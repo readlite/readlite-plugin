@@ -2,7 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { HighlightColor } from '../../hooks/useTextSelection';
 import { useTheme } from '../../context/ThemeContext';
 import { useI18n } from '../../context/I18nContext';
-import { PencilIcon, DocumentTextIcon, SparklesIcon, XMarkIcon, ClipboardDocumentIcon, CheckIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, DocumentTextIcon, SparklesIcon, XMarkIcon, ClipboardDocumentIcon, CheckIcon, TrashIcon, LanguageIcon } from '@heroicons/react/24/outline';
+import { createLogger } from '~/utils/logger';
+import { isAuthenticated } from '../../utils/auth';
+
+// Create a logger for this module
+const logger = createLogger('selection-toolbar');
 
 interface VirtualHighlightElement {
   getAttribute(name: string): string | null;
@@ -17,6 +22,9 @@ interface TextSelectionToolbarProps {
   highlightElement?: Element | VirtualHighlightElement | null;
   onRemoveHighlight?: (element: Element | VirtualHighlightElement) => void;
   onAskAI?: (selectedText: string) => void;
+  onCopy?: () => Promise<void> | void;
+  onTranslate?: (selectedText: string) => void;
+  onOpenAgent?: () => void;
 }
 
 // Define a more extensive type for highlight colors with proper names
@@ -34,7 +42,10 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
   onClose,
   highlightElement,
   onRemoveHighlight,
-  onAskAI
+  onAskAI,
+  onCopy,
+  onTranslate,
+  onOpenAgent
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -217,31 +228,17 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
     e.preventDefault();
     e.stopPropagation();
     
-    let textToCopy = '';
-    let selection: Selection | null = null;
-    
-    try {
-      // Try to get selection from iframe first
-      const iframe = document.querySelector('iframe');
-      if (iframe && iframe.contentWindow) {
-        selection = iframe.contentWindow.getSelection();
-      } else {
-        selection = window.getSelection();
-      }
-      
-      if (selection && !selection.isCollapsed) {
-        textToCopy = selection.toString();
-        
-        await navigator.clipboard.writeText(textToCopy);
-        setIsCopied(true);
-        
-        // Reset copy success indicator after 2 seconds
-        setTimeout(() => {
-          setIsCopied(false);
-        }, 2000);
-      }
-    } catch (err) {
-      console.error('Failed to copy text:', err);
+    if (onCopy) {
+      // Use the callback provided by parent component
+      await onCopy();
+      setIsCopied(true);
+      setTimeout(() => {
+        onClose();
+      }, 500);
+    } else {
+      // If no callback is provided, show a message
+      console.warn('Copy functionality requires onCopy callback');
+      alert(t('comingSoon'));
     }
   };
 
@@ -287,46 +284,55 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
     e.stopPropagation();
     
     if (onAskAI) {
-      let selectedText = '';
-      let selection: Selection | null = null;
-      
-      try {
-        // Try to get selection from iframe first
-        const iframe = document.querySelector('iframe');
-        if (iframe && iframe.contentWindow) {
-          selection = iframe.contentWindow.getSelection();
-        } else {
-          selection = window.getSelection();
-        }
-        
-        if (selection && !selection.isCollapsed) {
-          selectedText = selection.toString();
-          onAskAI(selectedText);
-          onClose(); // Close the toolbar after asking
-        }
-      } catch (err) {
-        console.error('Failed to get selected text for AI:', err);
-      }
+      // Just call the callback - parent component handles selection
+      onAskAI("");
+      onClose();
     } else {
       // Fallback if handler isn't provided
       alert(t('comingSoon'));
     }
   };
-  
+
+  // Handle translation with login check
+  const handleTranslate = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      // Check authentication status
+      const isLoggedIn = await isAuthenticated();
+      
+      if (isLoggedIn) {
+        // User is logged in, proceed with translation
+        if (onTranslate) {
+          onTranslate("");
+          // Close selection toolbar immediately
+          onClose();
+        } else {
+          logger.warn('Translation handler not provided');
+        }
+      } else {
+        // User is not logged in, open Agent component
+        logger.info('User not logged in, opening Agent');
+        if (onOpenAgent) {
+          onOpenAgent();
+          onClose();
+        } else {
+          logger.warn('Agent opener not provided');
+        }
+      }
+    } catch (err) {
+      logger.error('Error in handleTranslate:', err);
+    }
+  };
+
   return (
     <div 
       ref={toolbarRef}
-      className="fixed z-[2147483647] select-none readlite-selection-toolbar animate-in fade-in slide-in-from-bottom-2 duration-200"
-      style={{
-        top: `${position.top}px`,
-        left: `${position.left}px`,
-        pointerEvents: 'auto',
-      }}
-      onClick={(e) => {
-        // Prevent clicks on the toolbar from bubbling up and losing selection
-        e.stopPropagation();
-        e.preventDefault();
-      }}
+      className={`fixed z-[9999] transform -translate-x-1/2 transition-all duration-200 ease-out ${
+        isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+      }`}
+      style={calculatePosition()}
     >
       {/* Glass container with modern styling */}
       <div className={`
@@ -398,34 +404,18 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
               width={isChinese ? 48 : 56}
               specialColor="accent"
             />
-            
-            {/* 5. QUERY BUTTON */}
-            <ToolbarButton
-              onMouseDown={() => alert(t('comingSoon'))}
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                </svg>
-              }
-              label={t('query')}
-              isDark={theme === 'dark'}
-              width={isChinese ? 48 : 56}
-            />
-            
-            {/* 6. SHARE BUTTON */}
-            <ToolbarButton
-              onMouseDown={() => alert(t('comingSoon'))}
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935-2.186 2.25 2.25 0 0 0-3.935 2.186Z" />
-                </svg>
-              }
-              label={t('share')}
-              isDark={theme === 'dark'}
-              width={isChinese ? 48 : 56}
-            />
-            
-            {/* 7. CLOSE BUTTON - at the end */}
+
+            {/* 5. Translation button */}
+            {onTranslate && (
+              <ToolbarButton
+                onMouseDown={handleTranslate}
+                icon={<LanguageIcon className="w-5 h-5" />}
+                label={t('translate')}
+                width={isChinese ? 48 : 56}
+              />
+            )}
+
+            {/* 6. CLOSE BUTTON - at the end */}
             <ToolbarButton
               onMouseDown={onClose}
               icon={<XMarkIcon className="w-5 h-5" />}

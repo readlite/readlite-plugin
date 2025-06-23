@@ -202,6 +202,27 @@ function handlePortStreamingRequest(data: any, port: chrome.runtime.Port) {
     
     streamLogger.info(`Setting up stream for prompt: "${prompt?.substring(0, 30)}..."`);
     
+    // Set up safety timeout for entire streaming process
+    let streamCompleted = false;
+    const PORT_STREAM_TIMEOUT_MS = 120000; // 120 seconds
+    
+    const timeoutId = setTimeout(() => {
+      if (!streamCompleted) {
+        streamLogger.warn(`Port stream timeout triggered after ${PORT_STREAM_TIMEOUT_MS / 1000} seconds.`);
+        // Send error message back through port
+        try {
+          if (port) {
+            port.postMessage({ 
+              type: 'LLM_STREAM_ERROR', 
+              error: `Stream timed out after ${PORT_STREAM_TIMEOUT_MS / 1000} seconds`
+            });
+          }
+        } catch (e) {
+          streamLogger.error(`Error sending timeout message: ${e instanceof Error ? e.message : String(e)}`);
+        }
+      }
+    }, PORT_STREAM_TIMEOUT_MS);
+    
     // Wrap the streamHandler to send chunks via port
     const streamHandler = (chunk: string) => {
       try {
@@ -222,6 +243,8 @@ function handlePortStreamingRequest(data: any, port: chrome.runtime.Port) {
     streamLogger.info(`Starting stream process`);
     moduleToCheck.generateTextStream(prompt, streamHandler, options)
       .then(() => {
+        streamCompleted = true;
+        clearTimeout(timeoutId); // Clear safety timeout
         streamLogger.info(`Stream completed successfully`);
         // Send completion message
         if (port) {
@@ -229,6 +252,8 @@ function handlePortStreamingRequest(data: any, port: chrome.runtime.Port) {
         }
       })
       .catch((error: Error) => {
+        streamCompleted = true;
+        clearTimeout(timeoutId); // Clear safety timeout
         streamLogger.error(`Stream failed: ${error.message}`);
         // Send error message
         if (port) {
@@ -298,17 +323,17 @@ function handleStreamingRequest(
     streamLogger.info(`Starting streaming process.`);
     let streamCompleted = false;
     
-    // Safety timeout: If the stream promise doesn't resolve/reject within 30s,
+    // Safety timeout: If the stream promise doesn't resolve/reject within 120s,
     // send a failure response. This handles cases where the stream might hang indefinitely.
     const timeoutId = setTimeout(() => {
       if (!streamCompleted) {
-        streamLogger.warn(`Stream safety timeout triggered after 30 seconds.`);
+        streamLogger.warn(`Stream safety timeout triggered after 120 seconds.`);
         if (localSendResponse) {
-            localSendResponse({ success: false, error: 'Stream timed out after 30 seconds' });
+            localSendResponse({ success: false, error: 'Stream timed out after 120 seconds' });
             localSendResponse = null; // Mark response as sent
         } 
       }
-    }, 30000);
+    }, 120000);
 
     streamMethod(prompt, streamHandler, streamOptions)
       .then(() => {
@@ -558,13 +583,32 @@ async function fetchModelsInBackground(retryCount = 0, maxRetries = 3, retryDela
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    const models = await response.json();
-
-    if (Array.isArray(models) && models.length > 0 && models.every(m => m.value && m.label)) {
-      availableModels = models;
-      mainLogger.info(`Successfully fetched and updated models:`, availableModels);
+    const responseData = await response.json();
+    
+    // Log the raw response to see its exact structure
+    mainLogger.info(`API response structure:`, { 
+      isArray: Array.isArray(responseData),
+      type: typeof responseData
+    });
+    
+    // Handle both formats: direct array or {models: [...]} object
+    let models;
+    if (Array.isArray(responseData)) {
+      models = responseData;
+    } else if (responseData && typeof responseData === 'object' && Array.isArray(responseData.models)) {
+      models = responseData.models;
     } else {
-      mainLogger.warn(`Fetched models have unexpected structure or are empty, using defaults.`, models);
+      models = [];
+    }
+    
+    mainLogger.info(`Extracted models (${models.length}):`, models);
+    
+    if (Array.isArray(models) && models.length > 0) {
+      // Accept ALL models even if not ideally formatted - addresses immediate issue
+      availableModels = models;
+      mainLogger.info(`Successfully updated with ${models.length} models`);
+    } else {
+      mainLogger.warn(`No valid models found, using defaults.`);
       availableModels = []; // Reset to defaults if fetch is invalid
     }
   } catch (error) {

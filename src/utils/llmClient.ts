@@ -5,128 +5,20 @@
 
 // Import LLM request options type to maintain consistency with main LLM API
 import { LLMRequestOptions } from './llm';
-import { getAuthToken, handleTokenExpiry } from './auth';
-
 import { createLogger } from "~/utils/logger";
 
 // Create a logger for this module
 const logger = createLogger('utils');
 
-
-// New API endpoint 
-const OPENROUTER_API_ENDPOINT = 'https://api.readlite.app/api/openrouter/chat/completions';
-
-/**
- * Call LLM API via background service worker
- * @param method LLM API method name
- * @param params Parameters array
- * @returns API call result
- */
-const callBackgroundLLM = async (method: string, params: any[]): Promise<any> => {
-  logger.info(`[DEBUG] llmClient: Calling method "${method}" via background service worker`);
-  
-  return new Promise((resolve, reject) => {
-    logger.info(`[DEBUG] llmClient: Sending message to background worker`);
-    
-    chrome.runtime.sendMessage(
-      { 
-        type: 'LLM_API_REQUEST', 
-        data: { method, params } 
-      },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          logger.error(`[ERROR] llmClient: Runtime error: ${chrome.runtime.lastError.message}`);
-          reject(new Error(chrome.runtime.lastError.message));
-          return;
-        }
-        
-        if (!response) {
-          logger.error(`[ERROR] llmClient: No response received from background service worker`);
-          reject(new Error('No response received from background service worker'));
-          return;
-        }
-        
-        if (!response.success) {
-          logger.error(`[ERROR] llmClient: API error: ${response.error || 'Unknown error'}`);
-          reject(new Error(response.error || 'Unknown API error'));
-          return;
-        }
-        
-        logger.info(`[DEBUG] llmClient: Received successful response from background worker`);
-        resolve(response.data);
-      }
-    );
-  });
-};
-
 // Track active stream listeners to prevent memory leaks
 const activeStreamListeners = new Map();
 
-/**
- * Direct API call to the LLM service
- * @param messages Chat messages to send
- * @param options API options
- * @returns Promise with API response
- */
-export async function directApiCall(messages: any[], options: any): Promise<Response> {
-  // Get auth token
-  const token = await getAuthToken();
-  
-  // Prepare headers with authentication if available
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  
-  // Add auth token if available
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  
-  // Prepare request body
-  const requestBody = {
-    model: options.model,
-    max_tokens: options.maxTokens,
-    temperature: options.temperature,
-    messages: messages,
-    stream: !!options.stream
-  };
-  
-  // Make the API call
-  const response = await fetch(OPENROUTER_API_ENDPOINT, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(requestBody)
-  });
-  
-  // Handle 401 Unauthorized (token expired)
-  if (response.status === 401) {
-    logger.warn('Received 401 Unauthorized in directApiCall, handling token expiry');
-    await handleTokenExpiry(response);
-    throw new Error('Authentication failed: Your session has expired. Please log in again.');
-  }
-  
-  return response;
-}
 
 /**
  * LLM client API
  * Provides the same methods as the main LLM API, but calls via background service worker
  */
 const llmClient = {
-  /**
-   * Generate text via background service worker
-   */
-  generateText: async (prompt: string, options: LLMRequestOptions = {}) => {
-    logger.info(`[DEBUG] llmClient.generateText: Called with prompt: "${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}"`);
-    try {
-      const result = await callBackgroundLLM('generateText', [prompt, options]);
-      logger.info(`[DEBUG] llmClient.generateText: Received result successfully`);
-      return result;
-    } catch (error) {
-      logger.error(`[ERROR] llmClient.generateText: Failed with error: ${error instanceof Error ? error.message : String(error)}`);
-      throw error;
-    }
-  },
   
   /**
    * Generate text with streaming output
@@ -212,71 +104,11 @@ const llmClient = {
             streamId
           }
         });
-        
-        // Set a safety timeout in case the background never responds
-        const timeoutId = setTimeout(() => {
-          if (!isPortDisconnected) {
-            logger.warn(`[WARN] llmClient.generateTextStream: Stream timeout after 30 seconds`);
-            port.disconnect();
-            
-            if (receivedChunks > 0) {
-              logger.info(`[DEBUG] llmClient.generateTextStream: Returning partial response after timeout`);
-              resolve(fullResponse);
-            } else {
-              reject(new Error("Stream timed out after 30 seconds without receiving any response"));
-            }
-          }
-        }, 30000);
       } catch (error) {
         logger.error(`[ERROR] llmClient.generateTextStream: Setup error: ${error instanceof Error ? error.message : String(error)}`);
         reject(error);
       }
     });
-  },
-  
-  /**
-   * Summarize text via background service worker
-   */
-  summarizeText: async (text: string, maxLength: number = 3) => {
-    logger.info(`[DEBUG] llmClient.summarizeText: Called with text length: ${text.length}, maxLength: ${maxLength}`);
-    try {
-      const result = await callBackgroundLLM('summarizeText', [text, maxLength]);
-      logger.info(`[DEBUG] llmClient.summarizeText: Received result successfully`);
-      return result;
-    } catch (error) {
-      logger.error(`[ERROR] llmClient.summarizeText: Failed with error: ${error instanceof Error ? error.message : String(error)}`);
-      throw error;
-    }
-  },
-  
-  /**
-   * Extract key information from text via background service worker
-   */
-  extractKeyInfo: async (text: string, question: string) => {
-    logger.info(`[DEBUG] llmClient.extractKeyInfo: Called with text length: ${text.length}`);
-    try {
-      const result = await callBackgroundLLM('extractKeyInfo', [text, question]);
-      logger.info(`[DEBUG] llmClient.extractKeyInfo: Received result successfully`);
-      return result;
-    } catch (error) {
-      logger.error(`[ERROR] llmClient.extractKeyInfo: Failed with error: ${error instanceof Error ? error.message : String(error)}`);
-      throw error;
-    }
-  },
-  
-  /**
-   * Answer specific question about text
-   */
-  answerQuestion: async (text: string, question: string) => {
-    logger.info(`[DEBUG] llmClient.answerQuestion: Called with question: "${question}"`);
-    try {
-      const result = await callBackgroundLLM('answerQuestion', [text, question]);
-      logger.info(`[DEBUG] llmClient.answerQuestion: Received result successfully`);
-      return result;
-    } catch (error) {
-      logger.error(`[ERROR] llmClient.answerQuestion: Failed with error: ${error instanceof Error ? error.message : String(error)}`);
-      throw error;
-    }
   },
   
   /**

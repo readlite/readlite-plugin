@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useI18n } from '~/context/I18nContext';
 import { marked } from 'marked';
-import llmClient from '../../utils/llmClient';
-import SessionManager, { MessagePriority } from '../../utils/SessionManager';
 import { Model } from '../../types/api';
 import { isAuthenticated, openAuthPage } from '../../utils/auth';
 import { Message, ContextType } from './types';
@@ -12,9 +10,30 @@ import { createLogger } from '../../utils/logger';
 import LoginPrompt from './LoginPrompt';
 import MessageList from './MessageList';
 import InputArea from './InputArea';
+import ConversationManager from './ConversationManager';
+import aiClient from './AIClient';
+import { ExclamationCircleIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 // Create a logger instance for the agent component
 const logger = createLogger('agent');
+
+// Get summary instructions for the LLM
+const getSummaryInstructions = (): string => {
+  return `You are an assistant that helps users understand content currently visible on their screen. Your responses should:
+
+1. Focus primarily on the content that is currently visible in the user's viewport
+2. Provide explanations, summaries, or answer questions about the visible text
+3. Be clear and concise, with accurate information
+4. Acknowledge when you don't have enough context (if the visible content is incomplete)
+5. Adapt to the user's questions - they might ask about what they're currently reading
+
+When responding to questions about what's visible:
+- Prioritize the visible content over other context
+- Be helpful even if only partial information is available
+- If the user asks about something not in view, suggest they scroll to relevant sections
+
+Respond directly to queries without meta-commentary like "Based on the visible content..."`;
+};
 
 declare global {
   interface Window {
@@ -38,7 +57,7 @@ interface AgentUIProps {
  * Modern AgentUI component combining ReadLite, Cursor, and Claude UX elements
  * Optimized for token efficiency and mobile-friendly design
  */
-const AgentUI: React.FC<AgentUIProps> = ({ 
+export const AgentUI: React.FC<AgentUIProps> = ({ 
   onClose, 
   isVisible, 
   initialMessage,
@@ -61,6 +80,11 @@ const AgentUI: React.FC<AgentUIProps> = ({
   const [showLoginPrompt, setShowLoginPrompt] = useState(true); // Initialize to true
   // New state for selected text
   const [selectedText, setSelectedText] = useState<string>('');
+  // Add a state to track the last failed message for retry
+  const [lastFailedMessage, setLastFailedMessage] = useState<string>('');
+  
+  // Track if we're processing a large article
+  const isProcessingLargeArticle = useRef<boolean>(false);
 
   // Authentication state
   const [isAuth, setIsAuth] = useState<boolean>(false);
@@ -70,15 +94,16 @@ const AgentUI: React.FC<AgentUIProps> = ({
   
   // Refs
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   
-  // Initialize session manager for context management
-  const sessionManagerRef = useRef<SessionManager>(new SessionManager());
+  // Initialize conversation manager
+  const conversationManagerRef = useRef<ConversationManager>(
+    new ConversationManager(getSummaryInstructions())
+  );
   
   // Hooks
   const { t } = useI18n();
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
   
   // Check initial authentication status when the component mounts
   useEffect(() => {
@@ -221,67 +246,10 @@ const AgentUI: React.FC<AgentUIProps> = ({
         contextType: 'screen' // Default to screen context
       }]);
       
-      // Add welcome message to session manager
-      sessionManagerRef.current.addMessage({
-        id: 'welcome',
-        role: 'assistant',
-        content: welcomeMessage,
-        priority: MessagePriority.SYSTEM_INSTRUCTION,
-        timestamp: Date.now()
-      });
+      // Add welcome message to conversation manager
+      conversationManagerRef.current.addAssistantMessage(welcomeMessage);
     }
   }, [initialMessage, t]);
-  
-  // Set article context when available - updated to use visible content
-  useEffect(() => {
-    if (sessionManagerRef.current) {
-      if (visibleContent) {
-        // Set visible content as context
-        sessionManagerRef.current.setArticleContext(
-          article?.title || 'Current View',
-          visibleContent,
-          article?.url,
-          article?.language
-        );
-      } else if (article && article.content && article.content.length > 0) {
-        // Fallback to full article if visible content not provided
-        sessionManagerRef.current.setArticleContext(
-          article.title || 'Untitled',
-          article.content || '',
-          article.url,
-          article.language
-        );
-      }
-    }
-  }, [article, visibleContent]); // Update when either changes
-  
-  // Update context when visible content changes significantly
-  useEffect(() => {
-    // Skip if no visible content or not initialized
-    if (!visibleContent || !sessionManagerRef.current) return;
-    
-    // Check if this is a significant content change
-    const currentContext = sessionManagerRef.current.getArticleContextInfo();
-    if (currentContext) {
-      // Only update if the content is significantly different
-      // This prevents unnecessary updates during small scroll changes
-      const currentLength = currentContext.contentLength;
-      const newLength = visibleContent.length;
-      
-      // Update if content length changed by more than 20%
-      const changeThreshold = 0.2; // 20% change threshold
-      const percentChange = Math.abs(currentLength - newLength) / Math.max(currentLength, 1);
-      
-      if (percentChange > changeThreshold) {
-        sessionManagerRef.current.setArticleContext(
-          article?.title || 'Current View',
-          visibleContent,
-          article?.url,
-          article?.language
-        );
-      }
-    }
-  }, [visibleContent, article]);
   
   // Auto focus input when component becomes visible
   useEffect(() => {
@@ -295,7 +263,11 @@ const AgentUI: React.FC<AgentUIProps> = ({
   // Cleanup event listeners when component unmounts
   useEffect(() => {
     return () => {
-      llmClient.cleanupStreamListeners();
+      aiClient.cleanupStreamListeners();
+      // Reset large article processing flag when done
+      isProcessingLargeArticle.current = false;
+      // Also reset the conversation manager confirmation state
+      conversationManagerRef.current.resetConfirmationState();
     };
   }, []);
   
@@ -344,42 +316,22 @@ const AgentUI: React.FC<AgentUIProps> = ({
     }
   }, [selectedModel]);
   
-  // Handle send message (both button click and Enter key)
-  const handleSendMessage = useCallback(async () => {
-    if (!inputText.trim() || isLoading) return;
+  // simplify the handleArticleContext function
+  const handleArticleContext = (articleContent: string, title?: string, url?: string, language?: string): boolean => {
+    conversationManagerRef.current.setContext(
+      'article',
+      articleContent,
+      title || 'Untitled',
+      url,
+      language
+    );
     
-    // Check if user is authenticated
-    if (!isAuth) {
-      setError("Please log in to use the AI assistant feature.");
-      return;
-    }
+    logger.info(`Set article context with title: ${title || 'Untitled'}`);
     
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      sender: 'user',
-      text: inputText.trim(),
-      timestamp: Date.now(),
-      contextType // Store which context type was used
-    };
-    
-    // Add user message to conversation UI
-    setMessages(prev => [...prev, userMessage]);
-    setInputText('');
-    
-    // Add user message to session manager with high priority
-    sessionManagerRef.current.addMessage({
-      id: userMessage.id,
-      role: 'user', 
-      content: userMessage.text,
-      priority: MessagePriority.CURRENT_QUESTION,
-      timestamp: userMessage.timestamp
-    });
-    
-    // Reset height of textarea
-    if (inputRef.current) {
-      inputRef.current.style.height = 'auto';
-    }
-    
+    return false;
+  };
+  
+  const processUserMessage = useCallback(async () => {
     // Set loading state
     setIsLoading(true);
     setError(null);
@@ -390,30 +342,11 @@ const AgentUI: React.FC<AgentUIProps> = ({
     const isUsingSelection = contextType === 'selection' && selectedText;
     const referenceText = isUsingSelection ? selectedText : '';
     
-    // Ensure the right context is used
-    if (contextType === 'screen' && visibleContent) {
-      // Update context with latest visible content before generating response
-      sessionManagerRef.current.setArticleContext(
-        article?.title || 'Current View',
-        visibleContent,
-        article?.url,
-        article?.language
-      );
-    } else if (contextType === 'article' && article?.content) {
-      // Use the full article as context
-      sessionManagerRef.current.setArticleContext(
-        article.title || 'Untitled',
-        article.content || '',
-        article.url,
-        article.language
-      );
-    }
+    // Check if context is available
+    const hasContext = conversationManagerRef.current.hasContext();
     
-    // Check if article context is available
-    const hasArticleContext = sessionManagerRef.current.hasArticleContext();
-    
-    // If article context is missing, show an error
-    if (!hasArticleContext) {
+    // If context is missing, show an error
+    if (!hasContext) {
       let errorMessage = "No content available.";
       if (contextType === 'screen') {
         errorMessage = "No content visible on screen. Please scroll to view some content and try again.";
@@ -432,15 +365,15 @@ const AgentUI: React.FC<AgentUIProps> = ({
     let accumulatedResponse = '';
     
     try {
-      // Get optimized prompt from session manager
-      const prompt = sessionManagerRef.current.buildPrompt(getSummaryInstructions());
+      // Get prompt from conversation manager
+      const messages = conversationManagerRef.current.buildPrompt();
       
       // Use appropriate model settings for API call
       const modelSettings = getModelSettings();
       
       // Use streaming API for more responsive experience
-      await llmClient.generateTextStream(
-        prompt,
+      await aiClient.generateTextStream(
+        messages,
         (chunk: string) => {
           accumulatedResponse += chunk;
           setStreamingResponse(prev => prev + chunk);
@@ -461,20 +394,19 @@ const AgentUI: React.FC<AgentUIProps> = ({
       // Add agent response to conversation UI
       setMessages(prev => [...prev, agentMessage]);
       
-      // Add agent response to session manager with appropriate priority
-      sessionManagerRef.current.addMessage({
-        id: agentMessage.id,
-        role: 'assistant',
-        content: agentMessage.text,
-        priority: MessagePriority.RECENT_EXCHANGE,
-        timestamp: agentMessage.timestamp
-      });
+      // Add agent response to conversation manager
+      conversationManagerRef.current.addAssistantMessage(agentMessage.text);
       
       // Reset streaming response
       setStreamingResponse('');
       
     } catch (err) {
       logger.error("Error calling LLM API:", err);
+      
+      // Store the failed message for retry
+      if (inputText.trim() && !lastFailedMessage) {
+        setLastFailedMessage(inputText.trim());
+      }
       
       // Special handling for auth errors - suggest logging in again
       const errorMessage = err instanceof Error ? err.message : 'An error occurred while generating a response';
@@ -500,60 +432,154 @@ const AgentUI: React.FC<AgentUIProps> = ({
         
         setMessages(prev => [...prev, errorMessage]);
         
-        // Also add to session manager but with lower priority
-        sessionManagerRef.current.addMessage({
-          id: errorMessage.id,
-          role: 'assistant',
-          content: errorMessage.text,
-          priority: MessagePriority.HISTORICAL_EXCHANGE,
-          timestamp: errorMessage.timestamp
-        });
+        // Also add to conversation manager
+        conversationManagerRef.current.addAssistantMessage(errorMessage.text);
       }
     } finally {
       setIsLoading(false);
       setIsThinking(false);
+      // Reset large article processing flag when done
+      isProcessingLargeArticle.current = false;
     }
-  }, [inputText, isLoading, article, visibleContent, contextType, isAuth, modelsList, selectedText]);
-  
-  // Get summary instructions for the LLM
-  const getSummaryInstructions = (): string => {
-    return `You are an assistant that helps users understand content currently visible on their screen. Your responses should:
+  }, [contextType, selectedText, inputText, lastFailedMessage, article]);
 
-1. Focus primarily on the content that is currently visible in the user's viewport
-2. Provide explanations, summaries, or answer questions about the visible text
-3. Be clear and concise, with accurate information
-4. Acknowledge when you don't have enough context (if the visible content is incomplete)
-5. Adapt to the user's questions - they might ask about what they're currently reading
-
-When responding to questions about what's visible:
-- Prioritize the visible content over other context
-- Be helpful even if only partial information is available
-- If the user asks about something not in view, suggest they scroll to relevant sections
-
-Respond directly to queries without meta-commentary like "Based on the visible content..."`;
-  };
-
-  
-  // Clear conversation history
-  const handleClearConversation = () => {
-    // Clear UI messages but keep welcome message
-    const welcomeMessage = messages.find(msg => msg.id === 'welcome');
-    setMessages(welcomeMessage ? [welcomeMessage] : []);
+  // 简化handleSendMessage函数
+  const handleSendMessage = useCallback(async () => {
+    if ((!inputText.trim() && !lastFailedMessage) || isLoading) return;
     
-    // Clear session manager conversation
-    sessionManagerRef.current.clearConversation();
-    
-    // Re-add welcome message to session manager
-    if (welcomeMessage) {
-      sessionManagerRef.current.addMessage({
-        id: welcomeMessage.id,
-        role: 'assistant',
-        content: welcomeMessage.text,
-        priority: MessagePriority.SYSTEM_INSTRUCTION,
-        timestamp: welcomeMessage.timestamp
-      });
+    // Check if user is authenticated
+    if (!isAuth) {
+      setError("Please log in to use the AI assistant feature.");
+      return;
     }
-  };
+    
+    // Use either the input text or the last failed message for retry
+    const userInput = inputText.trim() || lastFailedMessage;
+    
+    // Reset the last failed message when submitting a new message
+    if (inputText.trim()) {
+      setLastFailedMessage('');
+    }
+    
+    // Check for @command syntax (@article, @screen, @selection)
+    const commandMatch = userInput.match(/^@(\w+)(?:\s+(.*))?$/);
+    if (commandMatch) {
+      const command = commandMatch[1].toLowerCase();
+      const remainingText = commandMatch[2] || '';
+      let isCommandHandled = false;
+      
+      // Handle simple context switching commands
+      if (['screen', 'article', 'selection'].includes(command)) {
+        const newContextType = command as ContextType;
+        
+        // Check context-specific requirements
+        if (newContextType === 'screen' && !visibleContent) {
+          setError("No content visible on screen. Please scroll to view some content.");
+          return;
+        } else if (newContextType === 'article' && !article?.content) {
+          setError("No article content available.");
+          return;
+        } else if (newContextType === 'selection' && !selectedText) {
+          setError("No text selection available. Please select some text first.");
+          return;
+        }
+        
+        // Update context type
+        setContextType(newContextType);
+        
+        // Create command acknowledgment message for the UI
+        const commandMessage: Message = {
+          id: `user-${Date.now()}`,
+          sender: 'user',
+          text: userInput,
+          timestamp: Date.now(),
+          contextType: newContextType
+        };
+        
+        // Add system response confirming the context change
+        const contextName = getContextTypeLabel(newContextType);
+        const responseMessage: Message = {
+          id: `system-${Date.now()}`,
+          sender: 'agent',
+          text: `Switched to ${contextName} context. ${remainingText ? 'Processing your query: "' + remainingText + '"' : ''}`,
+          timestamp: Date.now(),
+          contextType: newContextType
+        };
+        
+        // Update UI with both messages
+        setMessages(prev => [...prev, commandMessage, responseMessage]);
+        
+        // If there's remaining text, process it as a query
+        if (remainingText) {
+          // Set inputText to the remainingText and trigger handleSendMessage again
+          setInputText(remainingText);
+          setTimeout(() => handleSendMessage(), 100);
+        } else {
+          setInputText('');
+        }
+        
+        isCommandHandled = true;
+      }
+      
+      // If command was handled, exit the function
+      if (isCommandHandled) {
+        return;
+      }
+    }
+    
+    // Continue with normal message processing for non-command or unrecognized commands
+    
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      sender: 'user',
+      text: userInput,
+      timestamp: Date.now(),
+      contextType // Store which context type was used
+    };
+    
+    // Add user message to conversation UI
+    setMessages(prev => [...prev, userMessage]);
+    setInputText('');
+    
+    // Add user message to conversation manager
+    conversationManagerRef.current.addUserMessage(userInput);
+    
+    // Reset height of textarea
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+    }
+    
+    // 根据当前上下文类型设置上下文
+    if (contextType === 'article' && article?.content) {
+      // 使用简化的文章处理函数，直接设置上下文
+      handleArticleContext(
+        article.content,
+        article.title || 'Untitled',
+        article.url,
+        article.language
+      );
+    } else if (contextType === 'screen' && visibleContent) {
+      // 设置屏幕内容上下文
+      conversationManagerRef.current.setContext(
+        'screen',
+        visibleContent,
+        article?.title || 'Current View',
+        article?.url,
+        article?.language
+      );
+    } else if (contextType === 'selection' && selectedText) {
+      // 设置选中文本上下文
+      conversationManagerRef.current.setContext(
+        'selection',
+        selectedText,
+        'Selected Text'
+      );
+    }
+    
+    // 立即处理用户消息，不检查确认状态
+    processUserMessage();
+    
+  }, [inputText, isLoading, article, visibleContent, contextType, isAuth, selectedText, lastFailedMessage, processUserMessage]);
   
   // Monitor for authentication status changes via runtime messages
   useEffect(() => {
@@ -623,7 +649,7 @@ Respond directly to queries without meta-commentary like "Based on the visible c
       return {
         model: selectedModel.value,
         temperature: 0.7,
-        maxTokens: 4000
+        maxTokens: Math.floor(selectedModel.contextWindow * 0.8) // Use 80% of the context window
       };
     }
     
@@ -632,14 +658,14 @@ Respond directly to queries without meta-commentary like "Based on the visible c
       return {
         model: modelsList[0].value,
         temperature: 0.7,
-        maxTokens: 4000
+        maxTokens: Math.floor(modelsList[0].contextWindow * 0.8) // Use 80% of the context window
       };
     }
     
     // Fallback - should rarely happen
     return {
       temperature: 0.7,
-      maxTokens: 4000
+      maxTokens: 3200 // 80% of 4000
     };
   };
   
@@ -672,33 +698,69 @@ Respond directly to queries without meta-commentary like "Based on the visible c
     };
   }, [t]);
   
-  // Update SessionManager with the current context
+  // 简化上下文更新的useEffect
   useEffect(() => {
-    // Get access to the session manager
-    const sessionManager = sessionManagerRef.current;
-    
-    // Update the current context based on contextType
+    // 不处理大文章确认，直接设置上下文
     if (contextType === 'screen' && visibleContent) {
-      sessionManager.updateContext(
-        'visible_content',
+      conversationManagerRef.current.setContext(
+        'screen',
         visibleContent,
-        MessagePriority.VISIBLE_CONTENT
+        article?.title || 'Current View',
+        article?.url,
+        article?.language
       );
-    } else if (contextType === 'article' && article) {
-      sessionManager.updateContext(
-        'article_content',
+    } else if (contextType === 'article' && article?.content) {
+      // 直接设置文章上下文
+      conversationManagerRef.current.setContext(
+        'article',
         article.content,
-        MessagePriority.ARTICLE_CONTENT  
+        article.title || 'Untitled',
+        article.url,
+        article.language
       );
     } else if (contextType === 'selection' && selectedText) {
-      // Add the selected text as context
-      sessionManager.updateContext(
-        'selected_text',
+      conversationManagerRef.current.setContext(
+        'selection',
         selectedText,
-        MessagePriority.CURRENT_QUESTION // Give it high priority
+        'Selected Text'
       );
     }
   }, [contextType, visibleContent, article, selectedText]);
+  
+  // Update the clear conversation function to also reset the confirmation flag
+  const handleClearConversation = useCallback(() => {
+    // Clear UI messages but keep welcome message
+    const welcomeMessage = messages.find(msg => msg.id === 'welcome');
+    setMessages(welcomeMessage ? [welcomeMessage] : []);
+    
+    // Clear conversation manager
+    conversationManagerRef.current.clearConversation();
+    
+    // Re-add welcome message to conversation manager if it exists
+    if (welcomeMessage) {
+      conversationManagerRef.current.addAssistantMessage(welcomeMessage.text);
+    }
+
+    // Reset large article processing flag
+    isProcessingLargeArticle.current = false;
+  }, [messages]);
+  
+  // New method specifically for retrying a failed message
+  const handleRetry = useCallback(() => {
+    // If we have a last failed message, we'll use that
+    if (lastFailedMessage) {
+      // Call handleSendMessage which will use lastFailedMessage since inputText is empty
+      handleSendMessage();
+    } else if (messages.length > 0) {
+      // Find the last user message if there's no specific failed message
+      const lastUserMsg = [...messages].reverse().find(msg => msg.sender === 'user');
+      if (lastUserMsg) {
+        setLastFailedMessage(lastUserMsg.text);
+        // Delay slightly to ensure state update before calling handleSendMessage
+        setTimeout(() => handleSendMessage(), 10);
+      }
+    }
+  }, [lastFailedMessage, messages, handleSendMessage]);
   
   // Render the AgentUI component
   const agentContent = (
@@ -714,8 +776,6 @@ Respond directly to queries without meta-commentary like "Based on the visible c
         fontFamily: baseFontFamily || 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}
     >
-      {/* Remove the Header component since we've integrated its functionality into InputArea */}
-      
       {/* Show LoginPrompt if showLoginPrompt is true */} 
       {isAuthLoading ? (
         // Show loading indicator while checking auth status
@@ -753,7 +813,7 @@ Respond directly to queries without meta-commentary like "Based on the visible c
               isLoading={isLoading}
               isError={!!error}
               errorMessage={error}
-              retry={() => handleSendMessage()}
+              retry={handleRetry}
             />
           </div>
           

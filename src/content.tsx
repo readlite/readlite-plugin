@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react"
 import type { PlasmoCSConfig } from "plasmo"
 import { ReaderProvider } from "./context/ReaderContext"
 import { I18nProvider } from "./context/I18nContext"
-import Reader from "./components/Reader"
+import { TranslationProvider } from "./context/TranslationContext"
+import Reader from "./components/core/Reader"
 import { setupAuthListener } from "./utils/auth"
 import { createRoot } from 'react-dom/client'
 import { createLogger } from "./utils/logger"
@@ -38,13 +39,16 @@ export const world = "ISOLATED"
 // Based on types used in background.ts
 interface ReaderModeChangedMessage { type: 'READER_MODE_CHANGED'; isActive: boolean; }
 interface ContentScriptReadyMessage { type: 'CONTENT_SCRIPT_READY'; }
+interface ActivateReaderMessage { type: 'ACTIVATE_READER'; }
+interface DeactivateReaderMessage { type: 'DEACTIVATE_READER'; }
+interface ToggleReaderMessage { type: 'TOGGLE_READER'; }
 
-// Type for messages potentially received from background (currently none handled)
-type BackgroundMessage = {
-  type: string;
-  // Add other potential properties if messages are handled in the future
-  [key: string]: any; 
-};
+// Type for messages potentially received from background
+type BackgroundMessage = 
+  | ActivateReaderMessage
+  | DeactivateReaderMessage
+  | ToggleReaderMessage
+  | { type: string; [key: string]: any };
 
 // Types for Plasmo API
 interface PlasmoRenderArgs {
@@ -59,6 +63,10 @@ interface PlasmoRenderArgs {
 interface IframeWindow extends Window {
   updateTheme?: (newTheme: string) => void;
 }
+
+// Global variables to track iframe and root
+let iframeRoot: any = null;
+let iframeElement: HTMLIFrameElement | null = null;
 
 // Function to ensure the iframe theme is synchronized with the application theme
 function syncThemeToIframe(theme: ThemeType) {
@@ -127,10 +135,6 @@ export const StyleIsolator: React.FC<{
   return <div className={className}>{children}</div>;
 };
 
-// Global variables to track iframe and root
-let iframeRoot: any = null;
-let iframeElement: HTMLIFrameElement | null = null;
-
 /**
  * Content Script UI Component
  * Injected into the page, manages the reader mode state, and renders the Reader UI.
@@ -170,10 +174,35 @@ const ContentScriptUI = () => {
    * Show reader mode and hide original page
    */
   const showReaderMode = () => {
+    // Create iframe if it doesn't exist yet
+    if (!iframeElement) {
+      contentLogger.info("Creating iframe for reader mode");
+      createIframe();
+    }
+    
     // Only proceed if iframe exists
     if (!iframeElement) {
       contentLogger.warn("showReaderMode called but iframe does not exist");
       return;
+    }
+
+    // Verify iframe is still in DOM
+    const iframeCheck = document.getElementById("readlite-iframe-container");
+    if (!iframeCheck) {
+      contentLogger.error("Iframe reference exists but element not found in DOM - recreating");
+      createIframe();
+      if (!iframeElement) return;
+    }
+
+    // Debug check contentDocument
+    try {
+      if (iframeElement.contentDocument) {
+        contentLogger.info("iframe contentDocument is accessible");
+      } else {
+        contentLogger.warn("iframe contentDocument is null");
+      }
+    } catch (e) {
+      contentLogger.error("Error accessing iframe contentDocument:", e);
     }
 
     // Show iframe
@@ -206,12 +235,10 @@ const ContentScriptUI = () => {
     contentLogger.info("Reader mode hidden");
   }
 
-  // Set up listeners and initial communication
+  // Split the effect into multiple effects with specific responsibilities
+  
+  // 1. Effect for toggle event listener
   useEffect(() => {
-    /**
-     * Handles the custom event dispatched by the background script 
-     * (via executeScript) to toggle the reader UI.
-     */
     const handleInternalToggleEvent = () => {
       uiLogger.info("Received internal toggle event.");
       toggleReaderMode();
@@ -219,31 +246,74 @@ const ContentScriptUI = () => {
     
     document.addEventListener('READLITE_TOGGLE_INTERNAL', handleInternalToggleEvent);
     
-    // Notify background script that this content script instance is ready
+    return () => {
+      document.removeEventListener('READLITE_TOGGLE_INTERNAL', handleInternalToggleEvent);
+    };
+  }, []);
+  
+  // 2. Effect for message handling
+  useEffect(() => {
+    const handleBackgroundMessages = (
+      message: BackgroundMessage, 
+      sender: chrome.runtime.MessageSender, 
+      sendResponse: (response?: any) => void
+    ): boolean => { 
+      uiLogger.info(`Received message from background script: ${message.type}`);
+      
+      switch (message.type) {
+        case 'ACTIVATE_READER':
+          if (!isActive) {
+            toggleReaderMode();
+          }
+          sendResponse({ success: true });
+          break;
+        
+        case 'DEACTIVATE_READER':
+          if (isActive) {
+            toggleReaderMode();
+          }
+          sendResponse({ success: true });
+          break;
+          
+        case 'TOGGLE_READER':
+          toggleReaderMode();
+          sendResponse({ success: true });
+          break;
+      }
+      
+      return false; // No async processing
+    };
+    
+    chrome.runtime.onMessage.addListener(handleBackgroundMessages);
+    
+    return () => {
+      if (chrome.runtime?.onMessage?.hasListener(handleBackgroundMessages)) {
+        chrome.runtime.onMessage.removeListener(handleBackgroundMessages);
+      }
+    };
+  }, [isActive]);
+  
+  // 3. Effect for authentication setup - run once and never clean up
+  useEffect(() => {
+    // Set up authentication listener for tokens from ReadLite web app
+    try {
+      setupAuthListener();
+      uiLogger.info("Authentication listener setup complete");
+    } catch (error) {
+      uiLogger.error("Failed to set up authentication listener:", error);
+    }
+  }, []);
+  
+  // 4. Effect for initial setup and content script ready notification
+  useEffect(() => {
+    // Notify background script that content script is ready
     uiLogger.info("Sending CONTENT_SCRIPT_READY message.");
     chrome.runtime.sendMessage<ContentScriptReadyMessage>({ type: "CONTENT_SCRIPT_READY" })
       .catch(error => {
         uiLogger.warn("Failed to send CONTENT_SCRIPT_READY message:", error);
       });
     
-    /**
-     * Handles messages received directly from the background script.
-     */
-    const handleBackgroundMessages = (
-      message: BackgroundMessage, 
-      sender: chrome.runtime.MessageSender, 
-      sendResponse: (response?: any) => void
-    ): boolean => { 
-      return false; // No async processing
-    };
-    
-    // Add the message listener
-    chrome.runtime.onMessage.addListener(handleBackgroundMessages);
-    
-    // Set up authentication listener for tokens from ReadLite web app
-    setupAuthListener();
-    
-    // Inject CSS to ensure original page styles are correct when reader mode is active
+    // Inject CSS for reader mode
     const styleElement = document.createElement('style');
     styleElement.id = 'readlite-global-styles';
     styleElement.textContent = `
@@ -265,31 +335,24 @@ const ContentScriptUI = () => {
     `;
     document.head.appendChild(styleElement);
     
-    // Create iframe but initially hidden (not displayed)
-    createIframe();
-    
+    // Cleanup function - only runs when component is completely unmounted
     return () => {
-      uiLogger.info("Cleaning up content script.");
-      document.removeEventListener('READLITE_TOGGLE_INTERNAL', handleInternalToggleEvent);
+      uiLogger.info("Cleanup from unmounting content script.");
       
-      if (chrome.runtime?.onMessage?.hasListener(handleBackgroundMessages)) {
-        chrome.runtime.onMessage.removeListener(handleBackgroundMessages);
-      }
-      
-      // Remove styles
+      // Remove style elements
       const style = document.getElementById('readlite-global-styles');
       if (style) {
         document.head.removeChild(style);
       }
       
-      // Remove iframe
+      // Remove iframe only when component unmounts, not when toggling visibility
       removeIframe();
       
-      // Restore original page
+      // Reset page state
       document.documentElement.classList.remove('readlite-active');
       document.body.style.overflow = '';
     };
-  }, []); // Empty dependency array: Run only on mount and unmount
+  }, []); // Empty dependency array - runs once on mount, cleanup on unmount
   
   // Initially, component should return null because rendering is done inside the iframe
   if (!isActive) {
@@ -299,9 +362,11 @@ const ContentScriptUI = () => {
   return (
     <div className="readlite-reader-container">
       <I18nProvider>
-        <ReaderProvider>
-          <Reader />
-        </ReaderProvider>
+        <TranslationProvider>
+          <ReaderProvider>
+            <Reader />
+          </ReaderProvider>
+        </TranslationProvider>
       </I18nProvider>
     </div>
   );
@@ -312,7 +377,10 @@ const ContentScriptUI = () => {
  */
 function createIframe() {
   // If iframe already exists, don't create a duplicate
-  if (document.getElementById("readlite-iframe-container")) return;
+  if (document.getElementById("readlite-iframe-container")) {
+    isolatorLogger.info("iframe already exists, reusing existing iframe");
+    return;
+  }
 
   // Get preferred theme
   const preferredTheme = getPreferredTheme();
@@ -326,6 +394,13 @@ function createIframe() {
   // Add to document
   document.body.appendChild(iframe);
   isolatorLogger.info(`Created iframe container with theme: ${preferredTheme}`);
+  
+  // Verify iframe was added to DOM
+  const iframeCheck = document.getElementById("readlite-iframe-container");
+  if (!iframeCheck) {
+    isolatorLogger.error("Failed to append iframe to body - iframe not found in DOM after creation");
+    return;
+  }
   
   // Save global reference
   iframeElement = iframe;
@@ -493,16 +568,52 @@ function setupIframeContent(iframe: HTMLIFrameElement, theme: ThemeType) {
  * @param initialTheme The initial theme to pass to the ThemeProvider.
  */
 function renderReactApp(container: HTMLElement, initialTheme: ThemeType) {
+  isolatorLogger.info("Starting renderReactApp with container:", container?.tagName);
+
   if (!container) {
     isolatorLogger.error("Cannot render React app: container is null");
     return;
   }
   
+  // Debug container HTML
+  isolatorLogger.info("Container HTML structure:", container.innerHTML.substring(0, 100));
+  
   const rootElement = container.querySelector<HTMLElement>('#readlite-root'); // Use querySelector for type safety
   if (!rootElement) {
     isolatorLogger.error("Cannot find readlite-root element in iframe");
+    
+    // Attempt recovery by checking if we need to create the element
+    try {
+      isolatorLogger.info("Attempting recovery by creating #readlite-root element");
+      const newRoot = document.createElement('div');
+      newRoot.id = 'readlite-root';
+      newRoot.style.width = '100%';
+      newRoot.style.height = '100%';
+      container.appendChild(newRoot);
+      isolatorLogger.info("Created new #readlite-root element");
+      
+      // Try again with newly created element
+      const recoveredRoot = container.querySelector<HTMLElement>('#readlite-root');
+      if (recoveredRoot) {
+        isolatorLogger.info("Recovery successful, proceeding with rendering");
+        renderReactIntoRoot(recoveredRoot, initialTheme);
+        return;
+      }
+    } catch (error) {
+      isolatorLogger.error("Recovery attempt failed:", error);
+    }
     return;
   }
+  
+  // If we found the root element, render into it
+  renderReactIntoRoot(rootElement, initialTheme);
+}
+
+/**
+ * Helper function to render React into a root element
+ */
+function renderReactIntoRoot(rootElement: HTMLElement, initialTheme: ThemeType) {
+  isolatorLogger.info("Rendering React into root element");
   
   // Render React component
   try {
@@ -510,15 +621,27 @@ function renderReactApp(container: HTMLElement, initialTheme: ThemeType) {
     iframeRoot.render(
       <React.StrictMode>
         <I18nProvider>
-          <ReaderProvider initialTheme={initialTheme}>
-            <Reader />
-          </ReaderProvider>
+          <TranslationProvider>
+            <ReaderProvider initialTheme={initialTheme}>
+              <Reader />
+            </ReaderProvider>
+          </TranslationProvider>
         </I18nProvider>
       </React.StrictMode>
     );
-    isolatorLogger.info("React app rendered inside iframe");
+    isolatorLogger.info("React app rendered successfully inside iframe");
   } catch (error) {
     isolatorLogger.error("Failed to render Reader UI in iframe:", error);
+    
+    // Try simpler rendering as fallback
+    try {
+      isolatorLogger.info("Attempting simplified rendering as fallback");
+      const simpleRoot = createRoot(rootElement);
+      simpleRoot.render(<div>ReadLite Reader</div>);
+      isolatorLogger.info("Fallback rendering succeeded");
+    } catch (e) {
+      isolatorLogger.error("Even simplified rendering failed:", e);
+    }
   }
 }
 
@@ -559,8 +682,7 @@ export const render = async ({
   anchor, 
   createRootContainer 
 }: PlasmoRenderArgs) => {
-  // Initialize communication but don't render UI
-  // Actual UI rendering will be triggered by toggleReaderMode()
+  // Initialize communication but don't render UI until explicitly requested
   contentLogger.info('[Content Script] ReadLite content script initialized, waiting for activation');
   
   try {

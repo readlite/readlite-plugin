@@ -66,6 +66,7 @@ export interface ReaderContextType {
   updateSettings: (newSettings: Partial<ReaderSettings>) => void; // From useStoredSettings
   resetSettings: () => void; // From useStoredSettings
   closeReader: () => void; // Function to trigger reader close
+  loadArticle: () => Promise<void>; // Explicit function to load the article
 }
 
 // --- Context Definition ---
@@ -80,6 +81,7 @@ export const ReaderContext = createContext<ReaderContextType>({
   updateSettings: () => logger.warn("updateSettings called before Provider mounted"),
   resetSettings: () => logger.warn("resetSettings called before Provider mounted"),
   closeReader: () => logger.warn("closeReader called before Provider mounted"),
+  loadArticle: async () => logger.warn("loadArticle called before Provider mounted"),
 });
 
 // Hook to easily consume the context
@@ -100,7 +102,7 @@ const LoadingIndicator: React.FC = () => (
     justifyContent: 'center', 
     alignItems: 'center', 
     height: '100vh',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
     backgroundColor: '#f0f0f0',
     color: '#555',
     fontSize: '16px'
@@ -130,53 +132,48 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
   
   // State for article extraction
   const [article, setArticle] = useState<ArticleData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Start loading until settings loaded
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Start not loading until explicitly requested
   const [error, setError] = useState<string | null>(null);
   
   // Hook providing the article extraction function
   const { extractArticle } = useArticle();
   
-  // --- Effects ---
-
   /**
-   * Effect to load the article content once the settings have been loaded.
+   * Function to load the article content explicitly when requested
+   * (triggered by user action rather than automatically on mount)
    */
-  useEffect(() => {
-    const loadArticle = async () => {
-      logger.info("Settings loaded. Starting article extraction...");
-      setIsLoading(true);
-      setError(null); // Clear previous errors
-      try {
-        const extractedArticle = await extractArticle();
-        if (extractedArticle) {
-          logger.info(`Article extracted successfully: "${extractedArticle.title?.substring(0, 50)}..."`);
-          setArticle(extractedArticle);
-        } else {
-          logger.warn("Article extraction returned null or undefined.");
-          setError("Could not extract article content from this page.");
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error during article extraction";
-        logger.error("Error extracting article:", err);
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    // Trigger article loading only after settings are confirmed loaded
-    if (isSettingsLoaded) {
-      loadArticle();
-    } else {
-      // If settings aren't loaded yet, ensure isLoading remains true
-      setIsLoading(true); 
+  const loadArticle = useCallback(async () => {
+    // Only proceed if settings are loaded
+    if (!isSettingsLoaded) {
+      logger.warn("Attempted to load article before settings were loaded");
+      return;
     }
-  // Dependency: Re-run if the settings loading status changes. 
-  // extractArticle is assumed to be stable from its hook.
-  }, [isSettingsLoaded, extractArticle]); 
-  
-  // --- Callbacks ---
 
+    logger.info("Starting article extraction...");
+    setIsLoading(true);
+    setError(null); // Clear previous errors
+    
+    try {
+      const extractedArticle = await extractArticle();
+      if (extractedArticle) {
+        logger.info(`Article extracted successfully: "${extractedArticle.title?.substring(0, 50)}..."`);
+        setArticle(extractedArticle);
+      } else {
+        logger.warn("Article extraction returned null or undefined.");
+        setError("Could not extract article content from this page.");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error during article extraction";
+      logger.error("Error extracting article:", err);
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isSettingsLoaded, extractArticle]);
+
+  // No automatic article loading in useEffect
+  // Instead, loadArticle will be called explicitly when needed 
+  
   /**
    * Callback function to close the reader mode.
    * Dispatches a custom event handled by the content script.
@@ -198,6 +195,7 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
     updateSettings,
     resetSettings,
     closeReader,
+    loadArticle,
   };
   
   // --- Render ---

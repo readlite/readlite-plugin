@@ -1,18 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   ChatBubbleLeftRightIcon, 
   ArrowDownTrayIcon, 
   Cog6ToothIcon, 
-  XMarkIcon 
+  XMarkIcon,
+  PlayIcon,
+  PauseIcon,
+  LanguageIcon
 } from '@heroicons/react/24/outline';
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
-
-interface ReaderSettings {
-  // Define specific settings properties here based on actual usage
-  theme?: string;
-  fontSize?: number;
-  // Add other settings as needed
-}
 
 interface ReaderToolbarProps {
   showAgent: boolean;
@@ -27,6 +23,10 @@ interface ReaderToolbarProps {
   showSettings: boolean;
   isDragging?: boolean;
   t: (key: string) => string;
+  isAutoScrolling: boolean;
+  toggleAutoScroll: () => void;
+  translateArticle?: () => void;
+  isTranslating?: boolean;
 }
 
 /**
@@ -45,14 +45,35 @@ const ReaderToolbar: React.FC<ReaderToolbarProps> = ({
   showSettings,
   isDragging = false,
   t,
+  isAutoScrolling = false,
+  toggleAutoScroll,
+  translateArticle,
+  isTranslating = false,
 }) => {
   // Calculate right position based on panel width
   const rightPosition = showAgent ? `calc(${100 - leftPanelWidth}% + 20px)` : '20px';
   
+  // Track previous showAgent state to handle animation properly
+  const [isAnimating, setIsAnimating] = React.useState(false);
+  const prevShowAgentRef = React.useRef(showAgent);
+  
+  // Handle animation when Agent panel is toggled
+  useEffect(() => {
+    if (prevShowAgentRef.current !== showAgent) {
+      setIsAnimating(true);
+      const timer = setTimeout(() => {
+        setIsAnimating(false);
+      }, 200); // Match this with the Agent panel's animation duration
+      
+      prevShowAgentRef.current = showAgent;
+      return () => clearTimeout(timer);
+    }
+  }, [showAgent]);
+  
   return (
     <div
-      className={`fixed top-5 flex gap-2 p-2 border z-[2000] bg-primary/80 rounded-md shadow-lg backdrop-blur-md
-        ${isDragging ? '' : 'transition-all duration-300 ease-in-out'}`}
+      className={`fixed top-5 flex gap-2 p-2 z-[2000] bg-primary rounded-md shadow-lg backdrop-blur-md
+        ${isDragging || isAnimating ? '' : 'transition-all duration-200 ease-out'}`}
       style={{ right: rightPosition }}
     >
 
@@ -64,6 +85,30 @@ const ReaderToolbar: React.FC<ReaderToolbarProps> = ({
       >
         <ChatBubbleLeftRightIcon className="w-5 h-5" />
       </ToolbarButton>
+      
+      {/* Auto Scroll Button */}
+      <ToolbarButton
+        onClick={toggleAutoScroll}
+        title={t('autoScroll')}
+        isActive={isAutoScrolling}
+      >
+        {isAutoScrolling ? (
+          <PauseIcon className="w-5 h-5" />
+        ) : (
+          <PlayIcon className="w-5 h-5" />
+        )}
+      </ToolbarButton>
+      
+      {/* Translate Article Button */}
+      {translateArticle && (
+        <ToolbarButton
+          onClick={translateArticle}
+          title={t('translateArticle')}
+          isActive={isTranslating}
+        >
+          <LanguageIcon className="w-5 h-5" />
+        </ToolbarButton>
+      )}
       
       {/* Save as Markdown Button */}
       <ToolbarButton

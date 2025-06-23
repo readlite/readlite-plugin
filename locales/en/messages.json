@@ -1,470 +1,522 @@
 {
-  "extensionName": {
-    "message": "ReadLite",
-    "description": "Name of the extension."
-  },
-  "extensionDescription": {
-    "message": "Provide a clean, distraction-free reading experience for any article on the web.",
-    "description": "Description of the extension."
-  },
-  "displaySettings": {
-    "message": "Display Settings",
-    "description": "Title for the display settings panel."
-  },
-  "readingTheme": {
-    "message": "Theme",
-    "description": "Label for the reading theme selection."
-  },
-  "light": {
-    "message": "Light",
-    "description": "Light theme option."
-  },
-  "dark": {
-    "message": "Dark",
-    "description": "Dark theme option."
-  },
-  "paper": {
-    "message": "Paper",
-    "description": "Paper theme option."
-  },
-  "eyecare": {
-    "message": "Eyecare",
-    "description": "Eyecare theme option."
-  },
-  "highcontrast": {
-    "message": "High Contrast",
-    "description": "High Contrast theme option."
-  },
-  "fontSize": {
-    "message": "Font Size",
-    "description": "Label for font size adjustment."
-  },
-  "fontFamily": {
-    "message": "Font",
-    "description": "Label for font selection."
-  },
-  "contentWidth": {
-    "message": "Content Width",
-    "description": "Label for page width adjustment."
-  },
-  "narrow": {
-    "message": "Narrow",
-    "description": "Narrow width option."
-  },
-  "standard": {
-    "message": "Standard",
-    "description": "Standard width option."
-  },
-  "wide": {
-    "message": "Wide",
-    "description": "Wide width option."
-  },
-  "lineSpacing": {
-    "message": "Line Spacing",
-    "description": "Label for line spacing adjustment."
-  },
-  "tight": {
-    "message": "Tight",
-    "description": "Tight line spacing option."
-  },
-  "normal": {
-    "message": "Normal",
-    "description": "Normal line spacing option."
-  },
-  "relaxed": {
-    "message": "Relaxed",
-    "description": "Relaxed line spacing option."
-  },
-  "system": {
-    "message": "System",
-    "description": "System font option."
-  },
-  "currentSize": {
-    "message": "Current Size",
-    "description": "Label for displaying current font size."
-  },
-  "currentFont": {
-    "message": "Current Font",
-    "description": "Label for displaying current font."
-  },
-  "textAlignment": {
-    "message": "Text Alignment",
-    "description": "Label for text alignment options."
-  },
-  "left": {
-    "message": "Left",
-    "description": "Left alignment option."
-  },
-  "right": {
-    "message": "Right",
-    "description": "Right alignment option."
-  },
-  "center": {
-    "message": "Center",
-    "description": "Center alignment option."
-  },
-  "justify": {
-    "message": "Justify",
-    "description": "Justify alignment option."
-  },
-  "recommendedForChinese": {
-    "message": "For Chinese",
-    "description": "Label for fonts recommended for Chinese text."
-  },
-  "recommendedForEnglish": {
-    "message": "For English",
-    "description": "Label for fonts recommended for English text."
-  },
-  "recommendedForBoth": {
-    "message": "Universal",
-    "description": "Label for fonts recommended for both languages."
-  },
-  "allFonts": {
-    "message": "All Fonts",
-    "description": "Label for showing all available fonts."
-  },
-  "chineseFonts": {
-    "message": "Chinese Fonts",
-    "description": "Label for Chinese fonts section."
-  },
-  "englishFonts": {
-    "message": "English Fonts",
-    "description": "Label for English fonts section."
-  },
-  "detected": {
-    "message": "Detected",
-    "description": "Label for detected language."
-  },
-  "chinese": {
-    "message": "Chinese",
-    "description": "Chinese language name."
-  },
-  "english": {
-    "message": "English",
-    "description": "English language name."
-  },
-  "theme": {
-    "message": "Theme",
-    "description": "Theme section label."
-  },
-  "extractingArticle": {
-    "message": "Extracting article...",
-    "description": "Message shown when extracting article content."
-  },
-  "couldNotExtract": {
-    "message": "Could not extract article content",
-    "description": "Error message when article extraction fails."
-  },
-  "closeReaderMode": {
-    "message": "Close Reader Mode",
-    "description": "Label for button to close reader mode."
-  },
-  "close": {
-    "message": "Close",
-    "description": "Close button label."
-  },
-  "download": {   
-    "message": "Download",
-    "description": "Label for downloading article as Markdown."
-  },
-  "settings": {
-    "message": "Settings",
-    "description": "Label for the settings button/panel."
-  },
-  "agent": {
-    "message": "Agent",
-    "description": "Label/tooltip for the AI agent button."
-  },
-  "askQuestion": {
-    "message": "Ask a question",
-    "description": "Placeholder or action label in AI panel."
-  },
-  "summarize": {
-    "message": "Summarize article",
-    "description": "Action label in AI panel to summarize."
-  },
-  "fontGeorgia": {
-    "message": "Classic web serif font",
-    "description": "Description for Georgia font."
-  },
-  "fontPalatino": {
-    "message": "Classic elegant serif",
-    "description": "Description for Palatino font."
-  },
-  "fontBookerly": {
-    "message": "Kindle default reading font",
-    "description": "Description for Bookerly font."
-  },
-  "fontTimesNewRoman": {
-    "message": "Traditional classic serif",
-    "description": "Description for Times New Roman font."
-  },
-  "fontArial": {
-    "message": "Common sans-serif font",
-    "description": "Description for Arial font."
-  },
-  "fontSourceHanSans": {
-    "message": "Clean modern sans-serif",
-    "description": "Description for Source Han Sans font (English)."
-  },
-  "fontSourceHanSerif": {
-    "message": "Professional Chinese serif",
-    "description": "Description for Source Han Serif font (English)."
-  },
-  "fontPingFang": {
-    "message": "Apple default Chinese font",
-    "description": "Description for PingFang font (English)."
-  },
-  "fontHiraginoSansGB": {
-    "message": "Clear modern sans-serif",
-    "description": "Description for Hiragino Sans GB font (English)."
-  },
-  "fontMicrosoftYaHei": {
-    "message": "Windows default Chinese font",
-    "description": "Description for Microsoft YaHei font (English)."
-  },
-  "refreshLanguage": {
-    "message": "Sync browser language",
-    "description": "Action/tooltip for language sync."
-  },
-  "clearChat": {
-    "message": "Clear chat",
-    "description": "Label for the clear chat button in Agent UI."
-  },
-  "selectModel": {
-    "message": "Select Model",
-    "description": "Label for the model selector in Agent UI."
-  },
-  "comingSoon": {
-    "message": "Coming soon",
-    "description": "Label for features that will be available in the future."
-  },
-  "welcomeMessage": {
-    "message": "I'm here to help you understand what's currently visible on your screen. As you scroll, my context updates to focus on what you're reading now.",
-    "description": "Initial welcome message shown in Agent UI."
-  },
-  "contextTypeScreen": {
-    "message": "Screen",
-    "description": "Label for screen context type"
-  },
-  "contextTypeArticle": {
-    "message": "Article",
-    "description": "Label for article context type"
-  },
-  "contextTypeSelection": {
-    "message": "Selection",
-    "description": "Label for selection context type"
-  },
-  "contextSelectionDesc": {
-    "message": "Use selected text as context",
-    "description": "Description for selection context"
-  },
-  "explainSelection": {
-    "message": "Explain this selection",
-    "description": "Default query for selected text"
-  },
-  "loading": {
-    "message": "Loading...",
-    "description": "Message shown when content is loading."
-  },
-  "login": {
-    "message": "Log in",
-    "description": "Label for the login button."
-  },
-  "loginRequired": {
-    "message": "Login Required",
-    "description": "Title for the login required message."
-  },
-  "loginMessage": {
-    "message": "Please log in to use the AI assistant feature. Login is free and helps us prevent abuse.",
-    "description": "Message explaining why login is required."
-  },
-  "loginButton": {
-    "message": "Log In",
-    "description": "Label for the login button in the login UI."
-  },
-  "loginSafe": {
-    "message": "Safe login, no privacy concerns",
-    "description": "Message indicating login is safe"
-  },
-  "minimize": {
-    "message": "Close",
-    "description": "Text for minimize/close button"
-  },
-  "thinking": {
-    "message": "Thinking...",
-    "description": "Indicator when AI is thinking"
-  },
-  "agentContext": {
-    "message": "Context",
-    "description": "Label for the context selector"
-  },
-  "agentDefaultModel": {
-    "message": "Default",
-    "description": "Default model option"
-  },
-  "agentInputPlaceholder": {
-    "message": "Type your message...",
-    "description": "Placeholder text for input field"
-  },
-  "agentSendMessage": {
-    "message": "Send message",
-    "description": "Title for send button"
-  },
-  "agentSending": {
-    "message": "Sending...",
-    "description": "Text shown when message is being sent"
-  },
-  "agentSend": {
-    "message": "Send",
-    "description": "Text for send button"
-  },
-  "startConversation": {
-    "message": "Start a new conversation",
-    "description": "Text shown when no messages exist"
-  },
-  "emptyStateDescription": {
-    "message": "Select a context mode and ask any question to start the conversation.",
-    "description": "Description for empty state"
-  },
-  "errorOccurred": {
-    "message": "An error occurred",
-    "description": "Text shown when an error occurs"
-  },
-  "errorMessage": {
-    "message": "Unable to complete the request. Please try again later.",
-    "description": "Default error message"
-  },
-  "retry": {
-    "message": "Retry",
-    "description": "Text for retry button"
-  },
-  "modelSelectorTitle": {
-    "message": "Select AI Model",
-    "description": "Title for model selector"
-  },
-  "noModelsAvailable": {
-    "message": "No models available",
-    "description": "Text when no models are available"
-  },
-  "contextScreenDesc": {
-    "message": "Only use currently visible content",
-    "description": "Description for screen context"
-  },
-  "contextArticleDesc": {
-    "message": "Use the entire article as context",
-    "description": "Description for article context"
-  },
-  "collapseToolbar": {
-    "message": "Collapse Toolbar",
-    "description": "Label for the collapse toolbar button"
-  },
-  "custom": {
-    "message": "Custom",
-    "description": "Custom theme option."
-  },
-  "customTheme": {
-    "message": "Custom Theme",
-    "description": "Label for custom theme section."
-  },
-  "background": {
-    "message": "Background",
-    "description": "Label for background color setting."
-  },
-  "text": {
-    "message": "Text",
-    "description": "Label for text color setting."
-  },
-  "accent": {
-    "message": "Accent",
-    "description": "Label for accent color setting."
-  },
-  "border": {
-    "message": "Border",
-    "description": "Label for border color setting."
-  },
-  "select": {
-    "message": "Select",
-    "description": "Label for color select button."
-  },
-  "lightBackgrounds": {
-    "message": "Light backgrounds",
-    "description": "Label for light background color presets."
-  },
-  "darkBackgrounds": {
-    "message": "Dark backgrounds",
-    "description": "Label for dark background color presets."
-  },
-  "eyecareBackgrounds": {
-    "message": "Eye-care backgrounds",
-    "description": "Label for eye-care background color presets."
-  },
-  "darkText": {
-    "message": "Dark text",
-    "description": "Label for dark text color presets."
-  },
-  "lightText": {
-    "message": "Light text",
-    "description": "Label for light text color presets."
-  },
-  "accentColors": {
-    "message": "Accent colors",
-    "description": "Label for accent color presets."
-  },
-  "highlight": {
-    "message": "Highlight",
-    "description": "Label for the highlight button in selection toolbar."
-  },
-  "note": {
-    "message": "Note",
-    "description": "Label for the note button in selection toolbar."
-  },
-  "addNote": {
-    "message": "Add Note",
-    "description": "Label for the note button in selection toolbar."
-  },
-  "copy": {
-    "message": "Copy",
-    "description": "Label for the copy button in selection toolbar."
-  },
-  "copied": {
-    "message": "Copied",
-    "description": "Label shown after text has been copied."
-  },
-  "ai": {
-    "message": "AI",
-    "description": "Short label for the AI assistant button in selection toolbar."
-  },
-  "aiAssistant": {
-    "message": "AI Assistant",
-    "description": "Tooltip for the AI assistant button in selection toolbar."
-  },
-  "askAI": {
-    "message": "Ask AI",
-    "description": "Label for the AI assistant button in selection toolbar."
-  },
-  "removeHighlight": {
-    "message": "Remove Highlight",
-    "description": "Label for removing a highlight in selection toolbar."
-  },
-  "delete": {
-    "message": "Delete",
-    "description": "Label for the delete button in selection toolbar."
-  },
-  "query": {
-    "message": "Query",
-    "description": "Label for the query button in selection toolbar."
-  },
-  "share": {
-    "message": "Share",
-    "description": "Label for the share button in selection toolbar."
-  },
-  "selectHighlightColor": {
-    "message": "Select highlight color",
-    "description": "Label for the highlight color picker dialog."
-  },
-  "selectedText": {
-    "message": "Selected Text",
-    "description": "Label for selected text reference block"
+  "accent" : {
+    "description" : "Label for accent color setting.",
+    "message" : "Accent"
+  },
+  "accentColors" : {
+    "description" : "Label for accent color presets.",
+    "message" : "Accent colors"
+  },
+  "addNote" : {
+    "description" : "Label for the note button in selection toolbar.",
+    "message" : "Note"
+  },
+  "agent" : {
+    "description" : "Label/tooltip for the AI agent button.",
+    "message" : "Agent"
+  },
+  "agentContext" : {
+    "description" : "Label for the context selector",
+    "message" : "Context"
+  },
+  "agentDefaultModel" : {
+    "description" : "Default model option",
+    "message" : "Default"
+  },
+  "agentInputPlaceholder" : {
+    "description" : "Placeholder text for input field",
+    "message" : "Type your message..."
+  },
+  "agentSend" : {
+    "description" : "Text for send button",
+    "message" : "Send"
+  },
+  "agentSending" : {
+    "description" : "Text shown when message is being sent",
+    "message" : "Sending..."
+  },
+  "agentSendMessage" : {
+    "description" : "Title for send button",
+    "message" : "Send message"
+  },
+  "ai" : {
+    "description" : "Short label for the AI assistant button in selection toolbar.",
+    "message" : "AI"
+  },
+  "aiAssistant" : {
+    "description" : "Tooltip for the AI assistant button in selection toolbar.",
+    "message" : "AI Assistant"
+  },
+  "allFonts" : {
+    "description" : "Label for showing all available fonts.",
+    "message" : "All Fonts"
+  },
+  "askAI" : {
+    "description" : "Label for the AI assistant button in selection toolbar.",
+    "message" : "Ask AI"
+  },
+  "askQuestion" : {
+    "description" : "Placeholder or action label in AI panel.",
+    "message" : "Ask a question"
+  },
+  "autoScroll" : {
+    "description" : "Label for the auto-scroll button.",
+    "message" : "Auto-scroll"
+  },
+  "background" : {
+    "description" : "Label for background color setting.",
+    "message" : "Background"
+  },
+  "border" : {
+    "description" : "Label for border color setting.",
+    "message" : "Border"
+  },
+  "center" : {
+    "description" : "Center alignment option.",
+    "message" : "Center"
+  },
+  "chinese" : {
+    "description" : "Chinese language name.",
+    "message" : "Chinese"
+  },
+  "chineseFonts" : {
+    "description" : "Label for Chinese fonts section.",
+    "message" : "Chinese Fonts"
+  },
+  "clearChat" : {
+    "description" : "Label for the clear chat button in Agent UI.",
+    "message" : "Clear chat"
+  },
+  "close" : {
+    "description" : "Close button label.",
+    "message" : "Close"
+  },
+  "closeReaderMode" : {
+    "description" : "Label for button to close reader mode.",
+    "message" : "Close Reader Mode"
+  },
+  "collapseToolbar" : {
+    "description" : "Label for the collapse toolbar button",
+    "message" : "Collapse Toolbar"
+  },
+  "comingSoon" : {
+    "description" : "Label for features that will be available in the future.",
+    "message" : "Coming soon"
+  },
+  "contentWidth" : {
+    "description" : "Label for page width adjustment.",
+    "message" : "Content Width"
+  },
+  "contextArticleDesc" : {
+    "description" : "Description for article context",
+    "message" : "Use the entire article as context"
+  },
+  "contextScreenDesc" : {
+    "description" : "Description for screen context",
+    "message" : "Only use currently visible content"
+  },
+  "contextSelectionDesc" : {
+    "description" : "Description for selection context",
+    "message" : "Use selected text as context"
+  },
+  "contextTypeArticle" : {
+    "description" : "Label for article context type",
+    "message" : "Article"
+  },
+  "contextTypeScreen" : {
+    "description" : "Label for screen context type",
+    "message" : "Screen"
+  },
+  "contextTypeSelection" : {
+    "description" : "Label for selection context type",
+    "message" : "Selection"
+  },
+  "copied" : {
+    "description" : "Label shown after text has been copied.",
+    "message" : "Copied"
+  },
+  "copy" : {
+    "description" : "Label for the copy button in selection toolbar.",
+    "message" : "Copy"
+  },
+  "couldNotExtract" : {
+    "description" : "Error message when article extraction fails.",
+    "message" : "Could not extract article content"
+  },
+  "currentFont" : {
+    "description" : "Label for displaying current font.",
+    "message" : "Current Font"
+  },
+  "currentSize" : {
+    "description" : "Label for displaying current font size.",
+    "message" : "Current Size"
+  },
+  "custom" : {
+    "description" : "Custom theme option.",
+    "message" : "Custom"
+  },
+  "customTheme" : {
+    "description" : "Label for custom theme section.",
+    "message" : "Custom Theme"
+  },
+  "dark" : {
+    "description" : "Dark theme option.",
+    "message" : "Dark"
+  },
+  "darkBackgrounds" : {
+    "description" : "Label for dark background color presets.",
+    "message" : "Dark backgrounds"
+  },
+  "darkText" : {
+    "description" : "Label for dark text color presets.",
+    "message" : "Dark text"
+  },
+  "delete" : {
+    "description" : "Label for the delete button in selection toolbar.",
+    "message" : "Delete"
+  },
+  "detected" : {
+    "description" : "Label for detected language.",
+    "message" : "Detected"
+  },
+  "displaySettings" : {
+    "description" : "Title for the display settings panel.",
+    "message" : "Display Settings"
+  },
+  "download" : {
+    "description" : "Label for downloading article as Markdown.",
+    "message" : "Download"
+  },
+  "emptyStateDescription" : {
+    "description" : "Description for empty state",
+    "message" : "Select a context mode and ask any question to start the conversation."
+  },
+  "english" : {
+    "description" : "English language name.",
+    "message" : "English"
+  },
+  "englishFonts" : {
+    "description" : "Label for English fonts section.",
+    "message" : "English Fonts"
+  },
+  "errorMessage" : {
+    "description" : "Default error message",
+    "message" : "Unable to complete the request. Please try again later."
+  },
+  "errorOccurred" : {
+    "description" : "Text shown when an error occurs",
+    "message" : "An error occurred"
+  },
+  "explainSelection" : {
+    "description" : "Default query for selected text",
+    "message" : "Explain this selection"
+  },
+  "extensionDescription" : {
+    "description" : "Description of the extension.",
+    "message" : "Provide a clean, distraction-free reading experience for any article on the web."
+  },
+  "extensionName" : {
+    "description" : "Name of the extension.",
+    "message" : "ReadLite"
+  },
+  "extractingArticle" : {
+    "description" : "Message shown when extracting article content.",
+    "message" : "Extracting article..."
+  },
+  "eyecare" : {
+    "description" : "Eyecare theme option.",
+    "message" : "Eyecare"
+  },
+  "eyecareBackgrounds" : {
+    "description" : "Label for eye-care background color presets.",
+    "message" : "Eye-care backgrounds"
+  },
+  "fontArial" : {
+    "description" : "Description for Arial font.",
+    "message" : "Common sans-serif font"
+  },
+  "fontBookerly" : {
+    "description" : "Description for Bookerly font.",
+    "message" : "Kindle default reading font"
+  },
+  "fontFamily" : {
+    "description" : "Label for font selection.",
+    "message" : "Font"
+  },
+  "fontGeorgia" : {
+    "description" : "Description for Georgia font.",
+    "message" : "Classic web serif font"
+  },
+  "fontHiraginoSansGB" : {
+    "description" : "Description for Hiragino Sans GB font (English).",
+    "message" : "Clear modern sans-serif"
+  },
+  "fontMicrosoftYaHei" : {
+    "description" : "Description for Microsoft YaHei font (English).",
+    "message" : "Windows default Chinese font"
+  },
+  "fontPalatino" : {
+    "description" : "Description for Palatino font.",
+    "message" : "Classic elegant serif"
+  },
+  "fontPingFang" : {
+    "description" : "Description for PingFang font (English).",
+    "message" : "Apple default Chinese font"
+  },
+  "fontSize" : {
+    "description" : "Label for font size adjustment.",
+    "message" : "Font Size"
+  },
+  "fontSourceHanSans" : {
+    "description" : "Description for Source Han Sans font (English).",
+    "message" : "Clean modern sans-serif"
+  },
+  "fontSourceHanSerif" : {
+    "description" : "Description for Source Han Serif font (English).",
+    "message" : "Professional Chinese serif"
+  },
+  "fontTimesNewRoman" : {
+    "description" : "Description for Times New Roman font.",
+    "message" : "Traditional classic serif"
+  },
+  "highcontrast" : {
+    "description" : "High Contrast theme option.",
+    "message" : "High Contrast"
+  },
+  "highlight" : {
+    "description" : "Label for the highlight button in selection toolbar.",
+    "message" : "Highlight"
+  },
+  "justify" : {
+    "description" : "Justify alignment option.",
+    "message" : "Justify"
+  },
+  "left" : {
+    "description" : "Left alignment option.",
+    "message" : "Left"
+  },
+  "light" : {
+    "description" : "Light theme option.",
+    "message" : "Light"
+  },
+  "lightBackgrounds" : {
+    "description" : "Label for light background color presets.",
+    "message" : "Light backgrounds"
+  },
+  "lightText" : {
+    "description" : "Label for light text color presets.",
+    "message" : "Light text"
+  },
+  "lineSpacing" : {
+    "description" : "Label for line spacing adjustment.",
+    "message" : "Line Spacing"
+  },
+  "loading" : {
+    "description" : "Message shown when content is loading.",
+    "message" : "Loading..."
+  },
+  "login" : {
+    "description" : "Label for the login button.",
+    "message" : "Log in"
+  },
+  "loginButton" : {
+    "description" : "Label for the login button in the login UI.",
+    "message" : "Log In"
+  },
+  "loginMessage" : {
+    "description" : "Message explaining why login is required.",
+    "message" : "Please log in to use the AI assistant feature. Login is free and helps us prevent abuse."
+  },
+  "loginRequired" : {
+    "description" : "Title for the login required message.",
+    "message" : "Login Required"
+  },
+  "loginSafe" : {
+    "description" : "Message indicating login is safe",
+    "message" : "Safe login, no privacy concerns"
+  },
+  "minimize" : {
+    "description" : "Text for minimize/close button",
+    "message" : "Close"
+  },
+  "modelSelectorTitle" : {
+    "description" : "Title for model selector",
+    "message" : "Select AI Model"
+  },
+  "narrow" : {
+    "description" : "Narrow width option.",
+    "message" : "Narrow"
+  },
+  "noModelsAvailable" : {
+    "description" : "Text when no models are available",
+    "message" : "No models available"
+  },
+  "normal" : {
+    "description" : "Normal line spacing option.",
+    "message" : "Normal"
+  },
+  "note" : {
+    "description" : "Label for the note button in selection toolbar.",
+    "message" : "Note"
+  },
+  "paper" : {
+    "description" : "Paper theme option.",
+    "message" : "Paper"
+  },
+  "query" : {
+    "description" : "Label for the query button in selection toolbar.",
+    "message" : "Query"
+  },
+  "readingTheme" : {
+    "description" : "Label for the reading theme selection.",
+    "message" : "Theme"
+  },
+  "recommendedForBoth" : {
+    "description" : "Label for fonts recommended for both languages.",
+    "message" : "Universal"
+  },
+  "recommendedForChinese" : {
+    "description" : "Label for fonts recommended for Chinese text.",
+    "message" : "For Chinese"
+  },
+  "recommendedForEnglish" : {
+    "description" : "Label for fonts recommended for English text.",
+    "message" : "For English"
+  },
+  "refreshLanguage" : {
+    "description" : "Action/tooltip for language sync.",
+    "message" : "Sync browser language"
+  },
+  "relaxed" : {
+    "description" : "Relaxed line spacing option.",
+    "message" : "Relaxed"
+  },
+  "removeHighlight" : {
+    "description" : "Label for removing a highlight in selection toolbar.",
+    "message" : "Remove Highlight"
+  },
+  "retry" : {
+    "description" : "Text for retry button",
+    "message" : "Retry"
+  },
+  "right" : {
+    "description" : "Right alignment option.",
+    "message" : "Right"
+  },
+  "select" : {
+    "description" : "Label for color select button.",
+    "message" : "Select"
+  },
+  "selectedText" : {
+    "description" : "Label for selected text reference block",
+    "message" : "Selected Text"
+  },
+  "selectHighlightColor" : {
+    "description" : "Label for the highlight color picker dialog.",
+    "message" : "Select highlight color"
+  },
+  "selectModel" : {
+    "description" : "Label for the model selector in Agent UI.",
+    "message" : "Select Model"
+  },
+  "settings" : {
+    "description" : "Label for the settings button/panel.",
+    "message" : "Settings"
+  },
+  "share" : {
+    "description" : "Label for the share button in selection toolbar.",
+    "message" : "Share"
+  },
+  "standard" : {
+    "description" : "Standard width option.",
+    "message" : "Standard"
+  },
+  "startConversation" : {
+    "description" : "Text shown when no messages exist",
+    "message" : "Start a new conversation"
+  },
+  "summarize" : {
+    "description" : "Action label in AI panel to summarize.",
+    "message" : "Summarize article"
+  },
+  "system" : {
+    "description" : "System font option.",
+    "message" : "System"
+  },
+  "text" : {
+    "description" : "Label for text color setting.",
+    "message" : "Text"
+  },
+  "textAlignment" : {
+    "description" : "Label for text alignment options.",
+    "message" : "Text Alignment"
+  },
+  "theme" : {
+    "description" : "Label for theme button.",
+    "message" : "Theme"
+  },
+  "thinking" : {
+    "description" : "Label shown while the AI is thinking.",
+    "message" : "Thinking..."
+  },
+  "tight" : {
+    "description" : "Tight line spacing option.",
+    "message" : "Tight"
+  },
+  "tryAgain" : {
+    "description" : "Label for try again button.",
+    "message" : "Try again"
+  },
+  "ui" : {
+    "description" : "Label for UI color setting.",
+    "message" : "UI"
+  },
+  "welcomeMessage" : {
+    "description" : "Initial welcome message shown in Agent UI.",
+    "message" : "I'm here to help you understand what's currently visible on your screen. As you scroll, my context updates to focus on what you're reading now."
+  },
+  "wide" : {
+    "description" : "Wide width option.",
+    "message" : "Wide"
+  },
+  "quickSummary" : {
+    "description" : "Label for the quick summary button/feature.",
+    "message" : "Quick Summary"
+  },
+  "generatingSummary" : {
+    "description" : "Text shown when generating a summary.",
+    "message" : "Generating summary..."
+  },
+  "noSummaryAvailable" : {
+    "description" : "Text shown when no summary is available.",
+    "message" : "No summary available."
+  },
+  "translating" : {
+    "description" : "Label shown when text is being translated.",
+    "message" : "Translating"
+  },
+  "translation" : {
+    "description" : "Label shown before translated text.",
+    "message" : "Translation"
+  },
+  "translate" : {
+    "description" : "Label for the translate button in selection toolbar.",
+    "message" : "Translate"
+  },
+  "translateArticle" : {
+    "description" : "Label for the translate article button in the toolbar.",
+    "message" : "Translate Article"
+  },
+  "translatingArticle" : {
+    "description" : "Label shown when the article is being translated.",
+    "message" : "Translating Article"
+  },
+  "translationError" : {
+    "description" : "Error message shown when translation fails.",
+    "message" : "Error"
+  },
+  "translationFailed" : {
+    "description" : "Detailed error message shown when translation fails.",
+    "message" : "Translation failed. Please try again."
   }
 }

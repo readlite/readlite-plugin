@@ -118,6 +118,21 @@ module.exports = {
           '60%': { content: "'··'" },
           '80%, 100%': { content: "'···'" },
         },
+        fadeInTranslation: {
+          'from': { 
+            opacity: '0',
+            transform: 'translateY(5px)'
+          },
+          'to': { 
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
+        },
+        ellipsis: {
+          '0%': { content: '"."' },
+          '33%': { content: '".."' },
+          '66%': { content: '"..."' },
+        }
       },
       // Animation utilities
       animation: {
@@ -127,6 +142,8 @@ module.exports = {
         'loading': 'loading 1.5s ease-in-out infinite',
         'blink': 'blink 1s ease-in-out infinite',
         'dots': 'dots 1.6s steps(4, end) infinite',
+        'fadeInTranslation': 'fadeInTranslation 0.5s ease',
+        'ellipsis': 'ellipsis 1.5s infinite',
       },
     },
   },
@@ -155,6 +172,60 @@ module.exports = {
         },
       };
       addUtilities(newUtilities, ['responsive']);
+    },
+
+    // Translation styles plugin
+    function({ addUtilities }) {
+      const translationUtilities = {
+        '.readlite-translating': {
+          'opacity': '0.9',
+          'position': 'relative',
+        },
+        '.readlite-original-text': {
+          'margin-bottom': '4px',
+          'position': 'relative',
+        },
+        '.readlite-separator': {
+          'display': 'none',
+        },
+        '.readlite-separator-line': {
+          'display': 'none',
+        },
+        '.readlite-translation': {
+          'background-color': 'rgba(var(--readlite-bg-secondary-rgb), 0.6)',
+          'color': 'var(--readlite-text-accent)',
+          'margin-top': '4px',
+          'padding': '8px 10px',
+          'border-radius': '4px',
+          'font-style': 'normal',
+          'position': 'relative',
+          'box-shadow': '0 1px 2px rgba(0,0,0,0.03)',
+          'transition': 'all 0.2s ease',
+          'border-left': '2px solid var(--readlite-accent)',
+          'line-height': '1.5',
+          'animation': 'fadeInTranslation 0.5s ease',
+        },
+        '.readlite-translation::before': {
+          'display': 'none',
+        },
+        '.readlite-translating-indicator::after': {
+          'content': '"..."',
+          'animation': 'ellipsis 1.5s infinite',
+        },
+        '.readlite-translating-indicator::before': {
+          'content': 'attr(data-i18n-translating)',
+        },
+        '.readlite-translation-error': {
+          'color': 'var(--readlite-error)',
+          'background-color': 'rgba(255, 235, 235, 0.8)',
+          'border-left-color': 'var(--readlite-error)',
+        },
+        '.readlite-translation-error::before': {
+          'content': 'attr(data-i18n-error)',
+          'color': 'var(--readlite-error)',
+        },
+      };
+      addUtilities(translationUtilities);
     },
 
     // Simplified scrollbar styles matching global.css

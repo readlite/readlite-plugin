@@ -291,10 +291,15 @@ const InputArea: React.FC<InputAreaProps> = ({
                   {availableModels.map((model) => (
                     <div
                       key={model.value}
-                      className={`${menuItemClass} ${selectedModel?.value === model.value ? 'bg-bg-tertiary' : ''}`}
+                      className={`${menuItemClass} ${selectedModel?.value === model.value ? 'bg-bg-tertiary' : ''} flex items-center justify-between`}
                       onClick={() => handleSelectModel(model)}
                     >
-                      {model.label}
+                      <span>{model.label}</span>
+                      {model.inputPrice === 0 && model.outputPrice === 0 && (
+                        <span className="ml-2 px-1.5 py-0.5 text-xs rounded-md bg-green-500/20 text-green-500 font-medium">
+                          Free
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -311,7 +316,7 @@ const InputArea: React.FC<InputAreaProps> = ({
               onKeyDown={handleKeyDown}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              placeholder={t('agentInputPlaceholder') || 'Type your message...'}
+              placeholder={t('agentInputPlaceholder') || "Type your message..."}
               disabled={isLoading}
               rows={3}
               className="w-full bg-transparent py-2.5 resize-none outline-none 

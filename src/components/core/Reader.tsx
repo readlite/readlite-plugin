@@ -1,28 +1,31 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { useReader } from "../context/ReaderContext"
-import Settings from "./settings/Settings"
-import { useI18n } from "../context/I18nContext"
-import { LanguageCode } from "../utils/language"
-import { exportAsMarkdown } from "../utils/export"
-import AgentUI from "./agent"
-import ReaderToolbar from "~/components/reader/ReaderToolbar"
-import ReaderContent from "~/components/ReaderContent"
-import ReaderDivider from "~/components/reader/ReaderDivider"
-import { ThemeProvider } from "../context/ThemeContext"
-import { ThemeType } from "../config/theme"
-import { createLogger } from "~/utils/logger"
-import SelectionToolbar from "./reader/SelectionToolbar"
-import { HighlightColor } from "~/hooks/useTextSelection"
+import { useReader } from "../../context/ReaderContext"
+import Settings from "../settings/Settings"
+import { useI18n } from "../../context/I18nContext"
+import { useTranslation } from "../../context/TranslationContext"
+import { LanguageCode } from "../../utils/language"
+import { exportAsMarkdown } from "../../utils/export"
+import { AgentUI } from "../agent/AgentUI"
+import ReaderToolbar from "../reader/ReaderToolbar"
+import ReaderContent from "../reader/ReaderContent"
+import ReaderDivider from "../reader/ReaderDivider"
+import { ThemeProvider } from "../../context/ThemeContext"
+import { ThemeType } from "../../config/theme"
+import { createLogger } from "../../utils/logger"
+import SelectionToolbar from "../reader/SelectionToolbar"
+import { HighlightColor } from "../../hooks/useTextSelection"
 import { BookOpenIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { LanguageIcon } from '@heroicons/react/24/outline';
+import llmClient from '../../utils/llmClient';
+import { isAuthenticated } from '../../utils/auth';
 
 // Create a logger for this module
 const logger = createLogger('main-reader');
 
-// 更新类型定义，添加一个虚拟高亮元素类型
+// Virtual highlight element type for selection handling
 interface VirtualHighlightElement {
   getAttribute(name: string): string | null;
   hasAttribute?(name: string): boolean;
-  // 添加可能需要的其他方法
 }
 
 /**
@@ -34,39 +37,24 @@ const ReadingProgress: React.FC<{ scrollContainer?: HTMLElement | null }> = ({ s
   
   // Update progress as user scrolls
   useEffect(() => {
-    if (!scrollContainer) {
-      console.log('No scroll container available for progress bar');
-      return;
-    }
-    
-    console.log('Progress bar attached to scroll container:', scrollContainer);
+    if (!scrollContainer) return;
     
     const handleScroll = () => {
-      // Get scroll position, account for container height and content scroll height
       const scrollPosition = scrollContainer.scrollTop;
       const containerHeight = scrollContainer.clientHeight;
       const scrollHeight = scrollContainer.scrollHeight - containerHeight;
       
-      if (scrollHeight <= 0) {
-        console.log('Invalid scroll height detected');
-        return;
-      }
+      if (scrollHeight <= 0) return;
       
-      // Calculate progress as percentage
       const currentProgress = Math.min(100, Math.max(0, (scrollPosition / scrollHeight) * 100));
-      console.log(`Scroll progress: ${currentProgress.toFixed(1)}%`);
       setProgress(currentProgress);
     };
     
-    // Set initial progress
     handleScroll();
-    
-    // Add scroll listener
     scrollContainer.addEventListener('scroll', handleScroll);
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
   }, [scrollContainer]);
   
-  // Always render a container, even without a valid scrollContainer
   return (
     <div className="fixed top-0 left-0 w-full h-1.5 z-[9999] bg-accent/20 pointer-events-none">
       <div 
@@ -82,13 +70,27 @@ const ReadingProgress: React.FC<{ scrollContainer?: HTMLElement | null }> = ({ s
  * Displays the article in a clean, readable format with a side-by-side AI assistant.
  */
 const Reader = () => {
-  const { article, settings, isLoading, error, closeReader } = useReader()
+  // Get reader state from context
+  const {
+    article,
+    settings,
+    isLoading,
+    error,
+    updateSettings,
+    closeReader,
+    loadArticle
+  } = useReader();
+
+  // Additional state for reader functionality
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [visibleContent, setVisibleContent] = useState<string>("");
+  const [iframeReady, setIframeReady] = useState(false);
+
+  // State for Reader UI
   const [showSettings, setShowSettings] = useState(false)
   const [showAgent, setShowAgent] = useState(false)
   const [leftPanelWidth, setLeftPanelWidth] = useState(65) // Default to 65% width for reader
-  const [visibleContent, setVisibleContent] = useState<string>('') // State for visible content
-  const [isFullscreen, setIsFullscreen] = useState(false); // Track fullscreen state
-  const readerContentRef = useRef<HTMLIFrameElement>(null)
+  const readerContentRef = useRef<HTMLDivElement>(null)
   const dividerRef = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
   const initialXRef = useRef(0)
@@ -108,72 +110,107 @@ const Reader = () => {
   // Extract current theme from settings for use with ThemeProvider
   const theme = settings.theme as ThemeType;
   
-  // Add text selection related state and handlers
+  // Text selection state
   const [selectionState, setSelectionState] = useState<{
     isActive: boolean;
     rect: DOMRect | null;
     highlightElement?: Element | VirtualHighlightElement | null;
+    selectedText?: string;
+    domPath?: {
+      startPath: number[];
+      endPath: number[];
+      startOffset: number;
+      endOffset: number;
+    } | null;
   }>({
     isActive: false,
     rect: null,
-    highlightElement: null
+    highlightElement: null,
+    selectedText: '',
+    domPath: null
   });
 
   // Track scroll position for progress bar
   const [scrollProgress, setScrollProgress] = useState(0);
   
-  // Direct scroll handler for progress bar
+  // Track last removed highlight timestamp to prevent duplicates
+  const lastRemoveHighlightRef = useRef(0);
+
+  // Auto-scroll state
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const autoScrollIntervalRef = useRef<number | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const [autoScrollSpeed, setAutoScrollSpeed] = useState(1.5); // Speed in pixels per frame (default: normal reading speed)
+
+  // Translation state
+  const [translationState, setTranslationState] = useState<{
+    isVisible: boolean;
+    originalText: string;
+    translatedText: string;
+    position: { x: number; y: number };
+  }>({
+    isVisible: false,
+    originalText: '',
+    translatedText: '',
+    position: { x: 0, y: 0 }
+  });
+
+  // Get translation functions from context
+  const { translateArticle: translateWithContext, isTranslating: isTranslationActive, translationProgress: translationProgressValue, findAndTranslateContent } = useTranslation();
+
+  // --- Lifecycle Effects ---
+
+  // Log when Reader component mounts and check for iframe
   useEffect(() => {
-    if (!readerColumnRef.current) return;
+    logger.info("Reader component mounted");
     
-    const scrollContainer = readerColumnRef.current;
-    
-    const handleDirectScroll = () => {
-      const scrollPosition = scrollContainer.scrollTop;
-      const containerHeight = scrollContainer.clientHeight;
-      const scrollHeight = scrollContainer.scrollHeight - containerHeight;
+    const iframe = window.parent.document.getElementById("readlite-iframe-container") as HTMLIFrameElement;
+    if (iframe) {
+      logger.info("Reader iframe found");
+      setIframeReady(true);
+    } else {
+      logger.warn("Reader iframe not found on component mount");
       
-      if (scrollHeight <= 0) return;
+      const checkInterval = setInterval(() => {
+        const checkIframe = window.parent.document.getElementById("readlite-iframe-container");
+        if (checkIframe) {
+          logger.info("Reader iframe detected");
+          setIframeReady(true);
+          clearInterval(checkInterval);
+        }
+      }, 500);
       
-      const progress = Math.min(100, Math.max(0, (scrollPosition / scrollHeight) * 100));
-      setScrollProgress(progress);
-    };
-    
-    handleDirectScroll(); // Initial calculation
-    
-    scrollContainer.addEventListener('scroll', handleDirectScroll);
-    return () => scrollContainer.removeEventListener('scroll', handleDirectScroll);
-  }, [readerColumnRef.current]);
+      return () => clearInterval(checkInterval);
+    }
+  }, []);
+
+  // Load article data when component mounts and iframe is ready
+  useEffect(() => {
+    if (iframeReady) {
+      logger.info("Iframe ready, loading article content");
+      loadArticle();
+    }
+  }, [iframeReady, loadArticle]);
+
+  // --- Selection and Highlighting Handlers ---
 
   // Listen for text selection messages from ReaderContent
   useEffect(() => {
-    // 跟踪最后一次处理的时间戳，避免在短时间内处理多次相同的事件
     let lastProcessedTimestamp = 0;
     
     const handleSelectionMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'TEXT_SELECTED') {
-        // 检查是否在短时间内重复处理相同事件
         const now = Date.now();
-        if (now - lastProcessedTimestamp < 50) {
-          // 如果距离上次处理的时间太短，跳过这次处理
-          return;
-        }
+        if (now - lastProcessedTimestamp < 50) return;
         
-        // 更新处理时间戳
         lastProcessedTimestamp = now;
         
-        // In fullscreen mode, adjust rectangle coordinates
         let rect = event.data.rect;
         
         if (rect) {
-          console.log('Selection received:', rect);
-          
-          // Ensure the selection box displays correctly in fullscreen mode
           if (isFullscreen) {
-            // Apply any fullscreen-specific adjustments if needed
             rect = {
               ...rect,
-              // Make sure all properties are valid numbers
               left: isFinite(rect.left) ? rect.left : 0,
               top: isFinite(rect.top) ? rect.top : 0,
               right: isFinite(rect.right) ? rect.right : 0,
@@ -183,15 +220,10 @@ const Reader = () => {
             };
           }
           
-          // Only show if we have valid dimensions
           if (rect.width > 0 && rect.height > 0) {
-            // 创建一个虚拟的 highlight 元素以供 SelectionToolbar 使用
-            // 这将避免尝试传递实际的 DOM 元素
             let highlightElement = null;
             
-            // 如果有 highlightData，创建一个虚拟的元素以存储高亮信息
             if (event.data.highlightData) {
-              // 创建一个简单对象作为虚拟的元素代表
               highlightElement = {
                 getAttribute: (attr: string) => {
                   if (attr === 'data-highlight-id') return event.data.highlightData.id;
@@ -204,9 +236,65 @@ const Reader = () => {
             setSelectionState({
               isActive: event.data.isActive,
               rect: rect,
-              highlightElement: highlightElement
+              highlightElement: highlightElement,
+              selectedText: event.data.selectedText || '',
+              domPath: event.data.domPath
             });
-            console.log('Selection state updated:', rect);
+          }
+        } else if (event.data && event.data.type === 'TRANSLATE_SELECTION_COMPLETE') {
+          if (event.data.success && event.data.selectedText) {
+            // Get the selection position for the popup
+            const selection = window.getSelection();
+            if (!selection || !selection.rangeCount) return;
+            
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            
+            // Show loading state
+            setTranslationState({
+              isVisible: true,
+              originalText: event.data.selectedText,
+              translatedText: '翻译中...',
+              position: {
+                x: rect.left + rect.width / 2,
+                y: rect.top
+              }
+            });
+
+            // Call Gemini Flash 1.5 for translation using streaming
+            const prompt = `Translate the following text to ${event.data.selectedText.match(/[\u4e00-\u9fa5]/) ? 'English' : 'Chinese'}. Keep the original formatting and style. Only return the translated text without any explanations or notes:\n\n${event.data.selectedText}`;
+
+            // Use streaming instead of direct call
+            let streamedTranslation = '';
+            
+            // Stream handler to process each chunk
+            const handleStreamChunk = (chunk: string) => {
+              streamedTranslation += chunk;
+              // Update UI with the accumulated translation so far
+              setTranslationState(prev => ({
+                ...prev,
+                translatedText: streamedTranslation.trim() || '翻译中...'
+              }));
+            };
+            
+            llmClient.generateTextStream(prompt, handleStreamChunk, {
+              model: 'google/gemini-flash-1.5-8b',
+              temperature: 0.4,
+              maxTokens: 100000,
+              enableMem0: false,
+            }).then(fullTranslation => {
+              // Final update with complete translation
+              setTranslationState(prev => ({
+                ...prev,
+                translatedText: (fullTranslation as string).trim()
+              }));
+            }).catch(error => {
+              logger.error('Translation error:', error);
+              setTranslationState(prev => ({
+                ...prev,
+                translatedText: '翻译失败，请重试'
+              }));
+            });
           }
         }
       }
@@ -218,125 +306,131 @@ const Reader = () => {
     };
   }, [isFullscreen]);
 
-  // 跟踪最后一次移除高亮的时间戳
-  const lastRemoveHighlightRef = useRef(0);
+  // Handle copying selected text
+  const handleCopy = useCallback(async () => {
+    try {
+      // Send message directly to window with the selected text
+      window.postMessage(
+        { 
+          type: 'COPY_SELECTION',
+          selectedText: selectionState.selectedText
+        },
+        '*'
+      );
+      
+      // Log success
+      logger.info('Copy selection message sent');
+    } catch (error) {
+      logger.error('Error copying text:', error);
+    }
+  }, [selectionState.selectedText]);
+  
+  // Listen for copy operation completion
+  useEffect(() => {
+    const handleCopyComplete = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'COPY_SELECTION_COMPLETE') {
+        if (event.data.success) {
+          logger.info('Copy operation completed successfully');
+          // You could show a UI notification here if desired
+        } else {
+          const errorMsg = event.data.error || 'Unknown error';
+          logger.warn('Copy operation failed:', errorMsg);
+          // You could show an error notification here if desired
+        }
+      }
+    };
+    
+    window.addEventListener('message', handleCopyComplete);
+    return () => {
+      window.removeEventListener('message', handleCopyComplete);
+    };
+  }, []);
 
   // Handle removing a highlight
   const handleRemoveHighlight = useCallback((element: Element | VirtualHighlightElement) => {
     try {
-      // 防止短时间内的重复调用
       const now = Date.now();
-      if (now - lastRemoveHighlightRef.current < 100) {
-        console.log('Ignoring duplicate remove highlight request');
-        return;
-      }
+      if (now - lastRemoveHighlightRef.current < 100) return;
       lastRemoveHighlightRef.current = now;
       
       if (!element) {
-        console.error('Cannot remove highlight: Invalid element');
+        logger.error('Cannot remove highlight: Invalid element');
         return;
       }
       
-      // Get the highlight ID
       const highlightId = element.getAttribute('data-highlight-id');
       if (!highlightId) {
-        console.error('Cannot remove highlight: Missing highlight ID');
+        logger.error('Cannot remove highlight: Missing highlight ID');
         return;
       }
 
-      if (readerContentRef.current) {
-        if (typeof readerContentRef.current.contentDocument !== 'undefined') {
-          // If it's an iframe
-          // Cannot pass element directly through postMessage, use the highlight ID instead
-          readerContentRef.current.contentWindow?.postMessage(
-            { 
-              type: 'REMOVE_HIGHLIGHT', 
-              highlightId: highlightId
-            }, 
-            '*'
-          );
-        } else {
-          // If it's directly embedded content (not iframe)
-          readerContentRef.current.dispatchEvent(
-            new CustomEvent('remove-highlight', { detail: { highlightId } })
-          );
-        }
-      } else {
-        // Fallback to generic message passing
-        window.postMessage({ 
-          type: 'REMOVE_HIGHLIGHT', 
-          highlightId: highlightId
-        }, '*');
-      }
+      // Send message directly to window
+      window.postMessage({ 
+        type: 'REMOVE_HIGHLIGHT', 
+        highlightId: highlightId
+      }, '*');
       
-      // Clear selection state after removing highlight
-      setSelectionState({ isActive: false, rect: null, highlightElement: null });
+      // Keep selectedText in state but clear other properties
+      setSelectionState(prev => ({ 
+        ...prev, 
+        isActive: false, 
+        rect: null, 
+        highlightElement: null 
+      }));
     } catch (err) {
-      console.error('Error in handleRemoveHighlight:', err);
-      setSelectionState({ isActive: false, rect: null, highlightElement: null });
+      logger.error('Error in handleRemoveHighlight:', err);
+      // Keep selectedText in state but clear other properties
+      setSelectionState(prev => ({ 
+        ...prev, 
+        isActive: false, 
+        rect: null, 
+        highlightElement: null 
+      }));
     }
-  }, [readerContentRef]);
+  }, []);
 
   // Handle text highlight
   const handleHighlight = useCallback((color: HighlightColor) => {
     try {
-      if (readerContentRef.current) {
-        if (typeof readerContentRef.current.contentDocument !== 'undefined') {
-          // If it's an iframe
-          const contentDocument = readerContentRef.current.contentDocument;
-          if (contentDocument) {
-            const selection = contentDocument.getSelection();
-            if (selection && !selection.isCollapsed) {
-              // Send message to iframe content
-              readerContentRef.current.contentWindow?.postMessage(
-                { type: 'HIGHLIGHT_TEXT', color }, 
-                '*'
-              );
-            }
-          }
-        } else {
-          // If it's directly embedded content (not iframe)
-          readerContentRef.current.dispatchEvent(
-            new CustomEvent('highlight-text', { detail: { color } })
-          );
-        }
-      } else {
-        // Fallback to generic message passing
-        window.postMessage({ type: 'HIGHLIGHT_TEXT', color }, '*');
-      }
-      
-      // Don't automatically clear selection state after highlighting
-      // Let the user dismiss the toolbar manually
+      // Send message directly to window
+      window.postMessage({ type: 'HIGHLIGHT_TEXT', color }, '*');
     } catch (err) {
-      console.error('Error in handleHighlight:', err);
-      setSelectionState({ isActive: false, rect: null, highlightElement: null });
+      logger.error('Error in handleHighlight:', err);
+      // Keep selectedText in state but clear other properties
+      setSelectionState(prev => ({ 
+        ...prev, 
+        isActive: false, 
+        rect: null, 
+        highlightElement: null 
+      }));
     }
-  }, [readerContentRef]);
+  }, []);
 
   // Handle asking AI with selected text
   const handleAskAI = useCallback((selectedText: string) => {
     try {
-      if (selectedText && selectedText.trim()) {
-        // First make sure the Agent panel is visible
+      // Use the actual selectedText from state rather than the parameter
+      const textToProcess = selectionState.selectedText || selectedText;
+      
+      if (textToProcess && textToProcess.trim()) {
         if (!showAgent) {
           setShowAgent(true);
         }
         
-        // Send a message to the Agent with the selected text as context
-        // We're using window.postMessage to communicate with the Agent component
         window.postMessage({
           type: 'ASK_AI_WITH_SELECTION',
-          selectedText: selectedText.trim()
+          selectedText: textToProcess.trim()
         }, '*');
         
-        // Clear selection state after sending to AI
-        setSelectionState({ isActive: false, rect: null, highlightElement: null });
+        setSelectionState(prev => ({ ...prev, isActive: false }));
+      } else {
+        logger.warn('No text selected for AI processing');
       }
     } catch (err) {
-      console.error('Error in handleAskAI:', err);
-      setSelectionState({ isActive: false, rect: null, highlightElement: null });
+      logger.error('Error in handleAskAI:', err);
+      setSelectionState(prev => ({ ...prev, isActive: false }));
     }
-  }, [showAgent, setShowAgent, setSelectionState]);
+  }, [showAgent, setShowAgent, selectionState.selectedText]);
 
   // Handle direct DOM selection in fullscreen mode
   const captureSelection = useCallback(() => {
@@ -348,34 +442,31 @@ const Reader = () => {
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
         
-        // Validate the selection rectangle
         if (rect && isFinite(rect.width) && isFinite(rect.height) && 
             rect.width > 0 && rect.height > 0) {
-          console.log('Direct DOM selection captured:', rect);
           setSelectionState({
             isActive: true,
             rect: rect,
-            highlightElement: null
+            highlightElement: null,
+            selectedText: ''
           });
         }
       }
     } catch (err) {
-      console.error('Error capturing selection:', err);
+      logger.error('Error capturing selection:', err);
     }
   }, [isFullscreen, setSelectionState]);
 
   // Handle text selection events
   const handleTextSelection = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    // Text selection handler for fullscreen mode
     if (isFullscreen) {
-      // Use setTimeout to allow the selection to complete
       setTimeout(() => {
         captureSelection();
       }, 0);
     }
   }, [isFullscreen, captureSelection]);
 
-  // --- Effects ---
+  // --- Fullscreen Effects ---
 
   // Monitor fullscreen changes
   useEffect(() => {
@@ -392,7 +483,6 @@ const Reader = () => {
   // Ensure text selection in fullscreen mode
   useEffect(() => {
     if (isFullscreen && readerContainerRef.current) {
-      // Small timeout to ensure styles are applied after fullscreen transition
       setTimeout(() => {
         if (readerContainerRef.current) {
           readerContainerRef.current.style.userSelect = 'text'; 
@@ -403,18 +493,16 @@ const Reader = () => {
           readerContentRef.current.style.webkitUserSelect = 'text';
         }
         
-        // Also ensure the document body allows text selection
         document.body.style.userSelect = 'text';
         document.body.style.webkitUserSelect = 'text';
       }, 100);
     }
   }, [isFullscreen]);
   
-  // Additional useEffect specifically for handling text selection in fullscreen
+  // Special handling for text selection in fullscreen mode
   useEffect(() => {
     if (!isFullscreen) return;
 
-    // Add CSS to ensure selection toolbar is visible in fullscreen
     const style = document.createElement('style');
     style.id = 'fullscreen-selection-style';
     style.textContent = `
@@ -434,7 +522,6 @@ const Reader = () => {
         }
       }
       
-      /* Ensure the selection toolbar is visible in fullscreen */
       .readlite-selection-toolbar {
         position: fixed !important;
         z-index: 2147483647 !important;
@@ -442,12 +529,10 @@ const Reader = () => {
         pointer-events: auto !important;
       }
       
-      /* Ensure the selection toolbar buttons are clickable */
       .readlite-selection-toolbar button {
         pointer-events: auto !important;
       }
       
-      /* Ensure the selection toolbar is above all other elements */
       :fullscreen .readlite-selection-toolbar {
         position: fixed !important;
         z-index: 2147483647 !important;
@@ -457,7 +542,6 @@ const Reader = () => {
         visibility: visible !important;
       }
 
-      /* Force the selection toolbar to appear inside fullscreen context */
       :root:fullscreen .readlite-selection-toolbar,
       :root:fullscreen ~ .readlite-selection-toolbar,
       :root:fullscreen > * .readlite-selection-toolbar {
@@ -466,27 +550,24 @@ const Reader = () => {
     `;
     document.head.appendChild(style);
 
-    // Special handling for fullscreen selection events
     const handleFullscreenSelection = () => {
       const selection = window.getSelection();
       if (selection && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
         if (rect && rect.width > 0 && rect.height > 0) {
-          // Update selection state with fullscreen coordinates
           setSelectionState({
             isActive: true,
             rect: rect,
-            highlightElement: null
+            highlightElement: null,
+            selectedText: ''
           });
         }
       }
     };
 
-    // Add event listeners specifically for fullscreen
     document.addEventListener('mouseup', handleFullscreenSelection);
     document.addEventListener('selectionchange', () => {
-      // Delay slightly to ensure selection is complete
       setTimeout(handleFullscreenSelection, 10);
     });
 
@@ -499,41 +580,6 @@ const Reader = () => {
       document.removeEventListener('selectionchange', handleFullscreenSelection);
     };
   }, [isFullscreen, setSelectionState]);
-
-  // Additional useEffect for handling selection changes in fullscreen mode
-  useEffect(() => {
-    if (!isFullscreen || !readerContainerRef.current) return;
-    
-    const handleSelectionChange = () => {
-      const selection = window.getSelection();
-      if (selection && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        if (rect && rect.width > 0 && rect.height > 0) {
-          setSelectionState({
-            isActive: true,
-            rect: rect,
-            highlightElement: null
-          });
-        }
-      }
-    };
-    
-    document.addEventListener('selectionchange', handleSelectionChange);
-    
-    return () => {
-      document.removeEventListener('selectionchange', handleSelectionChange);
-    };
-  }, [isFullscreen, setSelectionState]);
-
-  // Detect article language when article data is available
-  useEffect(() => {
-    if (article?.language) {
-      // Language code is already normalized in detectLanguage function
-      const lang = article.language as LanguageCode;
-      setDetectedLanguage(lang);
-    }
-  }, [article?.language]);
   
   // Load user preferences
   useEffect(() => {
@@ -554,7 +600,7 @@ const Reader = () => {
   
   // Save user preferences
   useEffect(() => {
-    if (isDraggingRef.current) return; // Don't save during drag
+    if (isDraggingRef.current) return;
     try {
       localStorage.setItem('showAIPanel', showAgent.toString());
     } catch (e) {
@@ -564,7 +610,7 @@ const Reader = () => {
   
   // Save panel width when it changes, but not during dragging
   useEffect(() => {
-    if (isDraggingRef.current) return; // Don't save during drag
+    if (isDraggingRef.current) return;
     try {
       localStorage.setItem('readerPanelWidth', leftPanelWidth.toString());
     } catch (e) {
@@ -575,12 +621,9 @@ const Reader = () => {
   // Window resize handler
   useEffect(() => {
     const handleResize = () => {
-      // Consider adjusting panel width on small screens
       if (window.innerWidth < 768 && showAgent) {
-        // On very small screens, we might want to auto-hide AI panel
-        // or adjust the leftPanelWidth to a larger percentage
         if (leftPanelWidth < 40) {
-          setLeftPanelWidth(40); // Ensure reader is at least 40% on small screens
+          setLeftPanelWidth(40);
         }
       }
     };
@@ -598,21 +641,18 @@ const Reader = () => {
     
     if (!readerColumn) return;
     
-    // Keep track of last processed scroll position
     let lastScrollTop = readerColumn.scrollTop;
     let lastProcessedTime = Date.now();
     let scrollCounter = 0;
-    let forceUpdateCounter = 0; // Counter for periodic updates
+    let forceUpdateCounter = 0;
     
-    // Function to extract visible content from the DOM
     const extractVisibleContent = () => {
-      // Skip processing if scroll hasn't moved enough (at least 50px or 500ms passed)
       const currentScrollTop = readerColumn.scrollTop;
       const scrollDelta = Math.abs(currentScrollTop - lastScrollTop);
       const timeDelta = Date.now() - lastProcessedTime;
       
       forceUpdateCounter++;
-      const shouldForceUpdate = forceUpdateCounter >= 10; // Force update every 10 events
+      const shouldForceUpdate = forceUpdateCounter >= 10;
       
       if (scrollDelta < 50 && timeDelta < 500 && !shouldForceUpdate) {
         return;
@@ -629,14 +669,12 @@ const Reader = () => {
       const containerRect = readerContent.getBoundingClientRect();
       if (!containerRect) return;
       
-      // Get all text-containing elements in the article content
       const textElements = readerContent.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
       
       if (!textElements || textElements.length === 0) {
         return;
       }
       
-      // Top and bottom boundaries of the viewport, adjusted for the reader column's scroll position
       const readerScrollTop = readerColumn.scrollTop;
       const readerViewportTop = 0;
       const readerViewportBottom = readerColumn.clientHeight;
@@ -645,28 +683,23 @@ const Reader = () => {
       let visibleElementsCount = 0;
       let visibleElementsList = [];
       
-      // Always include the article title if available
       if (article.title) {
         visibleText += article.title + '\n\n';
       }
       
-      // Loop through elements to find which ones are visible
       textElements.forEach((el, index) => {
         const rect = el.getBoundingClientRect();
         const offsetTop = rect.top + readerScrollTop - containerRect.top;
         
-        // Check if element is at least partially visible in the reader column
         const elementTop = rect.top;
         const elementBottom = rect.bottom;
         const windowTop = 0;
         const windowBottom = window.innerHeight;
         
-        // Simple visibility detection
         const isVisibleSimple = 
           elementBottom > windowTop && 
           elementTop < windowBottom;
         
-        // Combined visibility detection methods
         const isVisible = isVisibleSimple || (
           offsetTop < readerViewportBottom &&
           offsetTop + rect.height > readerViewportTop &&
@@ -675,70 +708,78 @@ const Reader = () => {
         
         if (isVisible) {
           visibleElementsCount++;
-          // Get text content from the element
           let elementText = el.textContent?.trim() || '';
           
-          // Add the text with appropriate formatting based on tag
           if (elementText) {
             const tagName = el.tagName.toLowerCase();
             const shortPreview = elementText.substring(0, 30) + (elementText.length > 30 ? '...' : '');
             visibleElementsList.push(`${tagName}: ${shortPreview}`);
             
-            // Format based on tag type
             if (tagName.startsWith('h')) {
-              // Add formatting for headers
               visibleText += elementText + '\n\n';
             } else if (tagName === 'li') {
-              // Add bullet point for list items
               visibleText += '• ' + elementText + '\n';
             } else if (tagName === 'blockquote') {
-              // Format blockquotes
               visibleText += '> ' + elementText + '\n\n';
             } else {
-              // Regular paragraph
               visibleText += elementText + '\n\n';
             }
           }
         }
       });
       
-      // Generate a simple hash for comparison instead of full string comparison
       const contentHash = `${visibleElementsCount}-${visibleText.length}-${visibleText.substring(0, 50)}`;
       const currentContentHash = sessionStorage.getItem('lastVisibleContentHash') || '';
       
-      // Update state with the visible content only if significantly changed
       if (contentHash !== currentContentHash || shouldForceUpdate) {
         sessionStorage.setItem('lastVisibleContentHash', contentHash);
         setVisibleContent(visibleText);
       }
     };
     
-    // Initial extraction
     extractVisibleContent();
     
-    // Force a second extraction after a short delay to ensure DOM is fully rendered
     setTimeout(() => {
-      forceUpdateCounter = 100; // Force an update
+      forceUpdateCounter = 100;
       extractVisibleContent();
     }, 1000);
     
-    // Set up event listeners for scroll and resize
     const handleScroll = () => {
-      // Use requestAnimationFrame to avoid performance issues
       requestAnimationFrame(extractVisibleContent);
     };
     
-    // Add scroll listener to the reader column
     readerColumn.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleScroll);
     
     return () => {
       readerColumn.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
-      // Clear the hash on unmount
       sessionStorage.removeItem('lastVisibleContentHash');
     };
   }, [article]);
+  
+  // Direct scroll handler for progress bar
+  useEffect(() => {
+    if (!readerColumnRef.current) return;
+    
+    const scrollContainer = readerColumnRef.current;
+    
+    const handleDirectScroll = () => {
+      const scrollPosition = scrollContainer.scrollTop;
+      const containerHeight = scrollContainer.clientHeight;
+      const scrollHeight = scrollContainer.scrollHeight - containerHeight;
+      
+      if (scrollHeight <= 0) return;
+      
+      const progress = Math.min(100, Math.max(0, (scrollPosition / scrollHeight) * 100));
+      setScrollProgress(progress);
+    };
+    
+    handleDirectScroll();
+    
+    scrollContainer.addEventListener('scroll', handleDirectScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleDirectScroll);
+  }, [readerColumnRef.current]);
   
   // --- Drag Handlers ---
   
@@ -749,15 +790,12 @@ const Reader = () => {
     initialXRef.current = e.clientX;
     initialWidthRef.current = leftPanelWidth;
     
-    // Get the correct document object (iframe or parent document)
     const eventTarget = e.target as HTMLElement;
     const targetDoc = eventTarget?.ownerDocument || document;
     
-    // Add global event listeners to the correct document
     targetDoc.addEventListener('mousemove', handleDrag, { capture: true });
     targetDoc.addEventListener('mouseup', handleDragEnd, { capture: true });
     
-    // Set cursor styles during drag
     targetDoc.body.style.cursor = 'col-resize';
     targetDoc.body.style.userSelect = 'none';
   };
@@ -766,19 +804,14 @@ const Reader = () => {
   const handleDrag = useCallback((e: MouseEvent) => {
     if (!isDraggingRef.current) return;
     
-    // Use requestAnimationFrame for smoother updates
     requestAnimationFrame(() => {
-      // Get the container element to calculate width
       const containerElement = readerContainerRef.current;
-      // Fallback to window width if container not found
       const containerWidth = containerElement?.clientWidth || window.innerWidth;
       
       const deltaX = e.clientX - initialXRef.current;
       const percentageDelta = (deltaX / containerWidth) * 100;
       
-      // Calculate new width with constraints (30-85%)
       let newWidth = Math.min(85, Math.max(30, initialWidthRef.current + percentageDelta));
-      
       setLeftPanelWidth(newWidth);
     });
   }, []);
@@ -787,10 +820,8 @@ const Reader = () => {
   const handleDragEnd = useCallback(() => {
     isDraggingRef.current = false;
     
-    // Get the correct document object (may be different when ending the drag)
     const docs = [document]; 
     
-    // If we're in an iframe, also try to get the iframe document
     try {
       const iframe = document.getElementById('readlite-iframe-container') as HTMLIFrameElement;
       if (iframe?.contentDocument) {
@@ -800,28 +831,23 @@ const Reader = () => {
       // Ignore errors accessing iframe document
     }
     
-    // Remove listeners and reset styles from all potential documents
     docs.forEach(doc => {
       doc.removeEventListener('mousemove', handleDrag, { capture: true });
       doc.removeEventListener('mouseup', handleDragEnd, { capture: true });
       
-      // Reset cursor styles
       if (doc.body) {
         doc.body.style.cursor = '';
         doc.body.style.userSelect = '';
       }
     });
     
-    // Ensure user-select is enabled for the fullscreen element
     if (document.fullscreenElement && readerContainerRef.current) {
       readerContainerRef.current.style.userSelect = 'text';
-      // Also try to explicitly enable text selection on reader content
       if (readerContentRef.current) {
         readerContentRef.current.style.userSelect = 'text';
       }
     }
     
-    // Now that dragging is complete, save the width setting
     try {
       localStorage.setItem('readerPanelWidth', leftPanelWidth.toString());
     } catch (e) {
@@ -829,17 +855,12 @@ const Reader = () => {
     }
   }, [handleDrag, leftPanelWidth]);
   
-  // --- Event Handlers ---
+  // --- UI Animation Setup ---
 
-  /**
-   * Sets up necessary CSS animations for UI components like tooltips and toolbars
-   */
   useEffect(() => {
-    // Add required animation styles for selection toolbar
     if (readerContainerRef.current) {
       const doc = readerContainerRef.current.ownerDocument || document;
       
-      // Only add styles if they don't already exist
       if (!doc.getElementById('readlite-animation-styles')) {
         try {
           const style = doc.createElement('style');
@@ -871,17 +892,17 @@ const Reader = () => {
     }
   }, [readerContainerRef.current]);
 
+  // --- Event Handlers ---
+
   /**
    * Toggles fullscreen mode for the reader
    */
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
-      // Enter fullscreen
       readerContainerRef.current?.requestFullscreen().catch(err => {
         logger.error(`Error attempting to enable fullscreen:`, err);
       });
     } else {
-      // Exit fullscreen
       if (document.exitFullscreen) {
         document.exitFullscreen();
       }
@@ -903,23 +924,19 @@ const Reader = () => {
   }, [setShowAgent]);
   
   /**
-   * Closes the reader view by notifying the background script and dispatching 
-   * the internal toggle event (handled by content.tsx).
+   * Closes the reader view
    */
   const handleClose = useCallback(() => {
-    // Notify background script about state change before exiting
     chrome.runtime.sendMessage({
       type: "READER_MODE_CHANGED",
       isActive: false
     }).catch(error => logger.warn("Failed to send READER_MODE_CHANGED message:", error))
     
-    // Dispatch the internal event to trigger removal in content.tsx
     document.dispatchEvent(new CustomEvent('READLITE_TOGGLE_INTERNAL'))
   }, []);
 
   /**
    * Handles the download of the article as Markdown.
-   * Reused from Controls.tsx
    */
   const handleMarkdownDownload = useCallback(() => {
     if (article?.title && article.content) {
@@ -931,22 +948,287 @@ const Reader = () => {
     }
   }, [article]);
 
-  // Add debug logging for ReadingProgress
-  useEffect(() => {
-    console.log('Reader component mounted');
-    console.log('readerColumnRef.current:', readerColumnRef.current);
+  // --- Auto-scroll functionality ---
+
+  // Toggle auto-scroll
+  const toggleAutoScroll = useCallback(() => {
+    setIsAutoScrolling(prev => !prev);
   }, []);
 
-  useEffect(() => {
-    console.log('readerColumnRef updated:', readerColumnRef.current);
-  }, [readerColumnRef.current]);
+  // Auto-scroll for summary command
+  const autoScrollForSummary = useCallback(async () => {
+    const scrollContainer = readerColumnRef.current;
+    if (!scrollContainer) return;
 
-  // Update the scroll container reference for the ReadingProgress component
+    logger.info('Starting auto-scroll for summary command');
+    setIsAutoScrolling(true);
+
+    // Calculate the total scroll distance
+    const totalHeight = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+    const startPosition = scrollContainer.scrollTop;
+    
+    // Keep track of the last position to detect when we're at the bottom
+    let lastPosition = startPosition;
+    let isAtBottom = 0; // Changed from boolean to number to use as counter
+    
+    // Scroll at a faster rate for summary command (to complete faster)
+    const summaryScrollSpeed = 5;
+    let lastTime = 0;
+    
+    // Collect content while scrolling (this would be further enhanced to gather content)
+    const collectContentWhileScrolling = () => {
+      // For demo purposes, we'll just continue scrolling
+      if (scrollContainer.scrollTop >= totalHeight || isAtBottom >= 5) {
+        // We've reached the bottom, stop auto-scrolling
+        setIsAutoScrolling(false);
+        window.postMessage({ type: 'AUTO_SCROLL_COMPLETED' }, '*');
+        logger.info('Auto-scroll completed, reached end of document');
+        return;
+      }
+      
+      // Check if we're stuck (haven't moved)
+      if (Math.abs(scrollContainer.scrollTop - lastPosition) < 1) {
+        // Increment counter if we're stuck
+        if (++isAtBottom >= 5) {
+          // We're stuck, consider it done
+          setIsAutoScrolling(false);
+          window.postMessage({ type: 'AUTO_SCROLL_COMPLETED' }, '*');
+          logger.info('Auto-scroll completed, possibly reached end of document');
+          return;
+        }
+      } else {
+        // Reset counter if we've moved
+        isAtBottom = 0;
+      }
+      
+      // Update last position
+      lastPosition = scrollContainer.scrollTop;
+      
+      // Scroll down
+      scrollContainer.scrollBy({
+        top: summaryScrollSpeed,
+        behavior: 'auto'
+      });
+      
+      // Continue scrolling
+      if (isAutoScrolling) {
+        requestAnimationFrame(collectContentWhileScrolling);
+      } else {
+        window.postMessage({ type: 'AUTO_SCROLL_COMPLETED' }, '*');
+        logger.info('Auto-scroll stopped manually');
+      }
+    };
+    
+    // Start scrolling
+    requestAnimationFrame(collectContentWhileScrolling);
+    
+    // Return cleanup function
+    return () => {
+      setIsAutoScrolling(false);
+    };
+  }, []);
+
+  // Initialize auto-scroll when isAutoScrolling state changes
   useEffect(() => {
-    if (readerColumnRef.current) {
-      console.log('Reader column reference is available for scroll tracking');
+    const scrollContainer = readerColumnRef.current;
+    if (!scrollContainer) return;
+
+    // Calculate average reading speed (approximately 200-250 words per minute for an average reader)
+    // Assuming an average of 5 characters per word and 80 characters per line
+    // This means approximately 2.5-3 lines per second or roughly 1-2 pixels per 16ms frame
+    // We'll make this adjustable later for different reading speeds
+    
+    // Clear existing interval if any
+    if (autoScrollIntervalRef.current) {
+      window.clearInterval(autoScrollIntervalRef.current);
+      autoScrollIntervalRef.current = null;
     }
-  }, [readerColumnRef.current]);
+    
+    // Cancel any existing animation frame
+    if (animationFrameRef.current) {
+      window.cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    if (isAutoScrolling) {
+      // Start auto-scrolling
+      const autoScrollFrame = () => {
+        if (scrollContainer && !isDraggingRef.current) {
+          scrollContainer.scrollBy({
+            top: autoScrollSpeed,
+            behavior: 'auto' // Using 'auto' for smoother continuous scrolling
+          });
+        }
+      };
+
+      // Use requestAnimationFrame for smoother scrolling
+      let lastTime = 0;
+      const animateScroll = (timestamp: number) => {
+        if (!isAutoScrolling) {
+          if (animationFrameRef.current) {
+            window.cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+          }
+          return;
+        }
+        
+        const elapsed = timestamp - lastTime;
+        
+        // Only update scroll position every 16ms (approximately 60fps)
+        if (elapsed >= 16) {
+          lastTime = timestamp;
+          autoScrollFrame();
+        }
+        
+        animationFrameRef.current = requestAnimationFrame(animateScroll);
+      };
+      
+      animationFrameRef.current = requestAnimationFrame(animateScroll);
+      
+      // Pause auto-scroll when user manually scrolls
+      const pauseOnUserScroll = () => {
+        if (isAutoScrolling) {
+          setIsAutoScrolling(false);
+        }
+      };
+      
+      scrollContainer.addEventListener('wheel', pauseOnUserScroll);
+      scrollContainer.addEventListener('touchmove', pauseOnUserScroll);
+      
+      return () => {
+        scrollContainer.removeEventListener('wheel', pauseOnUserScroll);
+        scrollContainer.removeEventListener('touchmove', pauseOnUserScroll);
+        
+        // Clean up when unmounting or changing state
+        if (animationFrameRef.current) {
+          window.cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = null;
+        }
+      };
+    }
+  }, [isAutoScrolling, autoScrollSpeed]);
+
+  // Listen for auto-scroll requests from other components (like Agent)
+  useEffect(() => {
+    const handleAutoScrollRequest = (event: MessageEvent) => {
+      if (event.data) {
+        if (event.data.type === 'START_AUTO_SCROLL_FOR_SUMMARY') {
+          // Start auto-scrolling for summary command
+          autoScrollForSummary();
+        } else if (event.data.type === 'STOP_AUTO_SCROLL_FOR_SUMMARY') {
+          // Stop auto-scrolling
+          setIsAutoScrolling(false);
+        }
+      }
+    };
+    
+    window.addEventListener('message', handleAutoScrollRequest);
+    return () => {
+      window.removeEventListener('message', handleAutoScrollRequest);
+    };
+  }, [autoScrollForSummary]);
+
+  // Stop auto-scrolling when the Reader component will unmount or be hidden
+  useEffect(() => {
+    const stopAutoScroll = () => {
+      if (isAutoScrolling) {
+        setIsAutoScrolling(false);
+      }
+      
+      if (autoScrollIntervalRef.current) {
+        window.clearInterval(autoScrollIntervalRef.current);
+        autoScrollIntervalRef.current = null;
+      }
+      
+      if (animationFrameRef.current) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
+    
+    // Listen for visibility change to stop auto-scrolling when tab is hidden
+    const handleVisibilityChange = () => {
+      if (document.hidden && isAutoScrolling) {
+        setIsAutoScrolling(false);
+      }
+    };
+    
+    // Listen for page unload to clean up
+    const handleBeforeUnload = () => {
+      stopAutoScroll();
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      stopAutoScroll();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isAutoScrolling]);
+
+  // Close translation popup (if it still exists)
+  const handleCloseTranslation = useCallback(() => {
+    logger.info('Closing translation popup');
+    // Simply reset translation state
+    setTranslationState({
+      isVisible: false,
+      originalText: '',
+      translatedText: '',
+      position: { x: 0, y: 0 }
+    });
+  }, []);
+
+  // Add translation handler
+  const handleTranslate = useCallback((selectedText: string) => {
+    try {
+      // Use text from state or passed parameter
+      const textToTranslate = selectionState.selectedText || selectedText;
+      
+      if (textToTranslate && textToTranslate.trim() && readerContentRef.current) {
+        logger.info('Starting translation for selected text:', textToTranslate.substring(0, 50));
+
+        // Use TranslationContext method instead of messaging
+        findAndTranslateContent(readerContentRef.current, textToTranslate);
+        
+        // Clear the selection state immediately
+        setSelectionState(prev => ({ ...prev, isActive: false }));
+      } else {
+        logger.warn('No text selected for translation');
+      }
+    } catch (err) {
+      logger.error('Error in handleTranslate:', err);
+    }
+  }, [selectionState.selectedText, readerContentRef, findAndTranslateContent]);
+
+  // Add effect to monitor translation state changes
+  useEffect(() => {
+    logger.info('Translation state changed:', translationState);
+  }, [translationState]);
+
+  // Handle translation of the entire article
+  const handleTranslateArticle = async () => {
+    try {
+      // Check if user is logged in
+      const isLoggedIn = await isAuthenticated();
+      
+      if (isLoggedIn) {
+        // User is logged in, perform translation
+        if (readerContentRef.current) {
+          translateWithContext(readerContentRef.current);
+        }
+      } else {
+        // User is not logged in, open Agent interface
+        logger.info('Global translation requires login, opening Agent interface');
+        if (!showAgent) {
+          toggleAgent();
+        }
+      }
+    } catch (err) {
+      logger.error('Error checking login status:', err);
+    }
+  };
 
   // --- Conditional Rendering --- 
 
@@ -960,7 +1242,6 @@ const Reader = () => {
         >
           <div className="flex flex-col items-center">
             <div className="mb-4 animate-pulse">
-              {/* Book icon */}
               <BookOpenIcon className="w-16 h-16 text-current" />
             </div>
             <p className="text-current font-medium">{t('extractingArticle')}</p>
@@ -983,7 +1264,6 @@ const Reader = () => {
         >
           <div className="flex flex-col items-center max-w-md mx-auto p-4 rounded-lg">
             <div className="mb-4 text-error">
-              {/* Error icon */}
               <XCircleIcon className="w-16 h-16 text-current" />
             </div>
             <p className="text-current text-center font-medium">{error || t('couldNotExtract')}</p>
@@ -1003,6 +1283,7 @@ const Reader = () => {
 
   return (
     <ThemeProvider currentTheme={theme}>
+      <ReadingProgress />
       {/* Inline Progress Bar */}
       <div className="fixed top-0 left-0 w-full h-1.5 z-[9999] bg-accent/20 pointer-events-none">
         <div 
@@ -1010,6 +1291,24 @@ const Reader = () => {
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
+      
+      {/* Translation Progress Indicator */}
+      {isTranslationActive && (
+        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-[9999] bg-primary rounded-lg shadow-lg px-4 py-3 flex items-center space-x-3">
+          <LanguageIcon className="w-5 h-5 text-accent animate-pulse" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-primary">
+              {t('translatingArticle')}... {translationProgressValue}%
+            </span>
+            <div className="w-48 h-1.5 bg-accent/20 rounded-full mt-1">
+              <div 
+                className="h-full transition-all duration-150 ease-out bg-accent rounded-full"
+                style={{ width: `${translationProgressValue}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Container - the entire screen */}
       <div 
@@ -1058,6 +1357,10 @@ const Reader = () => {
               showSettings={showSettings}
               isDragging={isDraggingRef.current}
               t={t}
+              isAutoScrolling={isAutoScrolling}
+              toggleAutoScroll={toggleAutoScroll}
+              translateArticle={handleTranslateArticle}
+              isTranslating={isTranslationActive}
             />
           </div>
 
@@ -1087,26 +1390,28 @@ const Reader = () => {
                 visibleContent={visibleContent}
                 baseFontSize={settings.fontSize}
                 baseFontFamily={settings.fontFamily}
-                useStyleIsolation={true}
               />
             </div>
           )}
         </div>
         
-        {/* Text selection toolbar - now rendered directly for better positioning */}
+        {/* Text selection toolbar */}
         {selectionState.isActive && selectionState.rect && (
           <SelectionToolbar
             isVisible={selectionState.isActive}
             selectionRect={selectionState.rect}
-            highlightElement={selectionState.highlightElement}
             onHighlight={handleHighlight}
+            onClose={() => setSelectionState(prev => ({ ...prev, isActive: false }))}
+            highlightElement={selectionState.highlightElement}
             onRemoveHighlight={handleRemoveHighlight}
             onAskAI={handleAskAI}
-            onClose={() => setSelectionState({ isActive: false, rect: null, highlightElement: null })}
+            onCopy={handleCopy}
+            onTranslate={handleTranslate}
+            onOpenAgent={toggleAgent}
           />
         )}
         
-        {/* Settings Panel (Moved inside the fullscreen container) */}
+        {/* Settings Panel */}
         {showSettings && (
           <Settings
             onClose={() => setShowSettings(false)}
