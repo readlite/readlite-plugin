@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, memo } from "react"
+import React, { useState, useEffect, useMemo, memo, useRef, useCallback } from "react"
 import { useReader } from "~/context/ReaderContext"
 import { useI18n } from "~/context/I18nContext"
 import { LanguageCode } from "~/utils/language"
@@ -47,6 +47,44 @@ const Settings: React.FC<SettingsProps> = ({ onClose, buttonRef, onSettingsChang
   
   // Get button position for panel positioning
   const [buttonPosition, setButtonPosition] = useState<{ top: number; right: number } | null>(null);
+  
+  // Auto-close functionality
+  const autoCloseTimeoutRef = useRef<number | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // Clear auto-close timeout
+  const clearAutoCloseTimeout = useCallback(() => {
+    if (autoCloseTimeoutRef.current) {
+      clearTimeout(autoCloseTimeoutRef.current);
+      autoCloseTimeoutRef.current = null;
+    }
+  }, []);
+  
+  // Handle mouse enter - cancel auto-close
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+    clearAutoCloseTimeout();
+  }, [clearAutoCloseTimeout]);
+  
+  // Handle mouse leave - start auto-close timer
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    // Clear any existing timeout
+    clearAutoCloseTimeout();
+    
+    // Set a delay before closing (800ms gives users time to move cursor)
+    autoCloseTimeoutRef.current = window.setTimeout(() => {
+      logger.info('Auto-closing settings panel after mouse leave');
+      onClose();
+    }, 800);
+  }, [clearAutoCloseTimeout, onClose]);
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      clearAutoCloseTimeout();
+    };
+  }, [clearAutoCloseTimeout]);
   
   // Track button position for panel placement
   useEffect(() => {
@@ -145,6 +183,8 @@ const Settings: React.FC<SettingsProps> = ({ onClose, buttonRef, onSettingsChang
                 inset-0 sm:inset-auto z-[2147483647]
                 flex flex-col overflow-auto text-sm bg-primary text-primary border-border"
       style={{ ...panelPositionStyle, transform: 'translateZ(0)' }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex justify-between items-center p-3 py-3 sm:py-3 border-b border-border">
         <h2 className="m-0 text-base sm:text-sm font-medium">
