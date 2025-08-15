@@ -1,522 +1,522 @@
 {
-  "accent" : {
-    "description" : "Label for accent color setting.",
-    "message" : "强调"
-  },
-  "accentColors" : {
-    "description" : "Label for accent color presets.",
-    "message" : "强调色"
-  },
-  "addNote" : {
-    "description" : "Label for the note button in selection toolbar.",
-    "message" : "写想法"
-  },
-  "agent" : {
-    "description" : "AI 助手按钮的标签/提示",
-    "message" : "Agent"
-  },
-  "agentContext" : {
-    "description" : "上下文选择器的标签",
-    "message" : "上下文"
-  },
-  "agentDefaultModel" : {
-    "description" : "默认模型选项",
-    "message" : "默认"
-  },
-  "agentInputPlaceholder" : {
-    "description" : "输入框的占位文本",
-    "message" : "输入您的消息..."
-  },
-  "agentSend" : {
-    "description" : "发送按钮的文本",
-    "message" : "发送"
-  },
-  "agentSending" : {
-    "description" : "消息发送中显示的文本",
-    "message" : "发送中..."
-  },
-  "agentSendMessage" : {
-    "description" : "发送按钮的标题",
-    "message" : "发送消息"
-  },
-  "ai" : {
-    "description" : "Short label for the AI assistant button in selection toolbar.",
-    "message" : "AI"
-  },
-  "aiAssistant" : {
-    "description" : "Tooltip for the AI assistant button in selection toolbar.",
-    "message" : "AI 助手"
-  },
-  "allFonts" : {
-    "description" : "Label for showing all available fonts.",
-    "message" : "所有字体"
-  },
-  "askAI" : {
-    "description" : "Label for the AI assistant button in selection toolbar.",
-    "message" : "问 AI"
-  },
-  "askQuestion" : {
-    "description" : "AI 面板中的占位符或操作标签",
-    "message" : "请输入问题"
-  },
-  "autoScroll" : {
-    "description" : "自动滚动按钮的标签",
-    "message" : "自动滚动"
-  },
-  "background" : {
-    "description" : "Label for background color setting.",
-    "message" : "背景"
-  },
-  "border" : {
-    "description" : "Label for border color setting.",
-    "message" : "边框"
-  },
-  "center" : {
-    "description" : "Center alignment option.",
-    "message" : "居中"
-  },
-  "chinese" : {
-    "description" : "Chinese language name.",
-    "message" : "中文"
-  },
-  "chineseFonts" : {
-    "description" : "Label for Chinese fonts section.",
-    "message" : "中文字体"
-  },
-  "clearChat" : {
-    "description" : "Agent UI 中清除对话按钮的标签",
-    "message" : "清除对话"
-  },
-  "close" : {
-    "description" : "Close button label.",
-    "message" : "关闭"
-  },
-  "closeReaderMode" : {
-    "description" : "Label for button to close reader mode.",
-    "message" : "关闭阅读模式"
-  },
-  "collapseToolbar" : {
-    "description" : "折叠工具栏按钮的标签",
-    "message" : "折叠工具栏"
-  },
-  "comingSoon" : {
-    "description" : "未来将提供的功能的标签",
-    "message" : "即将推出"
-  },
-  "contentWidth" : {
-    "description" : "Label for page width adjustment.",
-    "message" : "页面宽度"
-  },
-  "contextArticleDesc" : {
-    "description" : "文章上下文的描述",
-    "message" : "使用整篇文章作为上下文"
-  },
-  "contextScreenDesc" : {
-    "description" : "屏幕上下文的描述",
-    "message" : "仅使用当前可见内容"
-  },
-  "contextSelectionDesc" : {
-    "description" : "Description for selection context",
-    "message" : "使用选中文本作为上下文"
-  },
-  "contextTypeArticle" : {
-    "description" : "Agent UI 中文章上下文类型的标签",
-    "message" : "文章"
-  },
-  "contextTypeScreen" : {
-    "description" : "Agent UI 中屏幕上下文类型的标签",
-    "message" : "屏幕"
-  },
-  "contextTypeSelection" : {
-    "description" : "Agent UI 中选择上下文类型的标签",
-    "message" : "选择"
-  },
-  "copied" : {
-    "description" : "Label shown after text has been copied.",
-    "message" : "已复制"
-  },
-  "copy" : {
-    "description" : "Label for the copy button in selection toolbar.",
-    "message" : "复制"
-  },
-  "couldNotExtract" : {
-    "description" : "Error message when article extraction fails.",
-    "message" : "无法提取文章内容"
-  },
-  "currentFont" : {
-    "description" : "Label for displaying current font.",
-    "message" : "当前字体"
-  },
-  "currentSize" : {
-    "description" : "显示当前字体大小标签",
-    "message" : "当前字号"
-  },
-  "custom" : {
-    "description" : "Custom theme option.",
-    "message" : "自定义"
-  },
-  "customTheme" : {
-    "description" : "Label for custom theme section.",
-    "message" : "自定义主题"
-  },
-  "dark" : {
-    "description" : "Dark theme option.",
-    "message" : "暗黑"
-  },
-  "darkBackgrounds" : {
-    "description" : "Label for dark background color presets.",
-    "message" : "深色背景"
-  },
-  "darkText" : {
-    "description" : "Label for dark text color presets.",
-    "message" : "深色文本"
-  },
-  "delete" : {
-    "description" : "Label for the delete button in selection toolbar.",
-    "message" : "删除"
-  },
-  "detected" : {
-    "description" : "Label for detected language.",
-    "message" : "已检测"
-  },
-  "displaySettings" : {
-    "description" : "Title for the display settings panel.",
-    "message" : "显示设置"
-  },
-  "download" : {
-    "description" : "下载文章为 Markdown 格式标签",
-    "message" : "下载"
-  },
-  "emptyStateDescription" : {
-    "description" : "空状态的描述",
-    "message" : "选择上下文模式并提问以开始对话"
-  },
-  "english" : {
-    "description" : "English language name.",
-    "message" : "英文"
-  },
-  "englishFonts" : {
-    "description" : "Label for English fonts section.",
-    "message" : "英文字体"
-  },
-  "errorMessage" : {
-    "description" : "默认错误消息",
-    "message" : "无法完成请求，请稍后再试"
-  },
-  "errorOccurred" : {
-    "description" : "发生错误时显示的文本",
-    "message" : "发生错误"
-  },
-  "explainSelection" : {
-    "description" : "Default query for selected text",
-    "message" : "解释这段选中内容"
-  },
-  "extensionDescription" : {
-    "description" : "Description of the extension.",
-    "message" : "为任何网页文章提供清晰无干扰的阅读体验。"
-  },
-  "extensionName" : {
-    "description" : "Name of the extension.",
-    "message" : "读点东西"
-  },
-  "extractingArticle" : {
-    "description" : "Message shown when extracting article content.",
-    "message" : "提取文章中..."
-  },
-  "eyecare" : {
-    "description" : "Eyecare theme option.",
-    "message" : "护眼"
-  },
-  "eyecareBackgrounds" : {
-    "description" : "Label for eye-care background color presets.",
-    "message" : "护眼背景"
-  },
-  "fontArial" : {
-    "description" : "Arial 字体的描述",
-    "message" : "通用无衬线字体"
-  },
-  "fontBookerly" : {
-    "description" : "Bookerly 字体的描述",
-    "message" : "Kindle默认阅读字体"
-  },
-  "fontFamily" : {
-    "description" : "Label for font selection.",
-    "message" : "字体"
-  },
-  "fontGeorgia" : {
-    "description" : "Georgia 字体的描述",
-    "message" : "经典网页衬线字体"
-  },
-  "fontHiraginoSansGB" : {
-    "description" : "冬青黑体字体的描述（中文）",
-    "message" : "清晰的现代无衬线字体"
-  },
-  "fontMicrosoftYaHei" : {
-    "description" : "微软雅黑字体的描述（中文）",
-    "message" : "Windows系统默认中文字体"
-  },
-  "fontPalatino" : {
-    "description" : "Palatino 字体的描述",
-    "message" : "经典优雅的衬线字体"
-  },
-  "fontPingFang" : {
-    "description" : "苹方字体的描述（中文）",
-    "message" : "苹果设备默认中文字体"
-  },
-  "fontSize" : {
-    "description" : "Label for font size adjustment.",
-    "message" : "字号"
-  },
-  "fontSourceHanSans" : {
-    "description" : "思源黑体字体的描述（中文）",
-    "message" : "现代清晰的无衬线字体"
-  },
-  "fontSourceHanSerif" : {
-    "description" : "思源宋体字体的描述（中文）",
-    "message" : "专业中文衬线字体"
-  },
-  "fontTimesNewRoman" : {
-    "description" : "Times New Roman 字体的描述",
-    "message" : "传统经典衬线字体"
-  },
-  "highcontrast" : {
-    "description" : "High Contrast theme option.",
-    "message" : "高对比度"
-  },
-  "highlight" : {
-    "description" : "Label for the highlight button in selection toolbar.",
-    "message" : "划线"
-  },
-  "justify" : {
-    "description" : "Justify alignment option.",
-    "message" : "两端对齐"
-  },
-  "left" : {
-    "description" : "Left alignment option.",
-    "message" : "左对齐"
-  },
-  "light" : {
-    "description" : "Light theme option.",
-    "message" : "明亮"
-  },
-  "lightBackgrounds" : {
-    "description" : "Label for light background color presets.",
-    "message" : "浅色背景"
-  },
-  "lightText" : {
-    "description" : "Label for light text color presets.",
-    "message" : "浅色文本"
-  },
-  "lineSpacing" : {
-    "description" : "Label for line spacing adjustment.",
-    "message" : "行间距"
-  },
-  "loading" : {
-    "description" : "内容加载时显示的消息",
-    "message" : "加载中..."
-  },
-  "login" : {
-    "description" : "登录按钮的标签",
-    "message" : "登录"
-  },
-  "loginButton" : {
-    "description" : "登录界面中登录按钮的标签",
-    "message" : "登录"
-  },
-  "loginMessage" : {
-    "description" : "解释为什么需要登录的消息",
-    "message" : "请登录以使用AI助手功能。登录是免费的，有助于我们防止滥用。"
-  },
-  "loginRequired" : {
-    "description" : "登录提示标题",
-    "message" : "需要登录"
-  },
-  "loginSafe" : {
-    "description" : "表示登录安全的消息",
-    "message" : "安全登录，无需担心隐私"
-  },
-  "minimize" : {
-    "description" : "最小化/关闭按钮的文本",
-    "message" : "关闭"
-  },
-  "modelSelectorTitle" : {
-    "description" : "模型选择器的标题",
-    "message" : "选择AI模型"
-  },
-  "narrow" : {
-    "description" : "Narrow width option.",
-    "message" : "窄"
-  },
-  "noModelsAvailable" : {
-    "description" : "无可用模型时的文本",
-    "message" : "无可用模型"
-  },
-  "normal" : {
-    "description" : "Normal line spacing option.",
-    "message" : "标准"
-  },
-  "note" : {
-    "description" : "Label for the note button in selection toolbar.",
-    "message" : "想法"
-  },
-  "paper" : {
-    "description" : "Paper theme option.",
-    "message" : "纸张"
-  },
-  "query" : {
-    "description" : "Label for the query button in selection toolbar.",
-    "message" : "查询"
-  },
-  "readingTheme" : {
-    "description" : "Label for the reading theme selection.",
-    "message" : "阅读主题"
-  },
-  "recommendedForBoth" : {
-    "description" : "Label for fonts recommended for both languages.",
-    "message" : "通用字体"
-  },
-  "recommendedForChinese" : {
-    "description" : "Label for fonts recommended for Chinese text.",
-    "message" : "推荐中文"
-  },
-  "recommendedForEnglish" : {
-    "description" : "Label for fonts recommended for English text.",
-    "message" : "推荐英文"
-  },
-  "refreshLanguage" : {
-    "description" : "语言同步的操作/提示",
-    "message" : "同步浏览器语言"
-  },
-  "relaxed" : {
-    "description" : "宽松行间距选项",
-    "message" : "宽松"
-  },
-  "removeHighlight" : {
-    "description" : "Label for removing a highlight in selection toolbar.",
-    "message" : "删除划线"
-  },
-  "retry" : {
-    "description" : "重试按钮的文本",
-    "message" : "重试"
-  },
-  "right" : {
-    "description" : "Right alignment option.",
-    "message" : "右对齐"
-  },
-  "select" : {
-    "description" : "Label for color select button.",
-    "message" : "选择"
-  },
-  "selectedText" : {
-    "description" : "Label for selected text reference block",
-    "message" : "选中文本"
-  },
-  "selectHighlightColor" : {
-    "description" : "Label for the highlight color picker dialog.",
-    "message" : "选择划线颜色"
-  },
-  "selectModel" : {
-    "description" : "Agent UI 中模型选择器的标签",
-    "message" : "选择模型"
-  },
-  "settings" : {
-    "description" : "设置按钮/面板的标签",
-    "message" : "设置"
-  },
-  "share" : {
-    "description" : "Label for the share button in selection toolbar.",
-    "message" : "分享"
-  },
-  "standard" : {
-    "description" : "Standard width option.",
-    "message" : "标准"
-  },
-  "startConversation" : {
-    "description" : "无消息时显示的文本",
-    "message" : "开始新对话"
-  },
-  "summarize" : {
-    "description" : "AI 面板中总结文章的操作标签",
-    "message" : "总结文章"
-  },
-  "system" : {
-    "description" : "系统字体选项",
-    "message" : "系统"
-  },
-  "text" : {
-    "description" : "Label for text color setting.",
-    "message" : "文本"
-  },
-  "textAlignment" : {
-    "description" : "Label for text alignment options.",
-    "message" : "文本对齐"
-  },
-  "theme" : {
-    "description" : "Label for theme button.",
-    "message" : "主题"
-  },
-  "thinking" : {
-    "description" : "AI 思考时显示的标签",
-    "message" : "思考中..."
-  },
-  "tight" : {
-    "description" : "Tight line spacing option.",
-    "message" : "紧凑"
-  },
-  "tryAgain" : {
-    "description" : "Label for try again button.",
-    "message" : "重试"
-  },
-  "ui" : {
-    "description" : "UI 颜色设置的标签",
-    "message" : "UI"
-  },
-  "welcomeMessage" : {
-    "description" : "Agent UI 中显示的初始欢迎消息",
-    "message" : "我可以帮助你理解当前屏幕上显示的内容。当你滚动页面时，我的上下文会更新以关注你正在阅读的内容。"
-  },
-  "wide" : {
-    "description" : "Wide width option.",
-    "message" : "宽"
-  },
-  "quickSummary" : {
-    "description" : "Label for the quick summary button/feature.",
-    "message" : "快速摘要"
-  },
-  "generatingSummary" : {
-    "description" : "Text shown when generating a summary.",
-    "message" : "正在生成摘要..."
-  },
-  "noSummaryAvailable" : {
-    "description" : "Text shown when no summary is available.",
-    "message" : "暂无可用摘要。"
-  },
-  "translating" : {
-    "description" : "Label shown when text is being translated.",
-    "message" : "翻译中"
-  },
-  "translation" : {
-    "description" : "Label shown before translated text.",
-    "message" : "翻译"
-  },
-  "translate" : {
-    "description" : "Label for the translate button in selection toolbar.",
-    "message" : "翻译"
-  },
-  "translateArticle" : {
-    "description" : "Label for the translate article button in the toolbar.",
-    "message" : "翻译全文"
-  },
-  "translatingArticle" : {
-    "description" : "Label shown when the article is being translated.",
-    "message" : "正在翻译全文"
-  },
-  "translationError" : {
-    "description" : "Error message shown when translation fails.",
-    "message" : "错误"
-  },
-  "translationFailed" : {
-    "description" : "Detailed error message shown when translation fails.",
-    "message" : "翻译失败，请重试"
+  "accent": {
+    "description": "Label for accent color setting.",
+    "message": "强调"
+  },
+  "accentColors": {
+    "description": "Label for accent color presets.",
+    "message": "强调色"
+  },
+  "addNote": {
+    "description": "Label for the note button in selection toolbar.",
+    "message": "写想法"
+  },
+  "agent": {
+    "description": "AI 助手按钮的标签/提示",
+    "message": "Agent"
+  },
+  "agentContext": {
+    "description": "上下文选择器的标签",
+    "message": "上下文"
+  },
+  "agentDefaultModel": {
+    "description": "默认模型选项",
+    "message": "默认"
+  },
+  "agentInputPlaceholder": {
+    "description": "输入框的占位文本",
+    "message": "输入消息，使用 '/' 快捷指令"
+  },
+  "agentSend": {
+    "description": "发送按钮的文本",
+    "message": "发送"
+  },
+  "agentSending": {
+    "description": "消息发送中显示的文本",
+    "message": "发送中..."
+  },
+  "agentSendMessage": {
+    "description": "发送按钮的标题",
+    "message": "发送消息"
+  },
+  "ai": {
+    "description": "Short label for the AI assistant button in selection toolbar.",
+    "message": "AI"
+  },
+  "aiAssistant": {
+    "description": "Tooltip for the AI assistant button in selection toolbar.",
+    "message": "AI 助手"
+  },
+  "allFonts": {
+    "description": "Label for showing all available fonts.",
+    "message": "所有字体"
+  },
+  "askAI": {
+    "description": "Label for the AI assistant button in selection toolbar.",
+    "message": "问 AI"
+  },
+  "askQuestion": {
+    "description": "AI 面板中的占位符或操作标签",
+    "message": "请输入问题"
+  },
+  "autoScroll": {
+    "description": "自动滚动按钮的标签",
+    "message": "自动滚动"
+  },
+  "background": {
+    "description": "Label for background color setting.",
+    "message": "背景"
+  },
+  "border": {
+    "description": "Label for border color setting.",
+    "message": "边框"
+  },
+  "center": {
+    "description": "Center alignment option.",
+    "message": "居中"
+  },
+  "chinese": {
+    "description": "Chinese language name.",
+    "message": "中文"
+  },
+  "chineseFonts": {
+    "description": "Label for Chinese fonts section.",
+    "message": "中文字体"
+  },
+  "clearChat": {
+    "description": "Agent UI 中清除对话按钮的标签",
+    "message": "清除对话"
+  },
+  "close": {
+    "description": "Close button label.",
+    "message": "关闭"
+  },
+  "closeReaderMode": {
+    "description": "Label for button to close reader mode.",
+    "message": "关闭阅读模式"
+  },
+  "collapseToolbar": {
+    "description": "折叠工具栏按钮的标签",
+    "message": "折叠工具栏"
+  },
+  "comingSoon": {
+    "description": "未来将提供的功能的标签",
+    "message": "即将推出"
+  },
+  "contentWidth": {
+    "description": "Label for page width adjustment.",
+    "message": "页面宽度"
+  },
+  "contextArticleDesc": {
+    "description": "文章上下文的描述",
+    "message": "使用整篇文章作为上下文"
+  },
+  "contextScreenDesc": {
+    "description": "屏幕上下文的描述",
+    "message": "仅使用当前可见内容"
+  },
+  "contextSelectionDesc": {
+    "description": "Description for selection context",
+    "message": "使用选中文本作为上下文"
+  },
+  "contextTypeArticle": {
+    "description": "Agent UI 中文章上下文类型的标签",
+    "message": "文章"
+  },
+  "contextTypeScreen": {
+    "description": "Agent UI 中屏幕上下文类型的标签",
+    "message": "屏幕"
+  },
+  "contextTypeSelection": {
+    "description": "Agent UI 中选择上下文类型的标签",
+    "message": "选择"
+  },
+  "copied": {
+    "description": "Label shown after text has been copied.",
+    "message": "已复制"
+  },
+  "copy": {
+    "description": "Label for the copy button in selection toolbar.",
+    "message": "复制"
+  },
+  "couldNotExtract": {
+    "description": "Error message when article extraction fails.",
+    "message": "无法提取文章内容"
+  },
+  "currentFont": {
+    "description": "Label for displaying current font.",
+    "message": "当前字体"
+  },
+  "currentSize": {
+    "description": "显示当前字体大小标签",
+    "message": "当前字号"
+  },
+  "custom": {
+    "description": "Custom theme option.",
+    "message": "自定义"
+  },
+  "customTheme": {
+    "description": "Label for custom theme section.",
+    "message": "自定义主题"
+  },
+  "dark": {
+    "description": "Dark theme option.",
+    "message": "暗黑"
+  },
+  "darkBackgrounds": {
+    "description": "Label for dark background color presets.",
+    "message": "深色背景"
+  },
+  "darkText": {
+    "description": "Label for dark text color presets.",
+    "message": "深色文本"
+  },
+  "delete": {
+    "description": "Label for the delete button in selection toolbar.",
+    "message": "删除"
+  },
+  "detected": {
+    "description": "Label for detected language.",
+    "message": "已检测"
+  },
+  "displaySettings": {
+    "description": "Title for the display settings panel.",
+    "message": "显示设置"
+  },
+  "download": {
+    "description": "下载文章为 Markdown 格式标签",
+    "message": "下载"
+  },
+  "emptyStateDescription": {
+    "description": "空状态的描述",
+    "message": "选择上下文模式并提问以开始对话"
+  },
+  "english": {
+    "description": "English language name.",
+    "message": "英文"
+  },
+  "englishFonts": {
+    "description": "Label for English fonts section.",
+    "message": "英文字体"
+  },
+  "errorMessage": {
+    "description": "默认错误消息",
+    "message": "无法完成请求，请稍后再试"
+  },
+  "errorOccurred": {
+    "description": "发生错误时显示的文本",
+    "message": "发生错误"
+  },
+  "explainSelection": {
+    "description": "Default query for selected text",
+    "message": "解释这段选中内容"
+  },
+  "extensionDescription": {
+    "description": "Description of the extension.",
+    "message": "为任何网页文章提供清晰无干扰的阅读体验。"
+  },
+  "extensionName": {
+    "description": "Name of the extension.",
+    "message": "读点东西"
+  },
+  "extractingArticle": {
+    "description": "Message shown when extracting article content.",
+    "message": "提取文章中..."
+  },
+  "eyecare": {
+    "description": "Eyecare theme option.",
+    "message": "护眼"
+  },
+  "eyecareBackgrounds": {
+    "description": "Label for eye-care background color presets.",
+    "message": "护眼背景"
+  },
+  "fontArial": {
+    "description": "Arial 字体的描述",
+    "message": "通用无衬线字体"
+  },
+  "fontBookerly": {
+    "description": "Bookerly 字体的描述",
+    "message": "Kindle默认阅读字体"
+  },
+  "fontFamily": {
+    "description": "Label for font selection.",
+    "message": "字体"
+  },
+  "fontGeorgia": {
+    "description": "Georgia 字体的描述",
+    "message": "经典网页衬线字体"
+  },
+  "fontHiraginoSansGB": {
+    "description": "冬青黑体字体的描述（中文）",
+    "message": "清晰的现代无衬线字体"
+  },
+  "fontMicrosoftYaHei": {
+    "description": "微软雅黑字体的描述（中文）",
+    "message": "Windows系统默认中文字体"
+  },
+  "fontPalatino": {
+    "description": "Palatino 字体的描述",
+    "message": "经典优雅的衬线字体"
+  },
+  "fontPingFang": {
+    "description": "苹方字体的描述（中文）",
+    "message": "苹果设备默认中文字体"
+  },
+  "fontSize": {
+    "description": "Label for font size adjustment.",
+    "message": "字号"
+  },
+  "fontSourceHanSans": {
+    "description": "思源黑体字体的描述（中文）",
+    "message": "现代清晰的无衬线字体"
+  },
+  "fontSourceHanSerif": {
+    "description": "思源宋体字体的描述（中文）",
+    "message": "专业中文衬线字体"
+  },
+  "fontTimesNewRoman": {
+    "description": "Times New Roman 字体的描述",
+    "message": "传统经典衬线字体"
+  },
+  "highcontrast": {
+    "description": "High Contrast theme option.",
+    "message": "高对比度"
+  },
+  "highlight": {
+    "description": "Label for the highlight button in selection toolbar.",
+    "message": "划线"
+  },
+  "justify": {
+    "description": "Justify alignment option.",
+    "message": "两端对齐"
+  },
+  "left": {
+    "description": "Left alignment option.",
+    "message": "左对齐"
+  },
+  "light": {
+    "description": "Light theme option.",
+    "message": "明亮"
+  },
+  "lightBackgrounds": {
+    "description": "Label for light background color presets.",
+    "message": "浅色背景"
+  },
+  "lightText": {
+    "description": "Label for light text color presets.",
+    "message": "浅色文本"
+  },
+  "lineSpacing": {
+    "description": "Label for line spacing adjustment.",
+    "message": "行间距"
+  },
+  "loading": {
+    "description": "内容加载时显示的消息",
+    "message": "加载中..."
+  },
+  "login": {
+    "description": "登录按钮的标签",
+    "message": "登录"
+  },
+  "loginButton": {
+    "description": "登录界面中登录按钮的标签",
+    "message": "登录"
+  },
+  "loginMessage": {
+    "description": "解释为什么需要登录的消息",
+    "message": "请登录以使用AI助手功能。登录是免费的，有助于我们防止滥用。"
+  },
+  "loginRequired": {
+    "description": "登录提示标题",
+    "message": "需要登录"
+  },
+  "loginSafe": {
+    "description": "表示登录安全的消息",
+    "message": "安全登录，无需担心隐私"
+  },
+  "minimize": {
+    "description": "最小化/关闭按钮的文本",
+    "message": "关闭"
+  },
+  "modelSelectorTitle": {
+    "description": "模型选择器的标题",
+    "message": "选择AI模型"
+  },
+  "narrow": {
+    "description": "Narrow width option.",
+    "message": "窄"
+  },
+  "noModelsAvailable": {
+    "description": "无可用模型时的文本",
+    "message": "无可用模型"
+  },
+  "normal": {
+    "description": "Normal line spacing option.",
+    "message": "标准"
+  },
+  "note": {
+    "description": "Label for the note button in selection toolbar.",
+    "message": "想法"
+  },
+  "paper": {
+    "description": "Paper theme option.",
+    "message": "纸张"
+  },
+  "query": {
+    "description": "Label for the query button in selection toolbar.",
+    "message": "查询"
+  },
+  "readingTheme": {
+    "description": "Label for the reading theme selection.",
+    "message": "阅读主题"
+  },
+  "recommendedForBoth": {
+    "description": "Label for fonts recommended for both languages.",
+    "message": "通用字体"
+  },
+  "recommendedForChinese": {
+    "description": "Label for fonts recommended for Chinese text.",
+    "message": "推荐中文"
+  },
+  "recommendedForEnglish": {
+    "description": "Label for fonts recommended for English text.",
+    "message": "推荐英文"
+  },
+  "refreshLanguage": {
+    "description": "语言同步的操作/提示",
+    "message": "同步浏览器语言"
+  },
+  "relaxed": {
+    "description": "宽松行间距选项",
+    "message": "宽松"
+  },
+  "removeHighlight": {
+    "description": "Label for removing a highlight in selection toolbar.",
+    "message": "删除划线"
+  },
+  "retry": {
+    "description": "重试按钮的文本",
+    "message": "重试"
+  },
+  "right": {
+    "description": "Right alignment option.",
+    "message": "右对齐"
+  },
+  "select": {
+    "description": "Label for color select button.",
+    "message": "选择"
+  },
+  "selectedText": {
+    "description": "Label for selected text reference block",
+    "message": "选中文本"
+  },
+  "selectHighlightColor": {
+    "description": "Label for the highlight color picker dialog.",
+    "message": "选择划线颜色"
+  },
+  "selectModel": {
+    "description": "Agent UI 中模型选择器的标签",
+    "message": "选择模型"
+  },
+  "settings": {
+    "description": "设置按钮/面板的标签",
+    "message": "设置"
+  },
+  "share": {
+    "description": "Label for the share button in selection toolbar.",
+    "message": "分享"
+  },
+  "standard": {
+    "description": "Standard width option.",
+    "message": "标准"
+  },
+  "startConversation": {
+    "description": "无消息时显示的文本",
+    "message": "开始新对话"
+  },
+  "summarize": {
+    "description": "AI 面板中总结文章的操作标签",
+    "message": "总结文章"
+  },
+  "system": {
+    "description": "系统字体选项",
+    "message": "系统"
+  },
+  "text": {
+    "description": "Label for text color setting.",
+    "message": "文本"
+  },
+  "textAlignment": {
+    "description": "Label for text alignment options.",
+    "message": "文本对齐"
+  },
+  "theme": {
+    "description": "Label for theme button.",
+    "message": "主题"
+  },
+  "thinking": {
+    "description": "AI 思考时显示的标签",
+    "message": "思考中..."
+  },
+  "tight": {
+    "description": "Tight line spacing option.",
+    "message": "紧凑"
+  },
+  "tryAgain": {
+    "description": "Label for try again button.",
+    "message": "重试"
+  },
+  "ui": {
+    "description": "UI 颜色设置的标签",
+    "message": "UI"
+  },
+  "welcomeMessage": {
+    "description": "Agent UI 中显示的初始欢迎消息",
+    "message": "我可以帮助你理解当前屏幕上显示的内容。当你滚动页面时，我的上下文会更新以关注你正在阅读的内容。"
+  },
+  "wide": {
+    "description": "Wide width option.",
+    "message": "宽"
+  },
+  "quickSummary": {
+    "description": "Label for the quick summary button/feature.",
+    "message": "快速摘要"
+  },
+  "generatingSummary": {
+    "description": "Text shown when generating a summary.",
+    "message": "正在生成摘要..."
+  },
+  "noSummaryAvailable": {
+    "description": "Text shown when no summary is available.",
+    "message": "暂无可用摘要。"
+  },
+  "translating": {
+    "description": "Label shown when text is being translated.",
+    "message": "翻译中"
+  },
+  "translation": {
+    "description": "Label shown before translated text.",
+    "message": "翻译"
+  },
+  "translate": {
+    "description": "Label for the translate button in selection toolbar.",
+    "message": "翻译"
+  },
+  "translateArticle": {
+    "description": "Label for the translate article button in the toolbar.",
+    "message": "翻译全文"
+  },
+  "translatingArticle": {
+    "description": "Label shown when the article is being translated.",
+    "message": "正在翻译全文"
+  },
+  "translationError": {
+    "description": "Error message shown when translation fails.",
+    "message": "错误"
+  },
+  "translationFailed": {
+    "description": "Detailed error message shown when translation fails.",
+    "message": "翻译失败，请重试"
   }
 }
