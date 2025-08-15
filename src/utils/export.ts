@@ -60,10 +60,14 @@ export const htmlToMarkdown = (html: string): string => {
   
   // Configure turndown to handle some HTML elements better
   turndownService.addRule('imageWithAttributes', {
-    filter: (node: Node): boolean => 
-      node.nodeName === 'IMG' && 
-      !!(node as HTMLImageElement).getAttribute('alt') || 
-      !!(node as HTMLImageElement).getAttribute('title'),
+    // Only match <img> elements that have either alt or title attributes
+    filter: (node: Node): boolean => {
+      if (node.nodeName !== 'IMG') {
+        return false;
+      }
+      const imgNode = node as HTMLImageElement;
+      return !!imgNode.getAttribute('alt') || !!imgNode.getAttribute('title');
+    },
     replacement: (content: string, node: Node): string => {
       const imgNode = node as HTMLImageElement;
       const alt = imgNode.getAttribute('alt') || '';
