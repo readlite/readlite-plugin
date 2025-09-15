@@ -3,11 +3,11 @@
  * Handles messages and context without complex tokenization
  */
 
-import { ContextType } from './types';
-import { createLogger } from '../../utils/logger';
+import { ContextType } from "./types";
+import { createLogger } from "../../utils/logger";
 
 // Create a logger instance for the conversation manager
-const logger = createLogger('conversation-manager');
+const logger = createLogger("conversation-manager");
 
 // Token estimation constants
 const ESTIMATED_TOKENS_PER_CHAR = 0.25; // Rough estimation
@@ -26,14 +26,14 @@ interface ConversationContext {
 }
 
 export interface AIMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
 export class ConversationManager {
   private messages: AIMessage[] = [];
   private currentContext: ConversationContext | null = null;
-  private systemPrompt: string = '';
+  private systemPrompt: string = "";
   private pendingLargeContext: ConversationContext | null = null; // Store large context pending confirmation
   private isAwaitingConfirmation: boolean = false; // Flag to track if waiting for user confirmation
   private confirmationCallback: ((confirmed: boolean) => void) | null = null; // Callback for confirmation
@@ -50,10 +50,10 @@ export class ConversationManager {
    */
   addSystemMessage(content: string): void {
     this.messages.push({
-      role: 'system',
-      content
+      role: "system",
+      content,
     });
-    logger.info('Added system message');
+    logger.info("Added system message");
   }
 
   /**
@@ -64,37 +64,55 @@ export class ConversationManager {
     if (this.isAwaitingConfirmation) {
       const lowerContent = content.toLowerCase().trim();
       // Check for confirmation keywords
-      if (lowerContent === 'yes' || lowerContent === 'y' || lowerContent === 'confirm' || 
-          lowerContent === 'continue' || lowerContent === '确认' || lowerContent === '是') {
+      if (
+        lowerContent === "yes" ||
+        lowerContent === "y" ||
+        lowerContent === "confirm" ||
+        lowerContent === "continue" ||
+        lowerContent === "确认" ||
+        lowerContent === "是"
+      ) {
         // User confirmed, proceed with the large context
         this.handleConfirmation(true);
         // Still add the message to the conversation
         this.messages.push({
-          role: 'user',
-          content
+          role: "user",
+          content,
         });
-        logger.info(`User confirmed large article context with message: "${content}"`);
+        logger.info(
+          `User confirmed large article context with message: "${content}"`,
+        );
         return;
-      } else if (lowerContent === 'no' || lowerContent === 'n' || lowerContent === 'cancel' || 
-                lowerContent === 'stop' || lowerContent === '取消' || lowerContent === '否') {
+      } else if (
+        lowerContent === "no" ||
+        lowerContent === "n" ||
+        lowerContent === "cancel" ||
+        lowerContent === "stop" ||
+        lowerContent === "取消" ||
+        lowerContent === "否"
+      ) {
         // User declined, cancel the large context
         this.handleConfirmation(false);
         // Still add the message to the conversation
         this.messages.push({
-          role: 'user',
-          content
+          role: "user",
+          content,
         });
-        logger.info(`User declined large article context with message: "${content}"`);
+        logger.info(
+          `User declined large article context with message: "${content}"`,
+        );
         return;
       }
     }
 
     // Regular user message
     this.messages.push({
-      role: 'user',
-      content
+      role: "user",
+      content,
     });
-    logger.info(`Added user message: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`);
+    logger.info(
+      `Added user message: ${content.substring(0, 50)}${content.length > 50 ? "..." : ""}`,
+    );
   }
 
   /**
@@ -102,10 +120,10 @@ export class ConversationManager {
    */
   addAssistantMessage(content: string): void {
     this.messages.push({
-      role: 'assistant',
-      content
+      role: "assistant",
+      content,
     });
-    logger.info('Added assistant message');
+    logger.info("Added assistant message");
   }
 
   /**
@@ -113,10 +131,10 @@ export class ConversationManager {
    */
   addConfirmationMessage(content: string): void {
     this.messages.push({
-      role: 'assistant',
-      content
+      role: "assistant",
+      content,
     });
-    logger.info('Added confirmation message');
+    logger.info("Added confirmation message");
   }
 
   /**
@@ -139,14 +157,22 @@ export class ConversationManager {
    * Sets the current context for the conversation
    * For large article contexts, no longer asks for user confirmation
    */
-  setContext(type: ContextType, content: string, title?: string, url?: string, language?: string): void {
+  setContext(
+    type: ContextType,
+    content: string,
+    title?: string,
+    url?: string,
+    language?: string,
+  ): void {
     // For article contexts, check the size but don't require confirmation
-    if (type === 'article' && this.isLargeContext(content)) {
+    if (type === "article" && this.isLargeContext(content)) {
       const estimatedTokens = this.estimateTokens(content);
       const estimatedChunks = Math.ceil(estimatedTokens / CHUNK_SIZE_TOKENS);
-      
-      logger.info(`Large article context detected: ~${estimatedTokens} tokens, will require ${estimatedChunks} chunks`);
-      
+
+      logger.info(
+        `Large article context detected: ~${estimatedTokens} tokens, will require ${estimatedChunks} chunks`,
+      );
+
       // Create context with chunking enabled
       this.currentContext = {
         type,
@@ -156,27 +182,27 @@ export class ConversationManager {
         language,
         isChunked: true,
         currentChunk: 1,
-        totalChunks: estimatedChunks
+        totalChunks: estimatedChunks,
       };
-      
+
       // Add system message to indicate processing in chunks
       const chunkInfo = `Processing article in chunks (1 of ${estimatedChunks}).`;
       this.addSystemMessage(chunkInfo);
-      
-      logger.info(`Set ${type} context with chunking: ${title || 'Untitled'}`);
+
+      logger.info(`Set ${type} context with chunking: ${title || "Untitled"}`);
       return;
     }
-    
+
     // For normal contexts or non-article types, set directly
     this.currentContext = {
       type,
       content,
       title,
       url,
-      language
+      language,
     };
-    
-    logger.info(`Set ${type} context: ${title || 'Untitled'}`);
+
+    logger.info(`Set ${type} context: ${title || "Untitled"}`);
   }
 
   /**
@@ -185,29 +211,33 @@ export class ConversationManager {
   private handleConfirmation(confirmed: boolean): void {
     // Guard against calling this method when not awaiting confirmation
     if (!this.isAwaitingConfirmation) {
-      logger.warn('handleConfirmation called but not awaiting confirmation');
+      logger.warn("handleConfirmation called but not awaiting confirmation");
       return;
     }
-    
+
     this.isAwaitingConfirmation = false;
-    
+
     if (confirmed && this.pendingLargeContext) {
       // User confirmed, set the context
       this.currentContext = this.pendingLargeContext;
-      logger.info(`User confirmed large context processing: ${this.pendingLargeContext.title || 'Untitled'}`);
-      
+      logger.info(
+        `User confirmed large context processing: ${this.pendingLargeContext.title || "Untitled"}`,
+      );
+
       // Add system message to indicate processing in chunks
       const chunkInfo = `Processing article in chunks (${this.pendingLargeContext.currentChunk} of ${this.pendingLargeContext.totalChunks}).`;
       this.addSystemMessage(chunkInfo);
     } else {
       // User declined or no pending context
-      logger.info('User declined large context processing or no pending context');
+      logger.info(
+        "User declined large context processing or no pending context",
+      );
       this.currentContext = null;
     }
-    
+
     // Clean up
     this.pendingLargeContext = null;
-    
+
     // Call the callback if set
     if (this.confirmationCallback) {
       this.confirmationCallback(confirmed);
@@ -220,10 +250,10 @@ export class ConversationManager {
    */
   resetConfirmationState(): void {
     if (this.isAwaitingConfirmation) {
-      logger.info('Resetting confirmation state');
+      logger.info("Resetting confirmation state");
       this.isAwaitingConfirmation = false;
       this.pendingLargeContext = null;
-      
+
       // Call the callback with false if set
       if (this.confirmationCallback) {
         this.confirmationCallback(false);
@@ -240,19 +270,21 @@ export class ConversationManager {
     if (!this.currentContext?.isChunked || !this.currentContext.totalChunks) {
       return false;
     }
-    
+
     if (this.currentContext.currentChunk! >= this.currentContext.totalChunks) {
       return false; // No more chunks
     }
-    
+
     // Increment the chunk counter
     this.currentContext.currentChunk!++;
-    
+
     // Add system message to indicate processing in chunks
     const chunkInfo = `Processing article in chunks (${this.currentContext.currentChunk} of ${this.currentContext.totalChunks}).`;
     this.addSystemMessage(chunkInfo);
-    
-    logger.info(`Advanced to chunk ${this.currentContext.currentChunk} of ${this.currentContext.totalChunks}`);
+
+    logger.info(
+      `Advanced to chunk ${this.currentContext.currentChunk} of ${this.currentContext.totalChunks}`,
+    );
     return true;
   }
 
@@ -283,81 +315,86 @@ export class ConversationManager {
    */
   buildPrompt(): AIMessage[] {
     const prompt: AIMessage[] = [];
-    
+
     // Start with system prompt if available
     if (this.systemPrompt) {
       prompt.push({
-        role: 'system',
-        content: this.systemPrompt
+        role: "system",
+        content: this.systemPrompt,
       });
     }
-    
+
     // Format the current context as a system message
     if (this.currentContext) {
-      let contextMessage = '';
-      
+      let contextMessage = "";
+
       // Include context type at the beginning
       contextMessage += `CONTENT TYPE: ${this.currentContext.type.toUpperCase()}\n\n`;
-      
+
       // Add metadata if available
       if (this.currentContext.title) {
         contextMessage += `TITLE: ${this.currentContext.title}\n`;
       }
-      
+
       if (this.currentContext.url) {
         contextMessage += `URL: ${this.currentContext.url}\n`;
       }
-      
+
       if (this.currentContext.language) {
         contextMessage += `LANGUAGE: ${this.currentContext.language}\n`;
       }
-      
+
       // For chunked content, add chunk information
       if (this.currentContext.isChunked) {
         contextMessage += `CHUNK: ${this.currentContext.currentChunk} of ${this.currentContext.totalChunks}\n`;
       }
-      
+
       // Add separator before content
       contextMessage += `\n----- CONTENT -----\n\n`;
-      
+
       // If chunked, extract just the current chunk
       let contextContent = this.currentContext.content;
-      if (this.currentContext.isChunked && this.currentContext.totalChunks! > 1) {
+      if (
+        this.currentContext.isChunked &&
+        this.currentContext.totalChunks! > 1
+      ) {
         const totalContent = this.currentContext.content;
         const totalTokens = this.estimateTokens(totalContent);
-        const chunkSize = Math.ceil(totalTokens / this.currentContext.totalChunks!);
-        
+        const chunkSize = Math.ceil(
+          totalTokens / this.currentContext.totalChunks!,
+        );
+
         // Calculate token positions for the current chunk
         const startPos = (this.currentContext.currentChunk! - 1) * chunkSize;
         const endPos = Math.min(startPos + chunkSize, totalTokens);
-        
+
         // Convert token positions to character positions (approximate)
         const startChar = Math.floor(startPos / ESTIMATED_TOKENS_PER_CHAR);
         const endChar = Math.floor(endPos / ESTIMATED_TOKENS_PER_CHAR);
-        
+
         // Extract the chunk
         contextContent = totalContent.substring(startChar, endChar);
-        
+
         // Add a note about chunking
         contextContent = `[This is chunk ${this.currentContext.currentChunk} of ${this.currentContext.totalChunks}]\n\n${contextContent}`;
       }
-      
+
       // Add the actual content
       contextMessage += contextContent;
-      
+
       // Add as system message
       prompt.push({
-        role: 'system',
-        content: contextMessage
+        role: "system",
+        content: contextMessage,
       });
     }
-    
+
     // Get only user and assistant messages for conversation history
     // Keep only the last 10 messages to avoid large prompts
     const conversationHistory = this.messages
-      .filter(msg => msg.role === 'user' || msg.role === 'assistant')
+      .filter((msg) => msg.role === "user" || msg.role === "assistant")
       .slice(-10);
-    
+
     // Add conversation history to the prompt
     return [...prompt, ...conversationHistory];
   }
@@ -367,14 +404,14 @@ export class ConversationManager {
    */
   clearConversation(): void {
     // Keep only system messages
-    this.messages = this.messages.filter(msg => msg.role === 'system');
+    this.messages = this.messages.filter((msg) => msg.role === "system");
     // Reset context and confirmation state
     this.currentContext = null;
     this.pendingLargeContext = null;
     this.isAwaitingConfirmation = false;
     this.confirmationCallback = null;
-    
-    logger.info('Conversation cleared');
+
+    logger.info("Conversation cleared");
   }
 
   /**
@@ -386,14 +423,14 @@ export class ConversationManager {
     this.pendingLargeContext = null;
     this.isAwaitingConfirmation = false;
     this.confirmationCallback = null;
-    
+
     // Re-add system prompt if available
     if (this.systemPrompt) {
       this.addSystemMessage(this.systemPrompt);
     }
-    
-    logger.info('Conversation manager reset');
+
+    logger.info("Conversation manager reset");
   }
 }
 
-export default ConversationManager; 
+export default ConversationManager;

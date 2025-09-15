@@ -1,7 +1,7 @@
 import { createLogger } from "./logger";
 
 // Create a logger for this module
-const logger = createLogger('auth');
+const logger = createLogger("auth");
 
 /**
  * Authentication utilities for ReadLite
@@ -9,8 +9,8 @@ const logger = createLogger('auth');
  */
 
 // Token storage keys
-const AUTH_TOKEN_KEY = 'auth_token';
-const AUTH_TIMESTAMP_KEY = 'auth_timestamp';
+const AUTH_TOKEN_KEY = "auth_token";
+const AUTH_TIMESTAMP_KEY = "auth_timestamp";
 const TOKEN_EXPIRY_DAYS = 30; // Token expires after 30 days
 
 /**
@@ -21,20 +21,20 @@ export async function isAuthenticated(): Promise<boolean> {
   try {
     const token = await getAuthToken();
     const timestamp = await getAuthTimestamp();
-    
+
     // If no token, not authenticated
     if (!token) return false;
-    
+
     // Check if token has expired
     if (timestamp) {
-      const expiryTime = timestamp + (TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+      const expiryTime = timestamp + TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
       if (Date.now() > expiryTime) {
         // Token expired, clear it
         await clearAuthData();
         return false;
       }
     }
-    
+
     return true;
   } catch (error) {
     logger.error("[Auth] Error checking authentication status:", error);
@@ -75,8 +75,8 @@ export async function clearAuthData(): Promise<void> {
     chrome.storage.local.remove([AUTH_TOKEN_KEY, AUTH_TIMESTAMP_KEY], () => {
       // Notify about authentication status change
       chrome.runtime.sendMessage({
-        type: 'AUTH_STATUS_CHANGED',
-        isAuthenticated: false
+        type: "AUTH_STATUS_CHANGED",
+        isAuthenticated: false,
       });
       resolve();
     });
@@ -90,21 +90,25 @@ export async function clearAuthData(): Promise<void> {
  */
 export async function handleTokenExpiry(error: any): Promise<boolean> {
   // Check various error conditions that indicate auth problems
-  const isAuthError = 
-    (error && error.status === 401) || 
-    (error && typeof error.message === 'string' && 
-      (error.message.includes('401') || 
-       error.message.toLowerCase().includes('unauthorized') ||
-       error.message.toLowerCase().includes('unauthenticated')));
-  
+  const isAuthError =
+    (error && error.status === 401) ||
+    (error &&
+      typeof error.message === "string" &&
+      (error.message.includes("401") ||
+        error.message.toLowerCase().includes("unauthorized") ||
+        error.message.toLowerCase().includes("unauthenticated")));
+
   if (isAuthError) {
-    logger.warn("[Auth] Authentication error detected:", error.status || error.message);
-    
+    logger.warn(
+      "[Auth] Authentication error detected:",
+      error.status || error.message,
+    );
+
     // Clear existing token data (which will notify about auth change)
     await clearAuthData();
     return true;
   }
-  
+
   return false;
 }
 
@@ -117,14 +121,14 @@ export function openAuthPage(): void {
   // Determine correct locale
   const locale = determineUserLocale();
   const authUrl = `https://readlite.app/${locale}/auth/sync`;
-  
+
   // Check if we're in a background script context (no window)
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     // Use chrome.tabs API for background scripts
     chrome.tabs.create({ url: authUrl });
   } else {
     // Use window.open for content scripts
-    window.open(authUrl, '_blank');
+    window.open(authUrl, "_blank");
   }
 }
 
@@ -135,18 +139,23 @@ export function openAuthPage(): void {
 function determineUserLocale(): string {
   try {
     // Try using chrome.i18n API if available
-    if (typeof chrome !== 'undefined' && chrome.i18n && chrome.i18n.getUILanguage) {
+    if (
+      typeof chrome !== "undefined" &&
+      chrome.i18n &&
+      chrome.i18n.getUILanguage
+    ) {
       const browserLang = chrome.i18n.getUILanguage();
-      return browserLang.startsWith('zh') ? 'zh' : 'en';
-    } 
+      return browserLang.startsWith("zh") ? "zh" : "en";
+    }
     // Fallback to navigator.language which is available in content scripts
     else {
-      const browserLang = navigator.language || navigator.languages?.[0] || 'en';
-      return browserLang.startsWith('zh') ? 'zh' : 'en';
+      const browserLang =
+        navigator.language || navigator.languages?.[0] || "en";
+      return browserLang.startsWith("zh") ? "zh" : "en";
     }
   } catch (error) {
     logger.error("[Auth] Error determining user locale:", error);
-    return 'en'; // Default to English on error
+    return "en"; // Default to English on error
   }
 }
 
@@ -156,35 +165,41 @@ function determineUserLocale(): string {
  */
 export function setupAuthListener(): void {
   // Check if we're in a content script context
-  if (typeof window !== 'undefined') {
-    window.addEventListener('message', function(event) {
+  if (typeof window !== "undefined") {
+    window.addEventListener("message", function (event) {
       // Security check for message origin
-      if (event.origin !== 'https://readlite.app') return;
-      
+      if (event.origin !== "https://readlite.app") return;
+
       // Process auth token message
-      if (event.data && event.data.type === 'READLITE_AUTH_TOKEN') {
+      if (event.data && event.data.type === "READLITE_AUTH_TOKEN") {
         const token = event.data.token;
-        
+
         // Save token to extension storage
-        chrome.storage.local.set({
-          [AUTH_TOKEN_KEY]: token,
-          [AUTH_TIMESTAMP_KEY]: Date.now()
-        }, function() {
-          logger.info('[Auth] Token saved to extension storage');
-          
-          // Send confirmation message back to web app
-          window.postMessage({
-            type: 'READLITE_AUTH_TOKEN_RECEIVED',
-            success: true
-          }, '*');
-          
-          // Notify background script about auth status change
-          chrome.runtime.sendMessage({
-            type: 'AUTH_STATUS_CHANGED',
-            isAuthenticated: true
-          });
-        });
+        chrome.storage.local.set(
+          {
+            [AUTH_TOKEN_KEY]: token,
+            [AUTH_TIMESTAMP_KEY]: Date.now(),
+          },
+          function () {
+            logger.info("[Auth] Token saved to extension storage");
+
+            // Send confirmation message back to web app
+            window.postMessage(
+              {
+                type: "READLITE_AUTH_TOKEN_RECEIVED",
+                success: true,
+              },
+              "*",
+            );
+
+            // Notify background script about auth status change
+            chrome.runtime.sendMessage({
+              type: "AUTH_STATUS_CHANGED",
+              isAuthenticated: true,
+            });
+          },
+        );
       }
     });
   }
-} 
+}

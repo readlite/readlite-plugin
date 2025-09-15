@@ -1,4 +1,4 @@
-import { Model } from '../../types/api';
+import { Model } from "../../types/api";
 
 // Update CommonProps to only include translation function
 export interface CommonProps {
@@ -8,7 +8,7 @@ export interface CommonProps {
 // Message interface
 export interface Message {
   id: string;
-  sender: 'user' | 'agent' | 'system'; // Add 'system' type for special messages
+  sender: "user" | "agent" | "system"; // Add 'system' type for special messages
   text: string;
   timestamp: number;
   thinking?: boolean;
@@ -21,7 +21,7 @@ export interface Message {
 
 // Confirmation data for system messages
 export interface ConfirmationData {
-  type: 'article_size'; // Type of confirmation
+  type: "article_size"; // Type of confirmation
   estimatedTokens?: number; // Estimated token count
   estimatedChunks?: number; // Estimated chunks needed
   onApprove?: () => void; // Function to call when approved
@@ -29,7 +29,7 @@ export interface ConfirmationData {
 }
 
 // Available context types
-export type ContextType = 'screen' | 'article' | 'selection';
+export type ContextType = "screen" | "article" | "selection";
 
 // Re-export Model type for convenience
-export type { Model }; 
+export type { Model };

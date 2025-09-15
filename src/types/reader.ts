@@ -7,7 +7,7 @@ import { LanguageCode } from "~/utils/language";
 
 // Definition for scroll position
 export interface ScrollPosition {
-  type: 'top' | 'bottom' | 'percent';
+  type: "top" | "bottom" | "percent";
   value?: number; // Used for percentage (0-100)
 }
 
@@ -58,9 +58,9 @@ export interface ReaderAPI {
   // Navigation
   scrollTo(position: ScrollPosition): Promise<void>;
   scrollBy(amount: number): Promise<void>;
-  turnPage(direction: 'next' | 'previous'): Promise<void>;
+  turnPage(direction: "next" | "previous"): Promise<void>;
   findAndScrollTo(text: string): Promise<boolean>;
-  
+
   // Content appearance
   setFontSize(size: number): Promise<void>;
   setFontFamily(font: string): Promise<void>;
@@ -68,28 +68,28 @@ export interface ReaderAPI {
   setLineSpacing(spacing: number): Promise<void>;
   setMargins(size: number): Promise<void>;
   toggleReadingMode(mode: string): Promise<void>;
-  
+
   // Selection and search
   search(query: string): Promise<SearchResult[]>;
   searchNext(): Promise<boolean>;
   searchPrevious(): Promise<boolean>;
   selectText(text: string): Promise<boolean>;
   getCurrentSelection(): Promise<string>;
-  
+
   // Highlights and annotations
   highlight(text: string, color?: string): Promise<string>;
   addNote(highlightId: string, note: string): Promise<void>;
   getHighlights(): Promise<Highlight[]>;
   removeHighlight(id: string): Promise<boolean>;
-  
+
   // Content information
   getWordCount(): Promise<number>;
   getReadingTime(): Promise<number>;
   getCurrentPosition(): Promise<ReadingPosition>;
   getVisibleContent(): Promise<string>;
   getFullContent(): Promise<string>;
-  getTableOfContents(): Promise<{id: string, level: number, title: string}[]>;
-} 
+  getTableOfContents(): Promise<{ id: string; level: number; title: string }[]>;
+}
 
 export interface ReaderSettings {
   theme: ThemeType;
