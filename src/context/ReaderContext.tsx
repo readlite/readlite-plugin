@@ -26,6 +26,7 @@ export interface ReaderSettings {
   fontSize: number;
   lineHeight: number;
   width: number;
+  useCustomWidth?: boolean; // Whether using custom width
   spacing: "tight" | "normal" | "relaxed";
   textAlign: "left" | "justify" | "right" | "center";
   trackingEnabled: boolean; // For potential future analytics
@@ -39,6 +40,7 @@ export const defaultSettings: ReaderSettings = {
   fontSize: 18,
   lineHeight: 1.6,
   width: 700, // Standard width
+  useCustomWidth: false, // Whether using custom width
   spacing: "normal",
   textAlign: "left",
   trackingEnabled: false,

@@ -107,6 +107,10 @@
     "description": "Label for page width adjustment.",
     "message": "页面宽度"
   },
+  "customWidth": {
+    "description": "Label for custom width slider.",
+    "message": "自定义宽度"
+  },
   "contextArticleDesc": {
     "description": "文章上下文的描述",
     "message": "使用整篇文章作为上下文"
