@@ -107,6 +107,10 @@
     "description": "Label for page width adjustment.",
     "message": "Content Width"
   },
+  "customWidth": {
+    "description": "Label for custom width slider.",
+    "message": "Custom Width"
+  },
   "contextArticleDesc": {
     "description": "Description for article context",
     "message": "Use the entire article as context"
