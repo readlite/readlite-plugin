@@ -28,47 +28,8 @@ interface VirtualHighlightElement {
   hasAttribute?(name: string): boolean;
 }
 
-/**
- * Reading Progress Indicator Component
- * Shows a progress bar at the top of the reader
- */
-const ReadingProgress: React.FC<{ scrollContainer?: HTMLElement | null }> = ({
-  scrollContainer,
-}) => {
-  const [progress, setProgress] = useState(0);
-
-  // Update progress as user scrolls
-  useEffect(() => {
-    if (!scrollContainer) return;
-
-    const handleScroll = () => {
-      const scrollPosition = scrollContainer.scrollTop;
-      const containerHeight = scrollContainer.clientHeight;
-      const scrollHeight = scrollContainer.scrollHeight - containerHeight;
-
-      if (scrollHeight <= 0) return;
-
-      const currentProgress = Math.min(
-        100,
-        Math.max(0, (scrollPosition / scrollHeight) * 100),
-      );
-      setProgress(currentProgress);
-    };
-
-    handleScroll();
-    scrollContainer.addEventListener("scroll", handleScroll);
-    return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, [scrollContainer]);
-
-  return (
-    <div className="fixed top-0 left-0 w-full h-1.5 z-[9999] bg-accent/20 pointer-events-none">
-      <div
-        className={`h-full transition-all duration-150 ease-out bg-accent`}
-        style={{ width: `${progress}%` }}
-      />
-    </div>
-  );
-};
+// Import the new Kindle-style progress component
+import KindleStyleProgress from '../reader/KindleStyleProgress';
 
 /**
  * Main Reader component
@@ -1364,14 +1325,11 @@ const Reader = () => {
 
   return (
     <ThemeProvider currentTheme={theme}>
-      <ReadingProgress />
-      {/* Inline Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-1.5 z-[9999] bg-accent/20 pointer-events-none">
-        <div
-          className="h-full transition-all duration-150 ease-out bg-accent"
-          style={{ width: `${scrollProgress}%` }}
-        />
-      </div>
+      {/* Kindle-style progress bar */}
+      <KindleStyleProgress 
+        scrollContainer={readerContentRef.current}
+        article={article}
+      />
 
       {/* Translation Progress Indicator */}
       {isTranslationActive && (

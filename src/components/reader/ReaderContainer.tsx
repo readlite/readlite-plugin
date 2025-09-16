@@ -8,7 +8,7 @@ import { useApp, useUIState, useUIActions } from '../../context/AppContext';
 import ReaderToolbar from './ReaderToolbar';
 import ReaderContent from './ReaderContent';
 import ReaderDivider from './ReaderDivider';
-import ReadingProgress from './ReadingProgress';
+import KindleStyleProgress from './KindleStyleProgress';
 import Settings from '../settings/Settings';
 import { AgentUI } from '../agent/AgentUI';
 import { createLogger } from '../../utils/logger';
@@ -146,8 +146,11 @@ export const ReaderContainer: React.FC = () => {
   // Main reader UI
   return (
     <div className={`reader-container flex flex-col h-screen bg-primary ${uiState.isFullscreen ? 'fullscreen' : ''}`}>
-      {/* Reading progress bar */}
-      <ReadingProgress scrollContainer={readerContentRef.current} />
+      {/* Kindle-style progress bar */}
+      <KindleStyleProgress 
+        scrollContainer={readerContentRef.current}
+        article={state.article}
+      />
 
       {/* Toolbar */}
       <ReaderToolbar />

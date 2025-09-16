@@ -19,9 +19,25 @@ const WidthSection: React.FC<WidthSectionProps> = ({
   t,
   updateSettings,
 }) => {
-  // State for custom width
+  // State for custom width and screen dimensions
   const [isCustomWidth, setIsCustomWidth] = useState(false);
   const [customWidthValue, setCustomWidthValue] = useState(settings.width);
+  const [maxScreenWidth, setMaxScreenWidth] = useState(1200);
+
+  // Get screen width and update max width
+  useEffect(() => {
+    const updateScreenWidth = () => {
+      const screenWidth = window.innerWidth;
+      // Set max width to screen width minus some padding
+      const maxWidth = Math.max(screenWidth - 100, 1200);
+      setMaxScreenWidth(maxWidth);
+    };
+
+    updateScreenWidth();
+    window.addEventListener('resize', updateScreenWidth);
+    
+    return () => window.removeEventListener('resize', updateScreenWidth);
+  }, []);
 
   // Check if current width matches any preset
   useEffect(() => {
@@ -97,7 +113,7 @@ const WidthSection: React.FC<WidthSectionProps> = ({
           <input
             type="range"
             min="400"
-            max="1200"
+            max={maxScreenWidth}
             step="10"
             value={customWidthValue}
             onChange={handleCustomWidthChange}
@@ -119,15 +135,16 @@ const WidthSection: React.FC<WidthSectionProps> = ({
                      [&::-moz-range-thumb]:transition-all
                      [&::-moz-range-thumb]:hover:scale-110"
             style={{
-              background: `linear-gradient(to right, rgb(var(--accent)) 0%, rgb(var(--accent)) ${((customWidthValue - 400) / (1200 - 400)) * 100}%, rgb(var(--border)) ${((customWidthValue - 400) / (1200 - 400)) * 100}%, rgb(var(--border)) 100%)`
+              background: `linear-gradient(to right, rgb(var(--accent)) 0%, rgb(var(--accent)) ${((customWidthValue - 400) / (maxScreenWidth - 400)) * 100}%, rgb(var(--border)) ${((customWidthValue - 400) / (maxScreenWidth - 400)) * 100}%, rgb(var(--border)) 100%)`
             }}
           />
           
           {/* Width indicator */}
           <div className="flex justify-between mt-1">
             <span className="text-[10px] text-secondary">400px</span>
-            <span className="text-[10px] text-secondary">1200px</span>
+            <span className="text-[10px] text-secondary">{maxScreenWidth}px</span>
           </div>
+
         </div>
       </div>
     </section>
