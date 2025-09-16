@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useMemo, ReactNode } from 'react'
-import { getBrowserLanguage, getMessage } from '../utils/i18n'
+import React, { createContext, useContext, useMemo, ReactNode } from "react";
+import { getBrowserLanguage, getMessage } from "../utils/i18n";
 
 // --- Types ---
 
@@ -32,34 +32,33 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
       try {
         // 1. Attempt to get translation in the detected UI language
         const message = getMessage(key, uiLanguage);
-        
+
         // 2. If not found and language is not English, try English as a fallback
-        if (!message && uiLanguage !== 'en') {
-          const fallbackMessage = getMessage(key, 'en');
+        if (!message && uiLanguage !== "en") {
+          const fallbackMessage = getMessage(key, "en");
           // 3. If English fallback also fails, return the key itself
-          return fallbackMessage || key; 
+          return fallbackMessage || key;
         }
 
         // 4. If found in original language, or if English was the original language and failed, return message or key
-        return message || key; 
-      } catch (error) {
+        return message || key;
+      } catch (_error) {
         // 5. Return the key in case of any unexpected errors during translation
-        return key; 
+        return key;
       }
     };
   }, [uiLanguage]);
 
   // Memoize the context value object
-  const value = useMemo(() => ({
-    uiLanguage,
-    t,
-  }), [uiLanguage, t]);
-
-  return (
-    <I18nContext.Provider value={value}>
-      {children}
-    </I18nContext.Provider>
+  const value = useMemo(
+    () => ({
+      uiLanguage,
+      t,
+    }),
+    [uiLanguage, t],
   );
+
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 };
 
 // --- Hook ---
@@ -72,7 +71,7 @@ export const useI18n = (): I18nContextType => {
   const context = useContext(I18nContext);
   if (!context) {
     // This error prevents using the hook outside of the provider tree
-    throw new Error('useI18n must be used within an I18nProvider');
+    throw new Error("useI18n must be used within an I18nProvider");
   }
   return context;
-}; 
+};

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Message, ContextType, ConfirmationData } from "./types";
-import { useTheme } from "../../context/ThemeContext";
+import { Message, ContextType } from "./types";
+// Removed unused imports: ConfirmationData, useTheme
 import {
   ChevronDownIcon,
   ChevronUpIcon,

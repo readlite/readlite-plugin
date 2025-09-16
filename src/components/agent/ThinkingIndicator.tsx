@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { CommonProps } from './types';
+import React, { useEffect, useState } from "react";
+// Removed unused import: CommonProps
 
-interface ThinkingIndicatorProps extends Pick<CommonProps, 't'> {}
+// Component doesn't need any props currently
+type ThinkingIndicatorProps = Record<string, never>;
 
-const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ t }) => {
-  const [dots, setDots] = useState('.');
-  
+const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = () => {
+  const [dots, setDots] = useState(".");
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? '.' : prev + '.');
+      setDots((prev) => (prev.length >= 3 ? "." : prev + "."));
     }, 500);
-    
+
     return () => clearInterval(interval);
   }, []);
-  
+
   return (
     <div className="self-start mx-3 my-3 flex">
       <span className="text-text-secondary text-xl font-bold leading-none">
@@ -23,4 +24,4 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ t }) => {
   );
 };
 
-export default ThinkingIndicator; 
+export default ThinkingIndicator;

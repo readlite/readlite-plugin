@@ -3,7 +3,7 @@
  * Defines the agent capabilities and command processing
  */
 
-import { ReaderAPI } from './reader';
+import { ReaderAPI } from "./reader";
 
 // Command components
 export interface ParsedCommand {
@@ -26,7 +26,7 @@ export interface DetectedIntent {
 
 // Agent response format
 export interface AgentResponse {
-  type: 'text' | 'action' | 'error';
+  type: "text" | "action" | "error";
   content: string;
   actions?: ReaderAction[];
   metadata?: Record<string, any>;
@@ -54,17 +54,20 @@ export interface CommandHandler {
 export interface AgentService {
   // Process user input - main entry point
   processCommand(input: string, readerApi: ReaderAPI): Promise<AgentResponse>;
-  
+
   // Command detection and parsing
   isCommandSyntax(input: string): boolean;
   parseCommand(input: string): ParsedCommand;
-  
+
   // Natural language understanding
   detectIntent(input: string): Promise<DetectedIntent>;
-  
+
   // Reader API access
-  executeReaderAction(action: ReaderAction, readerApi: ReaderAPI): Promise<void>;
-  
+  executeReaderAction(
+    action: ReaderAction,
+    readerApi: ReaderAPI,
+  ): Promise<void>;
+
   // Register command handlers
   registerCommandHandler(handler: CommandHandler): void;
-} 
+}

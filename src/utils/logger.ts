@@ -8,14 +8,14 @@ export enum LogLevel {
   ERROR = 0,
   WARN = 1,
   INFO = 2,
-  DEBUG = 3
+  DEBUG = 3,
 }
 
 // Current log level - can be overridden via configuration
 let currentLogLevel = LogLevel.INFO;
 
 // Whether to enable console logging (can be disabled for production)
-let ENABLE_CONSOLE = process.env.NODE_ENV !== 'production';
+const ENABLE_CONSOLE = process.env.NODE_ENV !== "production";
 
 /**
  * Set the global log level
@@ -78,9 +78,9 @@ export function createLogger(namespace: string) {
       if (currentLogLevel >= LogLevel.DEBUG && ENABLE_CONSOLE) {
         console.debug(formatMessage(message), ...args);
       }
-    }
+    },
   };
 }
 
 // Create default root logger
-export const logger = createLogger('app'); 
+export const logger = createLogger("app");
