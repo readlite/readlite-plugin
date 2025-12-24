@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**ReadLite** is a Chrome browser extension built with the [Plasmo Framework](https://www.plasmo.com/) that provides a clean, distraction-free reading experience. It features AI-powered summarization, translation, and highlighting capabilities.
+**ReadLite** is a Chrome browser extension built with the [Plasmo Framework](https://www.plasmo.com/) that provides a clean, distraction-free reading experience. It features AI-powered summarization, and highlighting capabilities.
 
 ### Key Technologies
 *   **Framework:** Plasmo (Browser Extension Framework)

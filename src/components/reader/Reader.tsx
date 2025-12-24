@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useReader } from "../../context/ReaderContext"
 import Settings from "../settings/Settings"
 import { useI18n } from "../../context/I18nContext"
-import { useTranslation } from "../../context/TranslationContext"
+
 import { LanguageCode } from "../../utils/language"
 import { exportAsMarkdown } from "../../utils/export"
 import { AgentUI } from "../agent/AgentUI"
@@ -15,7 +15,7 @@ import { createLogger } from "../../utils/logger"
 import SelectionToolbar from "../reader/SelectionToolbar"
 import { HighlightColor } from "../../hooks/useTextSelection"
 import { BookOpenIcon, XCircleIcon } from '@heroicons/react/24/outline';
-import { LanguageIcon } from '@heroicons/react/24/outline';
+
 import llmClient from '../../services/llmClient';
 import { isAuthenticated } from '../../services/auth';
 
@@ -142,22 +142,6 @@ const Reader = () => {
   const animationFrameRef = useRef<number | null>(null);
   const [autoScrollSpeed, setAutoScrollSpeed] = useState(1.5); // Speed in pixels per frame (default: normal reading speed)
 
-  // Translation state
-  const [translationState, setTranslationState] = useState<{
-    isVisible: boolean;
-    originalText: string;
-    translatedText: string;
-    position: { x: number; y: number };
-  }>({
-    isVisible: false,
-    originalText: '',
-    translatedText: '',
-    position: { x: 0, y: 0 }
-  });
-
-  // Get translation functions from context
-  const { translateArticle: translateWithContext, isTranslating: isTranslationActive, translationProgress: translationProgressValue, findAndTranslateContent } = useTranslation();
-
   // --- Lifecycle Effects ---
 
   // Log when Reader component mounts and check for iframe
@@ -239,61 +223,6 @@ const Reader = () => {
               highlightElement: highlightElement,
               selectedText: event.data.selectedText || '',
               domPath: event.data.domPath
-            });
-          }
-        } else if (event.data && event.data.type === 'TRANSLATE_SELECTION_COMPLETE') {
-          if (event.data.success && event.data.selectedText) {
-            // Get the selection position for the popup
-            const selection = window.getSelection();
-            if (!selection || !selection.rangeCount) return;
-            
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            
-            // Show loading state
-            setTranslationState({
-              isVisible: true,
-              originalText: event.data.selectedText,
-              translatedText: '翻译中...',
-              position: {
-                x: rect.left + rect.width / 2,
-                y: rect.top
-              }
-            });
-
-            // Call Gemini Flash 1.5 for translation using streaming
-            const prompt = `Translate the following text to ${event.data.selectedText.match(/[\u4e00-\u9fa5]/) ? 'English' : 'Chinese'}. Keep the original formatting and style. Only return the translated text without any explanations or notes:\n\n${event.data.selectedText}`;
-
-            // Use streaming instead of direct call
-            let streamedTranslation = '';
-            
-            // Stream handler to process each chunk
-            const handleStreamChunk = (chunk: string) => {
-              streamedTranslation += chunk;
-              // Update UI with the accumulated translation so far
-              setTranslationState(prev => ({
-                ...prev,
-                translatedText: streamedTranslation.trim() || '翻译中...'
-              }));
-            };
-            
-            llmClient.generateTextStream(prompt, handleStreamChunk, {
-              model: 'google/gemini-flash-1.5-8b',
-              temperature: 0.4,
-              maxTokens: 100000,
-              enableMem0: false,
-            }).then(fullTranslation => {
-              // Final update with complete translation
-              setTranslationState(prev => ({
-                ...prev,
-                translatedText: (fullTranslation as string).trim()
-              }));
-            }).catch(error => {
-              logger.error('Translation error:', error);
-              setTranslationState(prev => ({
-                ...prev,
-                translatedText: '翻译失败，请重试'
-              }));
             });
           }
         }
@@ -1168,68 +1097,6 @@ const Reader = () => {
     };
   }, [isAutoScrolling]);
 
-  // Close translation popup (if it still exists)
-  const handleCloseTranslation = useCallback(() => {
-    logger.info('Closing translation popup');
-    // Simply reset translation state
-    setTranslationState({
-      isVisible: false,
-      originalText: '',
-      translatedText: '',
-      position: { x: 0, y: 0 }
-    });
-  }, []);
-
-  // Add translation handler
-  const handleTranslate = useCallback((selectedText: string) => {
-    try {
-      // Use text from state or passed parameter
-      const textToTranslate = selectionState.selectedText || selectedText;
-      
-      if (textToTranslate && textToTranslate.trim() && readerContentRef.current) {
-        logger.info('Starting translation for selected text:', textToTranslate.substring(0, 50));
-
-        // Use TranslationContext method instead of messaging
-        findAndTranslateContent(readerContentRef.current, textToTranslate);
-        
-        // Clear the selection state immediately
-        setSelectionState(prev => ({ ...prev, isActive: false }));
-      } else {
-        logger.warn('No text selected for translation');
-      }
-    } catch (err) {
-      logger.error('Error in handleTranslate:', err);
-    }
-  }, [selectionState.selectedText, readerContentRef, findAndTranslateContent]);
-
-  // Add effect to monitor translation state changes
-  useEffect(() => {
-    logger.info('Translation state changed:', translationState);
-  }, [translationState]);
-
-  // Handle translation of the entire article
-  const handleTranslateArticle = async () => {
-    try {
-      // Check if user is logged in
-      const isLoggedIn = await isAuthenticated();
-      
-      if (isLoggedIn) {
-        // User is logged in, perform translation
-        if (readerContentRef.current) {
-          translateWithContext(readerContentRef.current);
-        }
-      } else {
-        // User is not logged in, open Agent interface
-        logger.info('Global translation requires login, opening Agent interface');
-        if (!showAgent) {
-          toggleAgent();
-        }
-      }
-    } catch (err) {
-      logger.error('Error checking login status:', err);
-    }
-  };
-
   // --- Conditional Rendering --- 
 
   // Handle loading state
@@ -1292,24 +1159,6 @@ const Reader = () => {
         />
       </div>
       
-      {/* Translation Progress Indicator */}
-      {isTranslationActive && (
-        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-[9999] bg-primary rounded-lg shadow-lg px-4 py-3 flex items-center space-x-3">
-          <LanguageIcon className="w-5 h-5 text-accent animate-pulse" />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-primary">
-              {t('translatingArticle')}... {translationProgressValue}%
-            </span>
-            <div className="w-48 h-1.5 bg-accent/20 rounded-full mt-1">
-              <div 
-                className="h-full transition-all duration-150 ease-out bg-accent rounded-full"
-                style={{ width: `${translationProgressValue}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main Container - the entire screen */}
       <div 
         ref={readerContainerRef}
@@ -1359,8 +1208,6 @@ const Reader = () => {
               t={t}
               isAutoScrolling={isAutoScrolling}
               toggleAutoScroll={toggleAutoScroll}
-              translateArticle={handleTranslateArticle}
-              isTranslating={isTranslationActive}
             />
           </div>
 
@@ -1406,7 +1253,6 @@ const Reader = () => {
             onRemoveHighlight={handleRemoveHighlight}
             onAskAI={handleAskAI}
             onCopy={handleCopy}
-            onTranslate={handleTranslate}
             onOpenAgent={toggleAgent}
           />
         )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react"
 import type { PlasmoCSConfig } from "plasmo"
 import { ReaderProvider } from "./context/ReaderContext"
 import { I18nProvider } from "./context/I18nContext"
-import { TranslationProvider } from "./context/TranslationContext"
+
 import Reader from "./components/reader/Reader"
 import { setupAuthListener } from "./services/auth"
 import { createRoot } from 'react-dom/client'
@@ -362,11 +362,9 @@ const ContentScriptUI = () => {
   return (
     <div className="readlite-reader-container">
       <I18nProvider>
-        <TranslationProvider>
           <ReaderProvider>
             <Reader />
           </ReaderProvider>
-        </TranslationProvider>
       </I18nProvider>
     </div>
   );
@@ -621,11 +619,9 @@ function renderReactIntoRoot(rootElement: HTMLElement, initialTheme: ThemeType) 
     iframeRoot.render(
       <React.StrictMode>
         <I18nProvider>
-          <TranslationProvider>
             <ReaderProvider initialTheme={initialTheme}>
               <Reader />
             </ReaderProvider>
-          </TranslationProvider>
         </I18nProvider>
       </React.StrictMode>
     );

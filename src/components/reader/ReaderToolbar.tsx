@@ -5,8 +5,7 @@ import {
   Cog6ToothIcon, 
   XMarkIcon,
   PlayIcon,
-  PauseIcon,
-  LanguageIcon
+  PauseIcon
 } from '@heroicons/react/24/outline';
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
 
@@ -25,8 +24,6 @@ interface ReaderToolbarProps {
   t: (key: string) => string;
   isAutoScrolling: boolean;
   toggleAutoScroll: () => void;
-  translateArticle?: () => void;
-  isTranslating?: boolean;
 }
 
 /**
@@ -47,8 +44,6 @@ const ReaderToolbar: React.FC<ReaderToolbarProps> = ({
   t,
   isAutoScrolling = false,
   toggleAutoScroll,
-  translateArticle,
-  isTranslating = false,
 }) => {
   // Calculate right position based on panel width
   const rightPosition = showAgent ? `calc(${100 - leftPanelWidth}% + 20px)` : '20px';
@@ -98,17 +93,6 @@ const ReaderToolbar: React.FC<ReaderToolbarProps> = ({
           <PlayIcon className="w-5 h-5" />
         )}
       </ToolbarButton>
-      
-      {/* Translate Article Button */}
-      {translateArticle && (
-        <ToolbarButton
-          onClick={translateArticle}
-          title={t('translateArticle')}
-          isActive={isTranslating}
-        >
-          <LanguageIcon className="w-5 h-5" />
-        </ToolbarButton>
-      )}
       
       {/* Save as Markdown Button */}
       <ToolbarButton

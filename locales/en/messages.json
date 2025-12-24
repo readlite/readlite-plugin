@@ -490,33 +490,5 @@
   "noSummaryAvailable": {
     "description": "Text shown when no summary is available.",
     "message": "No summary available."
-  },
-  "translating": {
-    "description": "Label shown when text is being translated.",
-    "message": "Translating"
-  },
-  "translation": {
-    "description": "Label shown before translated text.",
-    "message": "Translation"
-  },
-  "translate": {
-    "description": "Label for the translate button in selection toolbar.",
-    "message": "Translate"
-  },
-  "translateArticle": {
-    "description": "Label for the translate article button in the toolbar.",
-    "message": "Translate Article"
-  },
-  "translatingArticle": {
-    "description": "Label shown when the article is being translated.",
-    "message": "Translating Article"
-  },
-  "translationError": {
-    "description": "Error message shown when translation fails.",
-    "message": "Error"
-  },
-  "translationFailed": {
-    "description": "Detailed error message shown when translation fails.",
-    "message": "Translation failed. Please try again."
   }
 }

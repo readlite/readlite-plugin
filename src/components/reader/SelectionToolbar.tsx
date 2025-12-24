@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { HighlightColor } from '../../hooks/useTextSelection';
 import { useTheme } from '../../context/ThemeContext';
 import { useI18n } from '../../context/I18nContext';
-import { PencilIcon, DocumentTextIcon, SparklesIcon, XMarkIcon, ClipboardDocumentIcon, CheckIcon, TrashIcon, LanguageIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, DocumentTextIcon, SparklesIcon, XMarkIcon, ClipboardDocumentIcon, CheckIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { createLogger } from '~/utils/logger';
 import { isAuthenticated } from '../../services/auth';
 
@@ -23,7 +23,6 @@ interface TextSelectionToolbarProps {
   onRemoveHighlight?: (element: Element | VirtualHighlightElement) => void;
   onAskAI?: (selectedText: string) => void;
   onCopy?: () => Promise<void> | void;
-  onTranslate?: (selectedText: string) => void;
   onOpenAgent?: () => void;
 }
 
@@ -44,7 +43,6 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
   onRemoveHighlight,
   onAskAI,
   onCopy,
-  onTranslate,
   onOpenAgent
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -293,39 +291,6 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
     }
   };
 
-  // Handle translation with login check
-  const handleTranslate = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    try {
-      // Check authentication status
-      const isLoggedIn = await isAuthenticated();
-      
-      if (isLoggedIn) {
-        // User is logged in, proceed with translation
-        if (onTranslate) {
-          onTranslate("");
-          // Close selection toolbar immediately
-          onClose();
-        } else {
-          logger.warn('Translation handler not provided');
-        }
-      } else {
-        // User is not logged in, open Agent component
-        logger.info('User not logged in, opening Agent');
-        if (onOpenAgent) {
-          onOpenAgent();
-          onClose();
-        } else {
-          logger.warn('Agent opener not provided');
-        }
-      }
-    } catch (err) {
-      logger.error('Error in handleTranslate:', err);
-    }
-  };
-
   return (
     <div 
       ref={toolbarRef}
@@ -404,16 +369,6 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
               width={isChinese ? 48 : 56}
               specialColor="accent"
             />
-
-            {/* 5. Translation button */}
-            {onTranslate && (
-              <ToolbarButton
-                onMouseDown={handleTranslate}
-                icon={<LanguageIcon className="w-5 h-5" />}
-                label={t('translate')}
-                width={isChinese ? 48 : 56}
-              />
-            )}
 
             {/* 6. CLOSE BUTTON - at the end */}
             <ToolbarButton

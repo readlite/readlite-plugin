@@ -4,7 +4,7 @@ import { ThemeType } from '~/config/theme';
 import { useTextSelection } from '~/hooks/useTextSelection';
 import { useTheme } from '~/context/ThemeContext';
 import { useI18n } from '~/context/I18nContext';
-import { useTranslation } from '~/context/TranslationContext';
+
 import llmClient from '~/services/llmClient';
 import { createLogger } from "~/utils/logger";
 
@@ -44,8 +44,7 @@ const TYPOGRAPHY = {
 // List of CJK (Chinese, Japanese, Korean) language codes
 const CJK_LANGUAGES = ['zh', 'ja', 'ko'];
 
-// Selector for content elements that need translation
-const TRANSLATABLE_CONTENT_SELECTOR = 'p, h1, h2, h3, h4, h5, h6, li, blockquote, figcaption, td, th, caption, div.content-text, pre, pre > code';
+
 
 // Selector for content elements that need font styling
 const CONTENT_ELEMENTS_SELECTOR = 'p, li, blockquote, div:not(.code-lang-label):not(.readlite-byline)';
@@ -143,12 +142,9 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
     // Context hooks
     const { getReaderColors, theme } = useTheme();
     const { t } = useI18n();
-    const { findAndTranslateContent } = useTranslation();
     
     // Refs
     const contentRef = useRef<HTMLDivElement | null>(null);
-    const translationCache = useRef<Map<string, string>>(new Map());
-    const hasTranslationSetup = useRef(false);
     
     // Selection hook
     const { selection, applyHighlight, removeHighlight } = useTextSelection(contentRef);
@@ -157,11 +153,6 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
     const readerColors = useMemo(() => getReaderColors(), [getReaderColors, theme]);
     const isCJKLanguage = useMemo(() => CJK_LANGUAGES.includes(detectedLanguage), [detectedLanguage]);
     
-    // Translation state
-    const [isDocumentTranslated, setIsDocumentTranslated] = useState(false);
-    const [translationInProgress, setTranslationInProgress] = useState(false);
-    const [translatedElements, setTranslatedElements] = useState<Map<string, string>>(new Map());
-
     /**
      * Calculate optimal line height based on font size
      */
@@ -358,79 +349,6 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
           element.removeEventListener('mouseleave', listener);
         });
       };
-    };
-
-    /**
-     * Add paragraph IDs for translation
-     */
-    useEffect(() => {
-      if (!contentRef.current || !article) return;
-      
-      try {
-        // Add ID identifiers to all translatable content elements
-        const content = contentRef.current;
-        addContentIds(content);
-        
-        // Add message event listener for translation requests
-        const handleTranslateSelection = async (event: MessageEvent) => {
-          if (event.data?.type === 'TRANSLATE_SELECTION') {
-            await handleTranslationRequest(event);
-          }
-        };
-        
-        window.addEventListener('message', handleTranslateSelection);
-        
-        // Cleanup function
-        return () => {
-          window.removeEventListener('message', handleTranslateSelection);
-        };
-      } catch (error) {
-        logger.error('Error in translation setup:', error);
-      }
-    }, [article]);
-
-    /**
-     * Add IDs to all content elements for translation
-     */
-    const addContentIds = (contentElement: HTMLElement) => {
-      const contentElements = contentElement.querySelectorAll(TRANSLATABLE_CONTENT_SELECTOR);
-      
-      contentElements.forEach((element, index) => {
-        const tagName = element.tagName.toLowerCase();
-        // Avoid adding IDs to elements that already have one or empty elements
-        if (!element.getAttribute('data-content-id') && element.textContent?.trim()) {
-          element.setAttribute('data-content-id', `${tagName}-${index}`);
-        }
-      });
-      
-      logger.info(`Added IDs to ${contentElements.length} content elements for translation`);
-    };
-
-    /**
-     * Handle translation request from message event
-     */
-    const handleTranslationRequest = async (event: MessageEvent) => {
-      try {
-        // Check if we have explicit text from the message
-        if (event.data.selectedText && contentRef.current) {
-          await findAndTranslateContent(contentRef.current, event.data.selectedText);
-        } else {
-          // Use current selection
-          const doc = contentRef.current?.ownerDocument || document;
-          const selection = doc.getSelection();
-          
-          if (selection && !selection.isCollapsed && contentRef.current) {
-            await findAndTranslateContent(contentRef.current, selection.toString());
-          }
-        }
-        
-        // Clear the text selection after translation is complete
-        const doc = contentRef.current?.ownerDocument || document;
-        doc.getSelection()?.removeAllRanges();
-        
-      } catch (error) {
-        logger.error('Error in translate selection handler:', error);
-      }
     };
 
     /**
@@ -785,7 +703,6 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
           shadow-md
           rounded-md
           transition-colors duration-300
-          ${isDocumentTranslated ? 'readlite-document-translated' : ''}
         `}
         style={{
           maxWidth: `${settings.width}px`,
@@ -795,7 +712,6 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
         data-font-size={settings.fontSize}
         data-line-height={getOptimalLineHeight}
         data-theme={theme}
-        data-translated={isDocumentTranslated ? 'true' : 'false'}
       >
         {/* CSS variables for font properties that need to be dynamic */}
         <style>{generateContentStyles()}</style>

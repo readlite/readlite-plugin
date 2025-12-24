@@ -12,7 +12,6 @@ A browser extension that provides a clean, distraction-free reading experience w
 - **Adjustable Typography**: Customize font size, line spacing, and width for optimal reading comfort
 - **Article Saving**: Save articles as markdown for offline reading
 - **Text Highlighting & Notes**: Mark important passages and attach notes for later reference
-- **Inline Translation**: Translate selected text or the entire article without leaving the page
 
 ## Installation
 
