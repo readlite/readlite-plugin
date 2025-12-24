@@ -5,7 +5,7 @@
 
 import { getAuthToken, handleTokenExpiry } from './auth';
 
-import { createLogger } from "./logger";
+import { createLogger } from "../utils/logger";
 
 // Create a logger for this module
 const logger = createLogger('llm');

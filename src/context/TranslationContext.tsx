@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useCallback, ReactNode } from 'react';
 import { useI18n } from './I18nContext';
-import llmClient from '../utils/llmClient';
+import llmClient from '../services/llmClient';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('translation-context');
@@ -137,7 +137,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
         
         // Call translation API
         await llmClient.generateTextStream(prompt, handleStreamChunk, {
-          model: 'google/gemini-flash-1.5-8b',
+          model: 'google/gemini-2.0-flash-001',
           temperature: 0.5,
           maxTokens: 2000,
           enableMem0: false,

@@ -5,7 +5,7 @@ import { useTextSelection } from '~/hooks/useTextSelection';
 import { useTheme } from '~/context/ThemeContext';
 import { useI18n } from '~/context/I18nContext';
 import { useTranslation } from '~/context/TranslationContext';
-import llmClient from '~/utils/llmClient';
+import llmClient from '~/services/llmClient';
 import { createLogger } from "~/utils/logger";
 
 // Create a logger for this module

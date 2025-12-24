@@ -4,8 +4,8 @@
  */
 
 // Background service worker for the ReadLite extension
-import llmModule from './utils/llm';
-import { getAuthToken, handleTokenExpiry } from './utils/auth';
+import llmModule from './services/llm';
+import { getAuthToken, handleTokenExpiry, loginWithGoogle } from './services/auth';
 import { Model } from './types/api';
 import { createLogger } from './utils/logger';
 
@@ -62,6 +62,11 @@ interface GetModelsRequestMessage {
   forceRefresh?: boolean;
 }
 
+// Message to request Google Login
+interface LoginWithGoogleMessage { 
+  type: 'LOGIN_WITH_GOOGLE'; 
+}
+
 // Union type defining all possible background message types
 type BackgroundMessage = 
   ToggleReaderModeMessage | 
@@ -70,7 +75,8 @@ type BackgroundMessage =
   LlmApiRequestMessage | 
   LlmStreamRequestMessage |
   AuthStatusChangedMessage |
-  GetModelsRequestMessage;
+  GetModelsRequestMessage |
+  LoginWithGoogleMessage;
 
 // --- Main Message Listener --- 
 
@@ -110,6 +116,9 @@ chrome.runtime.onMessage.addListener((message: BackgroundMessage, sender, sendRe
       return true; // Async response possible
     case 'GET_MODELS_REQUEST':
       handleGetModelsRequest(message as GetModelsRequestMessage, sendResponse);
+      return true; // Async response possible
+    case 'LOGIN_WITH_GOOGLE':
+      handleLoginWithGoogle(sendResponse);
       return true; // Async response possible
     default:
       // Optional: Handle unknown message types if necessary
@@ -554,6 +563,21 @@ function handleAuthStatusChanged(isAuthenticated: boolean, sendResponse: (respon
 }
 
 /**
+ * Handles the LOGIN_WITH_GOOGLE message.
+ */
+async function handleLoginWithGoogle(sendResponse: (response?: any) => void) {
+  mainLogger.info('Handling Google Login request');
+  try {
+    const token = await loginWithGoogle();
+    mainLogger.info('Google Login successful');
+    sendResponse({ success: true, token });
+  } catch (error) {
+    mainLogger.error('Google Login failed:', error);
+    sendResponse({ success: false, error: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+/**
  * Fetches the list of available models from the API endpoint.
  * Updates the global `availableModels` state.
  */
@@ -644,44 +668,59 @@ function handleGetModelsRequest(message: GetModelsRequestMessage, sendResponse: 
   
   const forceRefresh = message.forceRefresh === true;
   const isExpired = Date.now() - lastModelsFetchTime > MODELS_CACHE_EXPIRY;
+  const hasCachedModels = availableModels && availableModels.length > 0;
   
-  // Fetch new data if:
-  // 1. Force refresh requested, OR
-  // 2. Cache is empty/not loaded, OR
-  // 3. Cache has expired
-  if (forceRefresh || !availableModels || availableModels.length === 0 || isExpired) {
-    const reason = forceRefresh ? "force refresh requested" : 
-                  (!availableModels || availableModels.length === 0) ? "cache empty" : 
-                  "cache expired";
-    mainLogger.info(`Fetching from server (reason: ${reason})`);
-    
-    fetchModelsInBackground()
-      .then(() => {
-        lastModelsFetchTime = Date.now(); // Update the timestamp
-        sendResponse({ success: true, data: availableModels, fromCache: false });
-      })
-      .catch((error) => {
-        mainLogger.error(`Error fetching models:`, error);
-        // If we have cached data, return it even on fetch error
-        if (availableModels && availableModels.length > 0) {
-          mainLogger.info(`Returning cached data despite fetch error`);
-          sendResponse({ 
-            success: true, 
-            data: availableModels, 
-            fromCache: true,
-            fetchError: error instanceof Error ? error.message : String(error)
-          });
-        } else {
-          sendResponse({ 
-            success: false, 
-            error: error instanceof Error ? error.message : String(error), 
-            data: [] 
-          });
-        }
-      });
-  } else {
-    // Return cached models
+  // Helper to safely send response
+  const safeSendResponse = (response: any) => {
+    try {
+      sendResponse(response);
+    } catch (error) {
+      mainLogger.warn(`Failed to send response (likely port closed):`, error);
+    }
+  };
+
+  // Strategy 1: Return cached data immediately if available and valid (unless forced)
+  if (hasCachedModels && !forceRefresh && !isExpired) {
     mainLogger.info(`Returning cached models (${availableModels.length} items)`);
-    sendResponse({ success: true, data: availableModels, fromCache: true });
+    safeSendResponse({ success: true, data: availableModels, fromCache: true });
+    return; // Done
   }
+
+  // Strategy 2: Stale-while-revalidate
+  // If we have cached data but it's expired or force refresh is requested,
+  // we can return the cached data immediately (if not forced) and fetch in background,
+  // OR if forced, we must wait.
+  
+  if (hasCachedModels && !forceRefresh) {
+    // Return stale data immediately
+    mainLogger.info(`Returning stale cached models (${availableModels.length} items) while refreshing`);
+    safeSendResponse({ success: true, data: availableModels, fromCache: true, isStale: true });
+    
+    // Trigger background refresh without waiting
+    fetchModelsInBackground().then(() => {
+       lastModelsFetchTime = Date.now();
+       mainLogger.info('Background model refresh complete');
+    }).catch(err => {
+       mainLogger.warn('Background model refresh failed:', err);
+    });
+    return;
+  }
+
+  // Strategy 3: Must fetch (Cache empty or Force Refresh)
+  const reason = forceRefresh ? "force refresh requested" : "cache empty";
+  mainLogger.info(`Fetching from server (reason: ${reason})`);
+  
+  fetchModelsInBackground()
+    .then(() => {
+      lastModelsFetchTime = Date.now(); // Update the timestamp
+      safeSendResponse({ success: true, data: availableModels, fromCache: false });
+    })
+    .catch((error) => {
+      mainLogger.error(`Error fetching models:`, error);
+      safeSendResponse({ 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error), 
+        data: [] 
+      });
+    });
 }

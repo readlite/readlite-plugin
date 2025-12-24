@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import { CommonProps, Message, ContextType } from './types';
+import { CommonProps, Message, ContextType } from '../../types/agent';
 import MessageBubble from './MessageBubble';
 import ThinkingIndicator from './ThinkingIndicator';
 import { ChatBubbleOvalLeftIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
