@@ -84,6 +84,7 @@ const Reader = () => {
   // State for Reader UI
   const [showSettings, setShowSettings] = useState(false)
   const readerContentRef = useRef<HTMLDivElement>(null)
+  const isDraggingRef = useRef(false)
   const settingsButtonRef = useRef<HTMLButtonElement>(null) as React.RefObject<HTMLButtonElement>
   const [detectedLanguage, setDetectedLanguage] = useState<LanguageCode>('en')
   
