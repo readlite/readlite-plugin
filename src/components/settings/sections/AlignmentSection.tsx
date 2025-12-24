@@ -1,6 +1,6 @@
-import React from 'react';
-import { alignmentOptions } from '../../../config/ui';
-import { LanguageCode } from '../../../utils/language';
+import React from "react";
+import { alignmentOptions } from "../../../config/ui";
+import { LanguageCode } from "../../../utils/language";
 
 interface AlignmentSectionProps {
   sectionClassName: string;
@@ -20,7 +20,7 @@ const AlignmentSection: React.FC<AlignmentSectionProps> = ({
   settings,
   t,
   uiLanguage,
-  updateSettings
+  updateSettings,
 }) => {
   // Change the text alignment
   const changeAlignment = (textAlign: string) => {
@@ -30,20 +30,22 @@ const AlignmentSection: React.FC<AlignmentSectionProps> = ({
   // Get alignment button class based on active state
   const getButtonClass = (isActive: boolean) => {
     return `p-1.5 flex flex-col items-center border rounded transition-all flex-1 cursor-pointer text-xs
-            ${isActive ? 
-              'border-accent bg-accent/5 text-accent' : 
-              'border-border bg-transparent text-primary'}`;
+            ${
+              isActive
+                ? "border-accent bg-accent/5 text-accent"
+                : "border-border bg-transparent text-primary"
+            }`;
   };
 
   return (
     <section className={sectionClassName}>
-      <h3 className={titleClassName}>{t('textAlignment')}</h3>
-      
+      <h3 className={titleClassName}>{t("textAlignment")}</h3>
+
       <div className="flex gap-1.5">
-        {alignmentOptions.map(option => {
+        {alignmentOptions.map((option) => {
           const isActive = settings.textAlign === option.value;
-          const label = uiLanguage === 'zh' ? option.label.zh : option.label.en;
-          
+          const label = uiLanguage === "zh" ? option.label.zh : option.label.en;
+
           return (
             <button
               key={option.value}
@@ -54,34 +56,34 @@ const AlignmentSection: React.FC<AlignmentSectionProps> = ({
               {/* Alignment icon */}
               <div className="flex w-full mb-1 justify-center">
                 {/* Left alignment icon */}
-                {option.value === 'left' && (
+                {option.value === "left" && (
                   <div className="flex flex-col items-start">
                     <div className="w-10 h-[3px] bg-current mb-[3px] rounded-sm" />
                     <div className="w-6 h-[3px] bg-current mb-[3px] rounded-sm" />
                     <div className="w-8 h-[3px] bg-current rounded-sm" />
                   </div>
                 )}
-                
+
                 {/* Justify alignment icon */}
-                {option.value === 'justify' && (
+                {option.value === "justify" && (
                   <div className="flex flex-col items-center">
                     <div className="w-10 h-[3px] bg-current mb-[3px] rounded-sm" />
                     <div className="w-10 h-[3px] bg-current mb-[3px] rounded-sm" />
                     <div className="w-10 h-[3px] bg-current rounded-sm" />
                   </div>
                 )}
-                
+
                 {/* Center alignment icon */}
-                {option.value === 'center' && (
+                {option.value === "center" && (
                   <div className="flex flex-col items-center">
                     <div className="w-8 h-[3px] bg-current mb-[3px] rounded-sm" />
                     <div className="w-6 h-[3px] bg-current mb-[3px] rounded-sm" />
                     <div className="w-10 h-[3px] bg-current rounded-sm" />
                   </div>
                 )}
-                
+
                 {/* Right alignment icon */}
-                {option.value === 'right' && (
+                {option.value === "right" && (
                   <div className="flex flex-col items-end">
                     <div className="w-10 h-[3px] bg-current mb-[3px] rounded-sm" />
                     <div className="w-6 h-[3px] bg-current mb-[3px] rounded-sm" />
@@ -89,9 +91,9 @@ const AlignmentSection: React.FC<AlignmentSectionProps> = ({
                   </div>
                 )}
               </div>
-              
+
               {/* Label */}
-              <span className={isActive ? 'font-medium' : ''}>{label}</span>
+              <span className={isActive ? "font-medium" : ""}>{label}</span>
             </button>
           );
         })}
@@ -100,4 +102,4 @@ const AlignmentSection: React.FC<AlignmentSectionProps> = ({
   );
 };
 
-export default AlignmentSection; 
+export default AlignmentSection;

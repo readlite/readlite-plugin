@@ -1,15 +1,21 @@
-import React, { createContext, useState, useEffect, ReactNode, useContext, useCallback } from "react"
-import { LanguageCode } from "../utils/language"
-import { useArticle } from "../hooks/useArticle"
-import { useStoredSettings } from "../hooks/useStoredSettings"
-import { createLogger } from "~/utils/logger"
-import { ThemeType } from "../config/theme"
-import { ThemeProvider } from "./ThemeContext"
-import { BookOpenIcon } from '@heroicons/react/24/outline'
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useContext,
+  useCallback,
+} from "react";
+import { LanguageCode } from "../utils/language";
+import { useArticle } from "../hooks/useArticle";
+import { useStoredSettings } from "../hooks/useStoredSettings";
+import { createLogger } from "~/utils/logger";
+import { ThemeType } from "../config/theme";
+import { ThemeProvider } from "./ThemeContext";
+import { BookOpenIcon } from "@heroicons/react/24/outline";
 
 // Create a logger for this module
-const logger = createLogger('reader-context');
-
+const logger = createLogger("reader-context");
 
 // --- Types & Defaults ---
 
@@ -29,7 +35,7 @@ export interface ReaderSettings {
 // Default settings for reader
 export const defaultSettings: ReaderSettings = {
   theme: "light",
-  fontFamily: '', // Empty string to allow language-specific default
+  fontFamily: "", // Empty string to allow language-specific default
   fontSize: 18,
   lineHeight: 1.6,
   width: 700, // Standard width
@@ -68,11 +74,14 @@ export const ReaderContext = createContext<ReaderContextType>({
   settings: defaultSettings,
   isLoading: false,
   error: null,
-  isSettingsLoaded: false, 
-  updateSettings: () => logger.warn("updateSettings called before Provider mounted"),
-  resetSettings: () => logger.warn("resetSettings called before Provider mounted"),
+  isSettingsLoaded: false,
+  updateSettings: () =>
+    logger.warn("updateSettings called before Provider mounted"),
+  resetSettings: () =>
+    logger.warn("resetSettings called before Provider mounted"),
   closeReader: () => logger.warn("closeReader called before Provider mounted"),
-  loadArticle: async () => logger.warn("loadArticle called before Provider mounted"),
+  loadArticle: async () =>
+    logger.warn("loadArticle called before Provider mounted"),
 });
 
 // Hook to easily consume the context
@@ -83,23 +92,33 @@ export const useReader = () => useContext(ReaderContext);
 // Add props interface for ReaderProvider
 interface ReaderProviderProps {
   children: ReactNode;
-  initialTheme?: ThemeType; 
+  initialTheme?: ThemeType;
 }
 
 // Simple loading indicator shown while settings are loading
 const LoadingIndicator: React.FC = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    height: '100vh',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
-    backgroundColor: '#f0f0f0',
-    color: '#555',
-    fontSize: '16px'
-  }}>
-    <div style={{ textAlign: 'center' }}>
-      <BookOpenIcon style={{ width: '40px', height: '40px', marginBottom: '10px', opacity: 0.6 }} />
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+      fontFamily:
+        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
+      backgroundColor: "#f0f0f0",
+      color: "#555",
+      fontSize: "16px",
+    }}
+  >
+    <div style={{ textAlign: "center" }}>
+      <BookOpenIcon
+        style={{
+          width: "40px",
+          height: "40px",
+          marginBottom: "10px",
+          opacity: 0.6,
+        }}
+      />
       <div>Loading Reader Settings...</div>
     </div>
   </div>
@@ -108,22 +127,25 @@ const LoadingIndicator: React.FC = () => (
 /**
  * Provider component for the Reader Context.
  */
-export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initialTheme }) => {
+export const ReaderProvider: React.FC<ReaderProviderProps> = ({
+  children,
+  initialTheme,
+}) => {
   // --- State & Hooks ---
-  
-  const { 
-    settings, 
-    updateSettings, 
-    isLoaded: isSettingsLoaded, 
-    resetSettings 
+
+  const {
+    settings,
+    updateSettings,
+    isLoaded: isSettingsLoaded,
+    resetSettings,
   } = useStoredSettings();
-  
+
   const [article, setArticle] = useState<ArticleData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false); 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { extractArticle } = useArticle();
-  
+
   const loadArticle = useCallback(async () => {
     if (!isSettingsLoaded) {
       logger.warn("Attempted to load article before settings were loaded");
@@ -132,19 +154,24 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
 
     logger.info("Starting article extraction...");
     setIsLoading(true);
-    setError(null); 
-    
+    setError(null);
+
     try {
       const extractedArticle = await extractArticle();
       if (extractedArticle) {
-        logger.info(`Article extracted successfully: "${extractedArticle.title?.substring(0, 50)}..."`);
+        logger.info(
+          `Article extracted successfully: "${extractedArticle.title?.substring(0, 50)}..."`,
+        );
         setArticle(extractedArticle as unknown as ArticleData);
       } else {
         logger.warn("Article extraction returned null or undefined.");
         setError("Could not extract article content from this page.");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error during article extraction";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Unknown error during article extraction";
       logger.error("Error extracting article:", err);
       setError(errorMessage);
     } finally {
@@ -154,10 +181,10 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
 
   const closeReader = useCallback(() => {
     logger.info("Dispatching close event (READLITE_TOGGLE_INTERNAL).");
-    document.dispatchEvent(new CustomEvent('READLITE_TOGGLE_INTERNAL'));
+    document.dispatchEvent(new CustomEvent("READLITE_TOGGLE_INTERNAL"));
   }, []);
-  
-  // --- Context Value --- 
+
+  // --- Context Value ---
 
   const value: ReaderContextType = {
     article,
@@ -170,16 +197,16 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
     closeReader,
     loadArticle,
   };
-  
+
   // --- Render ---
 
   return (
     <ReaderContext.Provider value={value}>
       {isSettingsLoaded ? (
-        <ThemeProvider initialTheme={initialTheme}>
-          {children}
-        </ThemeProvider>
-      ) : <LoadingIndicator />}
+        <ThemeProvider initialTheme={initialTheme}>{children}</ThemeProvider>
+      ) : (
+        <LoadingIndicator />
+      )}
     </ReaderContext.Provider>
   );
 };

@@ -1,17 +1,28 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { 
-  ThemeType, 
-  ThemeColors, 
-  themeTokens, 
-  getThemeColors, 
-  getSettingsColors, 
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
+import {
+  ThemeType,
+  ThemeColors,
+  themeTokens,
+  getThemeColors,
+  getSettingsColors,
   getReaderColors,
-  AVAILABLE_THEMES
-} from '../config/theme';
-import { createLogger } from '~/utils/logger';
-import { applyThemeGlobally, getPreferredTheme, saveTheme, setupThemeChangeListener } from '../utils/themeManager';
+  AVAILABLE_THEMES,
+} from "../config/theme";
+import { createLogger } from "~/utils/logger";
+import {
+  applyThemeGlobally,
+  getPreferredTheme,
+  saveTheme,
+  setupThemeChangeListener,
+} from "../utils/themeManager";
 
-const logger = createLogger('theme-context');
+const logger = createLogger("theme-context");
 
 interface ThemeContextType {
   theme: ThemeType;
@@ -28,7 +39,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
 };
@@ -38,9 +49,9 @@ interface ThemeProviderProps {
   initialTheme?: ThemeType;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
-  initialTheme
+  initialTheme,
 }) => {
   // Use initial theme if provided, otherwise try to get from storage or default
   // Note: For initial render, we need a synchronous value to avoid flash
@@ -50,7 +61,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     }
     return getPreferredTheme();
   });
-  
+
   const [customTheme, setCustomThemeState] = useState<string | null>(null);
 
   // Apply theme when it changes
@@ -75,7 +86,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       logger.info(`Theme synced from storage: ${newTheme}`);
       setThemeState(newTheme);
     });
-    
+
     return cleanup;
   }, []);
 
@@ -95,30 +106,31 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
   // Memoize values to prevent unnecessary re-renders
   const themeColors = useMemo(() => getThemeColors(theme), [theme]);
-  
+
   // Get UI specific colors - use useMemo to optimize performance
   const getUIColors = useMemo(() => {
     return () => getSettingsColors(theme);
   }, [theme]);
-  
+
   // Get Reader specific colors - use useMemo to optimize performance
   const getReaderThemeColors = useMemo(() => {
     return () => getReaderColors(theme);
   }, [theme]);
 
-  const value = useMemo(() => ({
-    theme,
-    setTheme,
-    customTheme,
-    setCustomTheme,
-    themeColors,
-    getUIColors,
-    getReaderColors: getReaderThemeColors,
-  }), [theme, customTheme, getUIColors, getReaderThemeColors]);
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      customTheme,
+      setCustomTheme,
+      themeColors,
+      getUIColors,
+      getReaderColors: getReaderThemeColors,
+    }),
+    [theme, customTheme, getUIColors, getReaderThemeColors],
+  );
 
   return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 };

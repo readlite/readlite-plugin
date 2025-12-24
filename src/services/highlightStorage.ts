@@ -8,7 +8,7 @@ import { StoredHighlight } from "../types/highlights";
 import { createLogger } from "../utils/logger";
 
 // Create a logger for this module
-const logger = createLogger('highlights');
+const logger = createLogger("highlights");
 
 // Create storage instance using Plasmo API
 const storage = new Storage({ area: "local" });
@@ -23,13 +23,13 @@ export class HighlightStorage {
   async getPageHighlights(url: string): Promise<StoredHighlight[]> {
     try {
       const allHighlights = await this.getAllHighlights();
-      return allHighlights.filter(h => h.url === url);
+      return allHighlights.filter((h) => h.url === url);
     } catch (error) {
       logger.error("Error fetching page highlights:", error);
       return [];
     }
   }
-  
+
   /**
    * Save a new highlight to storage
    * @param highlight The highlight data to save
@@ -44,26 +44,29 @@ export class HighlightStorage {
       logger.error("Error saving highlight:", error);
     }
   }
-  
+
   /**
    * Update an existing highlight
    * @param id ID of the highlight to update
    * @param updates Partial highlight data to update
    * @returns Promise resolving to boolean indicating success
    */
-  async updateHighlight(id: string, updates: Partial<StoredHighlight>): Promise<boolean> {
+  async updateHighlight(
+    id: string,
+    updates: Partial<StoredHighlight>,
+  ): Promise<boolean> {
     try {
       const highlights = await this.getAllHighlights();
-      const index = highlights.findIndex(h => h.id === id);
-      
+      const index = highlights.findIndex((h) => h.id === id);
+
       if (index === -1) return false;
-      
+
       highlights[index] = {
         ...highlights[index],
         ...updates,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
-      
+
       await storage.set(HIGHLIGHT_KEY, JSON.stringify(highlights));
       logger.info(`Updated highlight ${id}`);
       return true;
@@ -72,7 +75,7 @@ export class HighlightStorage {
       return false;
     }
   }
-  
+
   /**
    * Delete a highlight from storage
    * @param id ID of the highlight to delete
@@ -81,10 +84,10 @@ export class HighlightStorage {
   async deleteHighlight(id: string): Promise<boolean> {
     try {
       const highlights = await this.getAllHighlights();
-      const filteredHighlights = highlights.filter(h => h.id !== id);
-      
+      const filteredHighlights = highlights.filter((h) => h.id !== id);
+
       if (filteredHighlights.length === highlights.length) return false;
-      
+
       await storage.set(HIGHLIGHT_KEY, JSON.stringify(filteredHighlights));
       logger.info(`Deleted highlight ${id}`);
       return true;
@@ -93,7 +96,7 @@ export class HighlightStorage {
       return false;
     }
   }
-  
+
   /**
    * Get all stored highlights
    * @returns Promise resolving to array of all highlights
@@ -110,4 +113,4 @@ export class HighlightStorage {
 }
 
 // Export singleton instance
-export const highlightStorage = new HighlightStorage(); 
+export const highlightStorage = new HighlightStorage();
