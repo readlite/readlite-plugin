@@ -1,7 +1,7 @@
 {
   "name": "read-lite",
   "displayName": "ReadLite - Simple Reading Mode",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "A simple reading mode extension to make web reading more comfortable",
   "author": "ReadLite Team",
   "license": "MIT",
@@ -57,28 +57,19 @@
     "typescript": "^5.3.3"
   },
   "manifest": {
-    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoQzZz4ZmIisdj622mKaRivxIOiRvzXEyqvIBLjXPj+calX2j6SqGXVpTBufeNgiHQUJbFvBcpvFZh2uE0Qzbj5/pMk7/HIzWiHbaIJBZfmy36oxi/aFZdtqf0Bcwo+X2GaztgTrgMxrX4s/EvOhfwGRPBSydqkR+4STc3IVNTaXgXT/grfhwcONXh3ep5d8uOXYKVZphwPDZZ+RMge9Eu+wiY9BFC1L+3mn0F0W99vayOhvcoC60IJ8+3q1kRBF0Me/S8HbAl7qZICiqpVMCZU6jXvzIGo3JFLWpgH++E3Hbti5nEwVMjlizyVq8204yxwFs+o1XaBxt+U3C1exNMQIDAQAB",
     "default_locale": "en",
     "name": "__MSG_extensionName__",
     "description": "__MSG_extensionDescription__",
     "permissions": [
       "activeTab",
       "scripting",
-      "storage",
-      "identity"
+      "storage"
     ],
     "host_permissions": [
       "<all_urls>"
     ],
     "action": {
       "default_title": "ReadLite - Simple Reading Mode"
-    },
-    "oauth2": {
-      "client_id": "403776294910-84s0v4sun2bl8qljth5b59lrgl80dn0l.apps.googleusercontent.com",
-      "scopes": [
-        "https://www.googleapis.com/auth/userinfo.email",
-        "https://www.googleapis.com/auth/userinfo.profile"
-      ]
     },
     "background": {
       "service_worker": "background.js",

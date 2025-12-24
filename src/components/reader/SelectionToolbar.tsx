@@ -4,7 +4,6 @@ import { useTheme } from "../../context/ThemeContext";
 import { useI18n } from "../../context/I18nContext";
 import {
   PencilIcon,
-  DocumentTextIcon,
   XMarkIcon,
   ClipboardDocumentIcon,
   CheckIcon,
@@ -363,15 +362,6 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
                 />
               )
             )}
-
-            {/* 3. NOTE BUTTON */}
-            <ToolbarButton
-              onMouseDown={() => alert(t("comingSoon"))}
-              icon={<DocumentTextIcon className="w-5 h-5" />}
-              label={t("addNote")}
-              isDark={theme === "dark"}
-              width={isChinese ? 48 : 56}
-            />
 
             {/* 6. CLOSE BUTTON - at the end */}
             <ToolbarButton
