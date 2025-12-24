@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, KeyboardEvent } from 'react';
-import { ContextType } from './types';
+import { CommonProps, ContextType, Model } from '../../types/agent';
 import { Model } from '../../types/api';
 import { 
   ChevronDownIcon, 
@@ -16,9 +16,8 @@ interface InputAreaProps {
   isProcessing: boolean;
   onSendMessage: () => void;
   disableSend: boolean;
-  contextType: ContextType | null;
-  setContextType: (type: ContextType | null) => void;
-  contextOptions: { value: ContextType; label: string }[];
+  activeContext: ContextType; // derived in parent
+  onClearSelection?: () => void;
   selectedModel: Model | null;
   setSelectedModel: (model: Model | null) => void;
   availableModels: Model[];
@@ -44,9 +43,8 @@ const InputArea: React.FC<InputAreaProps> = ({
   isProcessing,
   onSendMessage,
   disableSend,
-  contextType,
-  setContextType,
-  contextOptions = [],
+  activeContext,
+  onClearSelection,
   selectedModel,
   setSelectedModel,
   availableModels = [],
@@ -58,7 +56,6 @@ const InputArea: React.FC<InputAreaProps> = ({
   selectedText = '',
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [showContextMenu, setShowContextMenu] = useState(false);
   const [showModelMenu, setShowModelMenu] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isToolbarExpanded, setIsToolbarExpanded] = useState(true);
@@ -66,7 +63,7 @@ const InputArea: React.FC<InputAreaProps> = ({
 
   // Should show reference block
   const shouldShowReference = 
-    contextType === 'selection' && 
+    activeContext === 'selection' && 
     selectedText && 
     selectedText.trim().length > 0;
 
@@ -114,12 +111,6 @@ const InputArea: React.FC<InputAreaProps> = ({
     setInputText(e.target.value);
   };
 
-  const handleSelectContext = (type: ContextType | null) => {
-    setContextType(type);
-    setShowContextMenu(false);
-    textareaRef.current?.focus();
-  };
-
   const handleSelectModel = (model: Model) => {
     setSelectedModel(model);
     setShowModelMenu(false);
@@ -127,9 +118,12 @@ const InputArea: React.FC<InputAreaProps> = ({
   };
 
   const getContextLabel = () => {
-    if (!contextType || !contextOptions || !Array.isArray(contextOptions)) return '';
-    const option = contextOptions.find(opt => opt?.value === contextType);
-    return option?.label || '';
+    switch (activeContext) {
+      case 'selection': return t('contextTypeSelection') || 'Selected Text';
+      case 'article': return t('contextTypeArticle') || 'Full Article';
+      case 'screen': return t('contextTypeScreen') || 'Visible Screen';
+      default: return activeContext;
+    }
   };
 
   const handleFocus = () => setIsFocused(true);
@@ -147,15 +141,25 @@ const InputArea: React.FC<InputAreaProps> = ({
       {shouldShowReference && (
         <div className="mb-2 bg-bg-secondary rounded-xl p-2 border border-border/50 shadow-sm">
           <div 
-            className="flex items-center text-xs text-text-secondary/80 mb-1 cursor-pointer hover:text-accent group"
-            onClick={toggleReference}
+            className="flex items-center justify-between text-xs text-text-secondary/80 mb-1 cursor-pointer hover:text-accent group"
           >
-            <QuoteIcon className="w-3.5 h-3.5 mr-1 text-text-secondary/60 group-hover:text-accent" />
-            <span className="font-medium">{t('selectedText') || 'Selected Text'}</span>
-            {isReferenceExpanded ? (
-              <ChevronDownIcon className="w-3.5 h-3.5 ml-1" />
-            ) : (
-              <ChevronRightIcon className="w-3.5 h-3.5 ml-1" />
+            <div className="flex items-center" onClick={toggleReference}>
+              <QuoteIcon className="w-3.5 h-3.5 mr-1 text-text-secondary/60 group-hover:text-accent" />
+              <span className="font-medium">{t('selectedText') || 'Selected Text'}</span>
+              {isReferenceExpanded ? (
+                <ChevronDownIcon className="w-3.5 h-3.5 ml-1" />
+              ) : (
+                <ChevronRightIcon className="w-3.5 h-3.5 ml-1" />
+              )}
+            </div>
+            {onClearSelection && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onClearSelection(); }}
+                className="text-text-secondary/50 hover:text-red-500 p-0.5 rounded-full hover:bg-red-500/10 transition-colors"
+                title={t('clearSelection') || "Clear selection"}
+              >
+                <XMarkIcon className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
           
@@ -176,50 +180,32 @@ const InputArea: React.FC<InputAreaProps> = ({
                         isFocused ? 'border-accent/50 shadow-[0_0_0_2px_var(--readlite-accent)]/10' : ''
                       }`}
         >
-          {/* Top toolbar with context and model selectors */}
+          {/* Top toolbar with context status and model selector */}
           <div className="flex justify-between px-4 pt-2 pb-0 text-[9px] text-text-secondary h-[24px]">
-            <div className="relative">
-              {isToolbarExpanded ? (
-                <button
-                  className="flex items-center gap-1 p-1 hover:bg-bg-tertiary rounded transition-colors duration-150"
-                  onClick={() => setShowContextMenu(!showContextMenu)}
-                  aria-label="Select context"
-                >
-                  <span className="flex items-center">
-                    <span className="text-text-secondary/10">@</span>
-                    <span className="ml-0.5 opacity-90 text-[10px]">
-                      {contextType ? getContextLabel() : (t('agentContext') || 'Context')}
-                    </span>
-                  </span>
-                  <ChevronDownIcon
-                    className={`w-4 h-4 transition-transform duration-200 ${showContextMenu ? 'rotate-180' : ''}`}
-                  />
-                </button>
-              ) : (
-                <button
-                  className={toolbarButtonClass}
-                  onClick={() => setIsToolbarExpanded(true)}
-                  title={t('expandToolbar') || "Expand toolbar"}
-                >
-                  <ChevronRightIcon className="w-3 h-3" />
-                </button>
-              )}
-              
-              {/* Context menu dropdown */}
-              {showContextMenu && contextOptions && Array.isArray(contextOptions) && (
-                <div className="absolute left-0 bottom-full mb-1 z-10 bg-bg-secondary shadow-lg rounded-lg 
-                               border border-border py-1 min-w-[150px] overflow-hidden animate-fadeIn">
-                  {contextOptions.map((option) => (
-                    <div
-                      key={option.value}
-                      className={`${menuItemClass} ${contextType === option.value ? 'bg-bg-tertiary' : ''}`}
-                      onClick={() => handleSelectContext(option.value)}
+            <div className="flex items-center">
+               {/* Context Status Pill */}
+               <div 
+                 className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full transition-colors duration-150 border ${
+                   activeContext === 'selection' 
+                     ? 'bg-accent/10 text-accent border-accent/20' 
+                     : 'bg-bg-tertiary/50 text-text-secondary/70 border-transparent'
+                 }`}
+               >
+                 <span className="text-[9px] font-medium">
+                   {activeContext === 'selection' && '✨ '}
+                   {activeContext === 'article' && '📄 '}
+                   {activeContext === 'screen' && '📱 '}
+                   {getContextLabel()}
+                 </span>
+                 {activeContext === 'selection' && onClearSelection && (
+                    <button 
+                      onClick={onClearSelection}
+                      className="ml-0.5 hover:text-red-500 transition-colors"
                     >
-                      {option.label}
-                    </div>
-                  ))}
-                </div>
-              )}
+                      <XMarkIcon className="w-2.5 h-2.5" />
+                    </button>
+                 )}
+               </div>
             </div>
 
             <div className="relative flex items-center gap-2">
@@ -252,11 +238,19 @@ const InputArea: React.FC<InputAreaProps> = ({
               )}
               
               {/* Toolbar collapse button */}
-              {isToolbarExpanded && (
+              {isToolbarExpanded ? (
                 <button
                   className={toolbarButtonClass}
                   onClick={() => setIsToolbarExpanded(false)}
                   title={t('collapseToolbar') || "Collapse toolbar"}
+                >
+                  <ChevronRightIcon className="w-3 h-3" />
+                </button>
+              ) : (
+                <button
+                  className={toolbarButtonClass}
+                  onClick={() => setIsToolbarExpanded(true)}
+                  title={t('expandToolbar') || "Expand toolbar"}
                 >
                   <ChevronLeftIcon className="w-3 h-3" />
                 </button>
@@ -347,13 +341,6 @@ const InputArea: React.FC<InputAreaProps> = ({
           </div>
         </div>
       </div>
-      
-      {/* Context selection hint */}
-      {!contextType && (
-        <div className="text-[10px] text-text-secondary/60 mt-1.5 ml-3">
-          {t('agentContextHint') || 'Pro tip: Select a context type for more relevant responses'}
-        </div>
-      )}
     </div>
   );
 };

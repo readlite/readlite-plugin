@@ -5,7 +5,7 @@
 
 // Import LLM request options type to maintain consistency with main LLM API
 import { LLMRequestOptions } from './llm';
-import { createLogger } from "~/utils/logger";
+import { createLogger } from "../utils/logger";
 
 // Create a logger for this module
 const logger = createLogger('utils');

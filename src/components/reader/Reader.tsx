@@ -16,8 +16,8 @@ import SelectionToolbar from "../reader/SelectionToolbar"
 import { HighlightColor } from "../../hooks/useTextSelection"
 import { BookOpenIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { LanguageIcon } from '@heroicons/react/24/outline';
-import llmClient from '../../utils/llmClient';
-import { isAuthenticated } from '../../utils/auth';
+import llmClient from '../../services/llmClient';
+import { isAuthenticated } from '../../services/auth';
 
 // Create a logger for this module
 const logger = createLogger('main-reader');

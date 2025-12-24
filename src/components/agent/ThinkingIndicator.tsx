@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CommonProps } from './types';
+import { CommonProps } from '../../types/agent';
 
 interface ThinkingIndicatorProps extends Pick<CommonProps, 't'> {}
 

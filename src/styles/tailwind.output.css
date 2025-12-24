@@ -803,10 +803,6 @@ video {
   margin-left: 0.5rem;
 }
 
-.ml-3 {
-  margin-left: 0.75rem;
-}
-
 .mr-1 {
   margin-right: 0.25rem;
 }
@@ -985,6 +981,10 @@ video {
 
 .w-16 {
   width: 4rem;
+}
+
+.w-2\.5 {
+  width: 0.625rem;
 }
 
 .w-24 {
@@ -1455,6 +1455,10 @@ video {
   border-color: rgb(64 64 64 / 0.5);
 }
 
+.border-transparent {
+  border-color: transparent;
+}
+
 .bg-accent {
   background-color: var(--readlite-accent);
 }
@@ -1518,6 +1522,10 @@ video {
 
 .bg-white\/95 {
   background-color: rgb(255 255 255 / 0.95);
+}
+
+.p-0\.5 {
+  padding: 0.125rem;
 }
 
 .p-1 {
@@ -2151,6 +2159,10 @@ video {
 
 .hover\:bg-red-50\/50:hover {
   background-color: rgb(254 242 242 / 0.5);
+}
+
+.hover\:bg-red-500\/10:hover {
+  background-color: rgb(239 68 68 / 0.1);
 }
 
 .hover\:text-accent:hover {

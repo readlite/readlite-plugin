@@ -1,5 +1,5 @@
 import React from 'react';
-import { CommonProps } from './types';
+import { CommonProps } from '../../types/agent';
 
 interface LoginPromptProps extends Pick<CommonProps, 't'> {
   onLogin: () => void;

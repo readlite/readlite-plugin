@@ -4,7 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useI18n } from '../../context/I18nContext';
 import { PencilIcon, DocumentTextIcon, SparklesIcon, XMarkIcon, ClipboardDocumentIcon, CheckIcon, TrashIcon, LanguageIcon } from '@heroicons/react/24/outline';
 import { createLogger } from '~/utils/logger';
-import { isAuthenticated } from '../../utils/auth';
+import { isAuthenticated } from '../../services/auth';
 
 // Create a logger for this module
 const logger = createLogger('selection-toolbar');

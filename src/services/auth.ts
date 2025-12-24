@@ -1,4 +1,4 @@
-import { createLogger } from "./logger";
+import { createLogger } from "../utils/logger";
 
 // Create a logger for this module
 const logger = createLogger('auth');
@@ -109,45 +109,111 @@ export async function handleTokenExpiry(error: any): Promise<boolean> {
 }
 
 /**
- * Open the authentication page in a new tab
- * Uses the browser's language to determine which locale to use
- * Works in both content script and background script contexts
+ * Login with Google using chrome.identity API
+ * Exchanges Google authorization code for ReadLite application token
+ * @returns Promise resolving to the ReadLite app token
  */
-export function openAuthPage(): void {
-  // Determine correct locale
-  const locale = determineUserLocale();
-  const authUrl = `https://readlite.app/${locale}/auth/sync`;
-  
-  // Check if we're in a background script context (no window)
-  if (typeof window === 'undefined') {
-    // Use chrome.tabs API for background scripts
-    chrome.tabs.create({ url: authUrl });
-  } else {
-    // Use window.open for content scripts
-    window.open(authUrl, '_blank');
-  }
-}
+export async function loginWithGoogle(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    try {
+      const redirectUri = chrome.identity.getRedirectURL();
+      const clientId = "403776294910-84s0v4sun2bl8qljth5b59lrgl80dn0l.apps.googleusercontent.com";
+      const scopes = [
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile"
+      ];
 
-/**
- * Get user's locale based on browser language
- * @returns 'zh' for Chinese users, 'en' for everyone else
- */
-function determineUserLocale(): string {
-  try {
-    // Try using chrome.i18n API if available
-    if (typeof chrome !== 'undefined' && chrome.i18n && chrome.i18n.getUILanguage) {
-      const browserLang = chrome.i18n.getUILanguage();
-      return browserLang.startsWith('zh') ? 'zh' : 'en';
-    } 
-    // Fallback to navigator.language which is available in content scripts
-    else {
-      const browserLang = navigator.language || navigator.languages?.[0] || 'en';
-      return browserLang.startsWith('zh') ? 'zh' : 'en';
+      // Log the redirect URI so the user can add it to Google Cloud Console
+      logger.info('[Auth] Using redirect URI:', redirectUri);
+      
+      const authUrl = new URL('https://accounts.google.com/o/oauth2/auth');
+      authUrl.searchParams.set('client_id', clientId);
+      authUrl.searchParams.set('response_type', 'code');
+      authUrl.searchParams.set('redirect_uri', redirectUri);
+      authUrl.searchParams.set('scope', scopes.join(' '));
+      authUrl.searchParams.set('access_type', 'offline');
+      authUrl.searchParams.set('prompt', 'consent');
+
+      logger.info('[Auth] Full Auth URL:', authUrl.toString());
+
+      logger.info('[Auth] Launching web auth flow...');
+
+      chrome.identity.launchWebAuthFlow({
+        url: authUrl.toString(),
+        interactive: true
+      }, async (responseUrl) => {
+        if (chrome.runtime.lastError) {
+          logger.error('[Auth] Google login error:', JSON.stringify(chrome.runtime.lastError));
+          reject(chrome.runtime.lastError);
+          return;
+        }
+
+        if (responseUrl) {
+          try {
+            const url = new URL(responseUrl);
+            const code = url.searchParams.get('code');
+            
+            if (!code) {
+              throw new Error('No code received from Google');
+            }
+
+            // Exchange Google code for ReadLite app token
+            logger.info('[Auth] Exchanging Google code for ReadLite token...');
+            
+            const response = await fetch('https://api.readlite.app/api/auth/google', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ 
+                code, 
+                redirect_uri: redirectUri 
+              })
+            });
+            
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              const errorMessage = errorData.message || `Server error: ${response.status}`;
+              throw new Error(errorMessage);
+            }
+            
+            const data = await response.json();
+            const appToken = data.token || data.access_token; // Handle potential response variations
+            
+            if (!appToken) {
+              throw new Error('No token received from ReadLite server');
+            }
+            
+            // Save ReadLite token to extension storage
+            await new Promise<void>((saveResolve) => {
+              chrome.storage.local.set({
+                [AUTH_TOKEN_KEY]: appToken,
+                [AUTH_TIMESTAMP_KEY]: Date.now()
+              }, () => saveResolve());
+            });
+
+            logger.info('[Auth] ReadLite token saved to extension storage');
+            
+            // Notify background script about auth status change
+            chrome.runtime.sendMessage({
+              type: 'AUTH_STATUS_CHANGED',
+              isAuthenticated: true
+            });
+
+            resolve(appToken);
+          } catch (error) {
+            logger.error('[Auth] Token exchange failed:', error);
+            reject(error);
+          }
+        } else {
+          reject(new Error('No response URL received from Google'));
+        }
+      });
+    } catch (error) {
+      logger.error('[Auth] Unexpected error during Google login:', error);
+      reject(error);
     }
-  } catch (error) {
-    logger.error("[Auth] Error determining user locale:", error);
-    return 'en'; // Default to English on error
-  }
+  });
 }
 
 /**

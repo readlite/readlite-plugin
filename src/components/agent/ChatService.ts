@@ -5,10 +5,10 @@
 
 import { createLogger } from '../../utils/logger';
 import { AIMessage } from './ConversationManager';
-import llmClient from '../../utils/llmClient';
+import llmClient from '../../services/llmClient';
 
 // Create a logger instance
-const logger = createLogger('ai-client');
+const logger = createLogger('chat-service');
 
 // Define model settings
 export interface ModelSettings {
@@ -17,7 +17,7 @@ export interface ModelSettings {
   maxTokens?: number;
 }
 
-export class AIClient {
+export class ChatService {
   /**
    * Generate a streaming response using the existing llmClient
    */
@@ -77,4 +77,4 @@ export class AIClient {
   }
 }
 
-export default new AIClient(); 
+export default new ChatService(); 

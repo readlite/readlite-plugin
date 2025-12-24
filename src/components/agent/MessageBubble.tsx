@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Message, ContextType, ConfirmationData } from "./types";
+import { Message, ContextType, ConfirmationData } from "../../types/agent";
 import { useTheme } from "../../context/ThemeContext";
 import {
   ChevronDownIcon,
