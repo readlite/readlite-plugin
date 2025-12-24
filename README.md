@@ -1,13 +1,12 @@
 # ReadLite - Simple Reading Mode
 
-A browser extension that provides a clean, distraction-free reading experience with AI summarization capabilities.
+A browser extension that provides a clean, distraction-free reading experience.
 
 ![ReadLite Icon](assets/icon.png)
 
 ## Features
 
 - **Clean Reader Interface**: Transform cluttered web pages into a beautiful, distraction-free reading experience
-- **AI Article Summarization**: Get instant summaries and insights about what you're reading
 - **Multiple Themes**: Choose from Light, Dark, Sepia, and Paper themes to suit your preference
 - **Adjustable Typography**: Customize font size, line spacing, and width for optimal reading comfort
 - **Article Saving**: Save articles as markdown for offline reading
@@ -37,7 +36,6 @@ Then open your browser's extension page (e.g., `chrome://extensions`), enable **
 2. Navigate to any article or blog post
 3. Click the ReadLite icon in your browser toolbar
 4. Enjoy a clean reading experience
-5. Use the AI button to get summaries and ask questions about the article
 
 ## Development
 
@@ -88,6 +86,6 @@ This extension is built with:
 
 MIT
 
-## Translation
+## Languages
 
 - [中文说明](./README.zh.md)

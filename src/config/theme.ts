@@ -1,413 +1,227 @@
+import { createLogger } from "../utils/logger";
+
+const logger = createLogger('theme-config');
+
 /**
- * ReadLite Theme System - Unified management of all theme colors
+ * Theme configuration system
  * Implementing dynamic theme switching using CSS variables, compatible with Tailwind
  */
-
-// Define supported theme types
-export type ThemeType = 'light' | 'dark' | 'eyecare' | 'custom';
 
 // Define centralized list of available themes
 export const AVAILABLE_THEMES: ThemeType[] = ['light', 'dark', 'eyecare', 'custom'];
 
-// Agent UI colors interface
-export interface AgentColors {
-  background: string;
-  messageBg: string;
-  userBubble: string;
-  agentBubble: string;
-  inputBg: string;
-  text: string;
-  textUser: string;
-  textAgent: string;
-  textSecondary: string;
-  accent: string;
-  border: string;
-  error: string;
-  scrollbar: string;
-  scrollbarHover: string;
-  chipBg: string;
-  thinkingPulse: string;
-}
+export type ThemeType = 'light' | 'dark' | 'eyecare' | 'custom';
 
-// Settings panel colors interface 
-export interface SettingsColors {
-  bg: string;           // Background color
-  text: string;         // Text color
-  border: string;       // Border color
-  highlight: string;    // Highlight color for active elements
-  buttonBg: string;     // Button background color
-  buttonText: string;   // Button text color
-}
-
-// Reader colors interface
-export interface ReaderColors {
-  background: string;   // Background color
-  text: string;         // Main text color
-  title: string;        // Title text color
-  border: string;       // Border color
-  toolbar: {
-    background: string; // Toolbar background
-    border: string;     // Toolbar border
-  };
-  link: {
-    normal: string;     // Link color
-    visited: string;    // Visited link color
-    hover: string;      // Hover link color
-    active: string;     // Active link color
-  };
-}
-
-// Theme color tokens - Define all color variables
-interface ColorTokens {
-  // Background colors
+// Main theme colors interface
+export interface ThemeColors {
   bg: {
     primary: string;   // Main background
-    secondary: string; // Secondary background
-    tertiary: string;  // Tertiary background
-    user: string;      // User message background
-    agent: string;     // Agent message background
+    secondary: string; // Sidebar/Toolbar background
+    tertiary: string;  // Subtle background
+    user: string;      // User message background (kept if needed for future UI)
     input: string;     // Input field background
   };
-  
-  // Text colors
   text: {
-    primary: string;   // Primary text
+    primary: string;   // Main text
     secondary: string; // Secondary text
     user: string;      // User message text
-    agent: string;     // Agent message text
     accent: string;    // Accent text
   };
-  
-  // Borders and decorations
-  border: string;      // Border
-  accent: string;      // Accent color
-  error: string;       // Error color
-  
-  // Scrollbar
-  scrollbar: {
-    track: string;     // Scrollbar track
-    thumb: string;     // Scrollbar thumb
+  ui: {
+    border: string;    // Border color
+    accent: string;    // Accent/Brand color (blue)
+    error: string;     // Error color (red)
   };
-  
-  // Link colors
+  highlight: {
+    beige: string;
+    cyan: string;
+    lavender: string;
+    olive: string;
+    peach: string;
+    selection: string; // Default selection color
+    selectionHover: string;
+  };
   link: {
-    normal: string;    // Normal link
-    visited: string;   // Visited link
-    hover: string;     // Hover link
-    active: string;    // Active link
+    normal: string;
+    hover: string;
   };
 }
 
-// 2025 Flagship – Reading × Minimalism Palette (OKLCH‑driven, WCAG‑compliant)
-// -------------------------------------------------------------
-// 1. Light  : "SILK"      – Daytime reading / Paper white + Cloud blue
-// 2. Dark   : "CARBON"    – Nighttime reading / Deep carbon + Mist blue
-// 3. Eyecare: "SEPIA"     – Long-term eye care / Old book rice + Bronze brown
-// 4. Custom : "PRISM"     – User-defined accent (other inherit Light)
-// -------------------------------------------------------------
-
-/**
- * All theme token collection
- * All color values are first determined in the OKLCH space, then converted to Hex, ensuring perceptual consistency
- */
-export const themeTokens: Record<ThemeType, ColorTokens> = {
-  /* ------------------------------------------------ LIGHT (SILK) ------------------------------------------------ */
+// Color tokens for each theme
+export const themeTokens: Record<ThemeType, ThemeColors> = {
   light: {
     bg: {
       primary: '#FFFFFF',
-      secondary: '#F9F9F9',
-      tertiary: '#ECEAE7',
-      user: '#F1EFEC',
-      agent: '#FFFFFF',
-      input: '#FFFFFF'
+      secondary: '#F9FAFB',
+      tertiary: '#F3F4F6',
+      user: '#EFF6FF',
+      input: '#FFFFFF',
     },
     text: {
-      primary: '#242628',
-      secondary: '#5A5F66',
-      user: '#242628',
-      agent: '#242628',
-      accent: '#3A7D7C'
+      primary: '#111827',
+      secondary: '#6B7280',
+      user: '#1E3A8A',
+      accent: '#2563EB',
     },
-    border: '#DFDDD9',
-    accent: '#3A7D7C',
-    error: '#D94A3A',
-    scrollbar: {
-      track: '#EAE8E4',
-      thumb: '#D4D1CC'
+    ui: {
+      border: '#E5E7EB',
+      accent: '#3B82F6',
+      error: '#EF4444',
+    },
+    highlight: {
+      beige: '#FFF5E6',
+      cyan: '#B5E4FF',
+      lavender: '#DCC6FF',
+      olive: '#DEEAB5',
+      peach: '#FFCC99',
+      selection: 'rgba(59, 130, 246, 0.2)',
+      selectionHover: 'rgba(59, 130, 246, 0.3)',
     },
     link: {
-      normal: '#2680FF',
-      visited: '#195DD1',
-      hover: '#3B8EFF',
-      active: '#1247A0'
+      normal: '#2563EB',
+      hover: '#1D4ED8',
     }
   },
-
-  /* ------------------------------------------------ DARK (CARBON) ------------------------------------------------ */
   dark: {
     bg: {
-      primary: '#161718',
-      secondary: '#1E1F20',
-      tertiary: '#262729',
-      user: '#2E2F31',
-      agent: '#161718',
-      input: '#1E1F20'
+      primary: '#1F2937',
+      secondary: '#111827',
+      tertiary: '#374151',
+      user: '#1E3A8A',
+      input: '#374151',
     },
     text: {
-      primary: '#E7EBF1',
-      secondary: '#A5AEBF',
-      user: '#E7EBF1',
-      agent: '#E7EBF1',
-      accent: '#7FA6FF'
+      primary: '#F9FAFB',
+      secondary: '#9CA3AF',
+      user: '#DBEAFE',
+      accent: '#60A5FA',
     },
-    border: '#1A1B1D',
-    accent: '#7FA6FF',
-    error: '#FF6F6F',
-    scrollbar: {
-      track: '#2B2D2F',
-      thumb: '#3B3D40'
+    ui: {
+      border: '#374151',
+      accent: '#3B82F6',
+      error: '#EF4444',
+    },
+    highlight: {
+      beige: 'rgba(255, 245, 230, 0.3)',
+      cyan: 'rgba(181, 228, 255, 0.3)',
+      lavender: 'rgba(220, 198, 255, 0.3)',
+      olive: 'rgba(222, 234, 181, 0.3)',
+      peach: 'rgba(255, 204, 153, 0.3)',
+      selection: 'rgba(59, 130, 246, 0.3)',
+      selectionHover: 'rgba(59, 130, 246, 0.4)',
     },
     link: {
-      normal: '#7FA6FF',
-      visited: '#AAA1FF',
-      hover: '#5E8CFF',
-      active: '#4771DB'
+      normal: '#60A5FA',
+      hover: '#93C5FD',
     }
   },
-
-  /* ------------------------------------------------ EYECARE (SEPIA) ---------------------------------------------- */
   eyecare: {
     bg: {
-      primary: '#F7F3E7',
-      secondary: '#EFEADF',
-      tertiary: '#E7E1D6',
-      user: '#EFEADF',
-      agent: '#F7F3E7',
-      input: '#FFFFFF'
+      primary: '#F7F3E8', // Warm parchment
+      secondary: '#EFEADD',
+      tertiary: '#E8E3D5',
+      user: '#E6E0D0',
+      input: '#FCF9F2',
     },
     text: {
-      primary: '#3B3226',
-      secondary: '#6B5F51',
+      primary: '#4B4237', // Soft brown-black
+      secondary: '#857A6B',
       user: '#3B3226',
-      agent: '#3B3226',
-      accent: '#A05B3C'
+      accent: '#8C6B4F', // Muted earth tone
     },
-    border: '#DCD4C8',
-    accent: '#A05B3C',
-    error: '#C46A4C',
-    scrollbar: {
-      track: '#DCD4C8',
-      thumb: '#C9C0B3'
+    ui: {
+      border: '#D6CDBF',
+      accent: '#8C6B4F',
+      error: '#B85C5C', // Soft red
+    },
+    highlight: {
+      beige: '#E6DAC8',
+      cyan: '#CDE4DC',
+      lavender: '#DCD4E0',
+      olive: '#D8DECB',
+      peach: '#E6D0C0',
+      selection: 'rgba(140, 107, 79, 0.15)',
+      selectionHover: 'rgba(140, 107, 79, 0.25)',
     },
     link: {
-      normal: '#8B6C40',
-      visited: '#6B5231',
-      hover: '#A27C46',
-      active: '#5E482A'
+      normal: '#8C6B4F',
+      hover: '#6B523D',
     }
   },
-
-  /* ------------------------------------------------ CUSTOM (PRISM) ------------------------------------------------ */
   custom: {
+    // These are default values, they will be overridden by CSS variables at runtime
     bg: {
-      primary: '#FEFCFA',
-      secondary: '#F6F4F2',
-      tertiary: '#ECEAE7',
-      user: '#F1EFEC',
-      agent: '#FEFCFA',
-      input: '#FFFFFF'
+      primary: '#FFFFFF',
+      secondary: '#F9FAFB',
+      tertiary: '#F3F4F6',
+      user: '#EFF6FF',
+      input: '#FFFFFF',
     },
     text: {
-      primary: '#242628',
-      secondary: '#5A5F66',
-      user: '#242628',
-      agent: '#242628',
-      accent: '#7C4DFF'
+      primary: '#111827',
+      secondary: '#6B7280',
+      user: '#1E3A8A',
+      accent: '#2563EB',
     },
-    border: '#DFDDD9',
-    accent: '#7C4DFF',
-    error: '#D94A3A',
-    scrollbar: {
-      track: '#EAE8E4',
-      thumb: '#D4D1CC'
+    ui: {
+      border: '--readlite-border',
+      accent: '--readlite-accent',
+      error: '--readlite-error',
+    },
+    highlight: {
+      beige: '--readlite-highlight-beige',
+      cyan: '--readlite-highlight-cyan',
+      lavender: '--readlite-highlight-lavender',
+      olive: '--readlite-highlight-olive',
+      peach: '--readlite-highlight-peach',
+      selection: '--readlite-highlight-selection',
+      selectionHover: '--readlite-highlight-selection-hover',
     },
     link: {
-      normal: '#7C4DFF',
-      visited: '#6B3ACF',
-      hover: '#9670FF',
-      active: '#5E3DBD'
+      normal: '#2563EB',
+      hover: '#1D4ED8',
     }
-  }
-};
-
-// Generate CSS variable names mapping from color tokens
-export const cssVarNames = {
-  bg: {
-    primary: '--readlite-bg-primary',
-    secondary: '--readlite-bg-secondary',
-    tertiary: '--readlite-bg-tertiary',
-    user: '--readlite-bg-user',
-    agent: '--readlite-bg-agent',
-    input: '--readlite-bg-input'
-  },
-  text: {
-    primary: '--readlite-text-primary',
-    secondary: '--readlite-text-secondary',
-    user: '--readlite-text-user',
-    agent: '--readlite-text-agent',
-    accent: '--readlite-text-accent'
-  },
-  border: '--readlite-border',
-  accent: '--readlite-accent',
-  error: '--readlite-error',
-  scrollbar: {
-    track: '--readlite-scrollbar-track',
-    thumb: '--readlite-scrollbar-thumb'
-  },
-  link: {
-    normal: '--readlite-link',
-    visited: '--readlite-link-visited',
-    hover: '--readlite-link-hover',
-    active: '--readlite-link-active'
-  },
-  highlight: {
-    beige: '--readlite-highlight-beige',
-    cyan: '--readlite-highlight-cyan',
-    lavender: '--readlite-highlight-lavender',
-    olive: '--readlite-highlight-olive',
-    peach: '--readlite-highlight-peach',
-    selection: '--readlite-highlight-selection',
-    selectionHover: '--readlite-highlight-selection-hover'
   }
 };
 
 /**
- * Get agent UI colors based on the provided theme type
- * 
- * @param theme The theme type (light, dark, sepia, or paper)
- * @returns An object containing agent UI colors
+ * Get color tokens for a specific theme
+ * @param theme The theme type (light, dark, eyecare, custom)
+ * @returns The theme colors object
  */
-export function getAgentColors(theme: ThemeType): AgentColors {
-  const tokens = themeTokens[theme];
-  
-  return {
-    background: tokens.bg.primary,
-    messageBg: tokens.bg.secondary,
-    userBubble: tokens.bg.user,
-    agentBubble: tokens.bg.agent,
-    inputBg: tokens.bg.input,
-    text: tokens.text.primary,
-    textUser: tokens.text.user,
-    textAgent: tokens.text.agent,
-    textSecondary: tokens.text.secondary,
-    accent: tokens.accent,
-    border: tokens.border,
-    error: tokens.error,
-    scrollbar: tokens.scrollbar.track,
-    scrollbarHover: tokens.scrollbar.thumb,
-    chipBg: tokens.bg.tertiary,
-    thinkingPulse: addOpacity(tokens.accent, 0.3)
-  };
+export function getThemeColors(theme: ThemeType): ThemeColors {
+  return themeTokens[theme] || themeTokens.light;
 }
 
 /**
- * Get settings panel colors based on the provided theme type
- * 
- * @param theme The theme type (light, dark, sepia, or paper)
+ * Get setting panel colors based on the provided theme type
+ * @param theme The theme type (light, dark, eyecare, custom)
  * @returns An object containing colors for settings panel
  */
-export function getSettingsColors(theme: ThemeType): SettingsColors {
-  const tokens = themeTokens[theme];
-  
+export function getSettingsColors(theme: ThemeType) {
+  const tokens = getThemeColors(theme);
   return {
-    bg: tokens.bg.primary,
+    background: tokens.bg.secondary,
     text: tokens.text.primary,
-    border: tokens.border,
-    highlight: tokens.accent,
-    buttonBg: darkenColor(tokens.bg.primary, 3),
-    buttonText: tokens.text.primary
+    border: tokens.ui.border,
+    activeButtonBg: tokens.ui.accent,
+    activeButtonText: theme === 'dark' ? '#FFFFFF' : '#FFFFFF',
+    inactiveButtonBg: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    hoverButtonBg: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
   };
 }
 
 /**
- * Get reader UI colors based on the provided theme type
- * 
- * @param theme The theme type (light, dark, sepia, or paper)
+ * Get reader content colors based on the provided theme type
+ * @param theme The theme type (light, dark, eyecare, custom)
  * @returns An object containing colors for reader UI
  */
-export function getReaderColors(theme: ThemeType): ReaderColors {
-  const tokens = themeTokens[theme];
-  
-  // Determine border color based on theme type
-  const isDarkTheme = theme === 'dark';
-  const borderBaseColor = isDarkTheme ? '#FFFFFF' : '#000000';
-  const borderOpacity = 0.02; // Reduced from 0.04 for even more subtle borders
-  const toolbarBorderOpacity = 0.015; // Reduced for even subtler toolbar borders
-  
+export function getReaderColors(theme: ThemeType) {
+  const tokens = getThemeColors(theme);
   return {
     background: tokens.bg.primary,
-    text: addOpacity(tokens.text.primary, 1),
-    title: addOpacity(tokens.text.primary, 1),
-    border: addOpacity(borderBaseColor, borderOpacity),
-    toolbar: {
-      background: addOpacity(tokens.bg.primary, 0.5),
-      border: addOpacity(borderBaseColor, toolbarBorderOpacity)
-    },
+    text: tokens.text.primary,
+    secondaryText: tokens.text.secondary,
     link: tokens.link
   };
 }
-
-// Helper function to convert hex to rgb for rgba values
-function hexToRgb(hex: string): string {
-  // Remove the hash if it exists
-  hex = hex.replace('#', '');
-  
-  // Convert 3-digit hex to 6-digit hex
-  if (hex.length === 3) {
-    hex = hex.split('').map(c => c + c).join('');
-  }
-  
-  // Parse the hex values
-  const r = parseInt(hex.substr(0, 2), 16);
-  const g = parseInt(hex.substr(2, 2), 16);
-  const b = parseInt(hex.substr(4, 2), 16);
-  
-  return `${r}, ${g}, ${b}`;
-}
-
-// Helper function to apply opacity to a color
-function addOpacity(color: string, opacity: number): string {
-  // If already rgba, just update the opacity
-  if (color.startsWith('rgba(')) {
-    return color.replace(/rgba\([^,]+,[^,]+,[^,]+,\s*[\d.]+\)/, `rgba($1, $2, $3, ${opacity})`);
-  }
-  
-  // If rgb, convert to rgba
-  if (color.startsWith('rgb(')) {
-    return color.replace('rgb(', 'rgba(').replace(')', `, ${opacity})`);
-  }
-  
-  // If hex, convert to rgba
-  if (color.startsWith('#')) {
-    const rgb = hexToRgb(color);
-    return `rgba(${rgb}, ${opacity})`;
-  }
-  
-  // Default fallback
-  return color;
-}
-
-// Helper function to darken a color
-function darkenColor(color: string, percent: number): string {
-  if (!color.startsWith('#')) return color;
-  
-  let r = parseInt(color.slice(1, 3), 16);
-  let g = parseInt(color.slice(3, 5), 16);
-  let b = parseInt(color.slice(5, 7), 16);
-  
-  r = Math.max(0, Math.floor(r * (1 - percent / 100)));
-  g = Math.max(0, Math.floor(g * (1 - percent / 100)));
-  b = Math.max(0, Math.floor(b * (1 - percent / 100)));
-  
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-} 

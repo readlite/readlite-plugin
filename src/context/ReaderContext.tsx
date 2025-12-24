@@ -14,7 +14,6 @@ const logger = createLogger('reader-context');
 // --- Types & Defaults ---
 
 // Main settings type
-// Removed LanguageSettings and LanguageSettingsMap as per-language overrides are currently not implemented in setters.
 export interface ReaderSettings {
   theme: ThemeType;
   fontFamily: string;
@@ -41,18 +40,10 @@ export const defaultSettings: ReaderSettings = {
 };
 
 // Define the structure for the extracted article data
-// Based on Mercury parser output structure
 export interface ArticleData {
   title: string;
   content: string; // HTML content
-  author?: string;
-  date?: string;
-  siteName?: string;
-  textContent?: string; // Plain text version
-  excerpt?: string;
-  length?: number;
   byline?: string;
-  dir?: string; // Text direction (e.g., 'ltr', 'rtl')
   language?: string; // Detected language code (e.g., 'en', 'zh')
 }
 
@@ -92,7 +83,7 @@ export const useReader = () => useContext(ReaderContext);
 // Add props interface for ReaderProvider
 interface ReaderProviderProps {
   children: ReactNode;
-  initialTheme?: ThemeType; // Add initialTheme prop here
+  initialTheme?: ThemeType; 
 }
 
 // Simple loading indicator shown while settings are loading
@@ -116,13 +107,10 @@ const LoadingIndicator: React.FC = () => (
 
 /**
  * Provider component for the Reader Context.
- * Manages fetching stored settings, extracting article content, and providing 
- * state and update functions to child components.
  */
 export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initialTheme }) => {
   // --- State & Hooks ---
   
-  // Settings state managed by useStoredSettings (handles loading from chrome.storage)
   const { 
     settings, 
     updateSettings, 
@@ -130,20 +118,13 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
     resetSettings 
   } = useStoredSettings();
   
-  // State for article extraction
   const [article, setArticle] = useState<ArticleData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Start not loading until explicitly requested
+  const [isLoading, setIsLoading] = useState<boolean>(false); 
   const [error, setError] = useState<string | null>(null);
   
-  // Hook providing the article extraction function
   const { extractArticle } = useArticle();
   
-  /**
-   * Function to load the article content explicitly when requested
-   * (triggered by user action rather than automatically on mount)
-   */
   const loadArticle = useCallback(async () => {
-    // Only proceed if settings are loaded
     if (!isSettingsLoaded) {
       logger.warn("Attempted to load article before settings were loaded");
       return;
@@ -151,13 +132,13 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
 
     logger.info("Starting article extraction...");
     setIsLoading(true);
-    setError(null); // Clear previous errors
+    setError(null); 
     
     try {
       const extractedArticle = await extractArticle();
       if (extractedArticle) {
         logger.info(`Article extracted successfully: "${extractedArticle.title?.substring(0, 50)}..."`);
-        setArticle(extractedArticle);
+        setArticle(extractedArticle as unknown as ArticleData);
       } else {
         logger.warn("Article extraction returned null or undefined.");
         setError("Could not extract article content from this page.");
@@ -171,13 +152,6 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
     }
   }, [isSettingsLoaded, extractArticle]);
 
-  // No automatic article loading in useEffect
-  // Instead, loadArticle will be called explicitly when needed 
-  
-  /**
-   * Callback function to close the reader mode.
-   * Dispatches a custom event handled by the content script.
-   */
   const closeReader = useCallback(() => {
     logger.info("Dispatching close event (READLITE_TOGGLE_INTERNAL).");
     document.dispatchEvent(new CustomEvent('READLITE_TOGGLE_INTERNAL'));
@@ -185,7 +159,6 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
   
   // --- Context Value --- 
 
-  // Assemble the context value object
   const value: ReaderContextType = {
     article,
     settings,
@@ -202,12 +175,11 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({ children, initia
 
   return (
     <ReaderContext.Provider value={value}>
-      {/* Show loading indicator until settings are loaded */} 
       {isSettingsLoaded ? (
-        <ThemeProvider initialTheme={initialTheme} currentTheme={settings.theme}>
+        <ThemeProvider initialTheme={initialTheme}>
           {children}
         </ThemeProvider>
       ) : <LoadingIndicator />}
     </ReaderContext.Provider>
   );
-}; 
+};

@@ -5,19 +5,14 @@ import { useI18n } from "../../context/I18nContext"
 
 import { LanguageCode } from "../../utils/language"
 import { exportAsMarkdown } from "../../utils/export"
-import { AgentUI } from "../agent/AgentUI"
 import ReaderToolbar from "../reader/ReaderToolbar"
 import ReaderContent from "../reader/ReaderContent"
-import ReaderDivider from "../reader/ReaderDivider"
 import { ThemeProvider } from "../../context/ThemeContext"
 import { ThemeType } from "../../config/theme"
 import { createLogger } from "../../utils/logger"
 import SelectionToolbar from "../reader/SelectionToolbar"
 import { HighlightColor } from "../../hooks/useTextSelection"
 import { BookOpenIcon, XCircleIcon } from '@heroicons/react/24/outline';
-
-import llmClient from '../../services/llmClient';
-import { isAuthenticated } from '../../services/auth';
 
 // Create a logger for this module
 const logger = createLogger('main-reader');
@@ -67,7 +62,7 @@ const ReadingProgress: React.FC<{ scrollContainer?: HTMLElement | null }> = ({ s
 
 /**
  * Main Reader component
- * Displays the article in a clean, readable format with a side-by-side AI assistant.
+ * Displays the article in a clean, readable format.
  */
 const Reader = () => {
   // Get reader state from context
@@ -88,13 +83,7 @@ const Reader = () => {
 
   // State for Reader UI
   const [showSettings, setShowSettings] = useState(false)
-  const [showAgent, setShowAgent] = useState(false)
-  const [leftPanelWidth, setLeftPanelWidth] = useState(65) // Default to 65% width for reader
   const readerContentRef = useRef<HTMLDivElement>(null)
-  const dividerRef = useRef<HTMLDivElement>(null)
-  const isDraggingRef = useRef(false)
-  const initialXRef = useRef(0)
-  const initialWidthRef = useRef(0)
   const settingsButtonRef = useRef<HTMLButtonElement>(null) as React.RefObject<HTMLButtonElement>
   const [detectedLanguage, setDetectedLanguage] = useState<LanguageCode>('en')
   
@@ -260,11 +249,9 @@ const Reader = () => {
       if (event.data && event.data.type === 'COPY_SELECTION_COMPLETE') {
         if (event.data.success) {
           logger.info('Copy operation completed successfully');
-          // You could show a UI notification here if desired
         } else {
           const errorMsg = event.data.error || 'Unknown error';
           logger.warn('Copy operation failed:', errorMsg);
-          // You could show an error notification here if desired
         }
       }
     };
@@ -334,32 +321,6 @@ const Reader = () => {
       }));
     }
   }, []);
-
-  // Handle asking AI with selected text
-  const handleAskAI = useCallback((selectedText: string) => {
-    try {
-      // Use the actual selectedText from state rather than the parameter
-      const textToProcess = selectionState.selectedText || selectedText;
-      
-      if (textToProcess && textToProcess.trim()) {
-        if (!showAgent) {
-          setShowAgent(true);
-        }
-        
-        window.postMessage({
-          type: 'ASK_AI_WITH_SELECTION',
-          selectedText: textToProcess.trim()
-        }, '*');
-        
-        setSelectionState(prev => ({ ...prev, isActive: false }));
-      } else {
-        logger.warn('No text selected for AI processing');
-      }
-    } catch (err) {
-      logger.error('Error in handleAskAI:', err);
-      setSelectionState(prev => ({ ...prev, isActive: false }));
-    }
-  }, [showAgent, setShowAgent, selectionState.selectedText]);
 
   // Handle direct DOM selection in fullscreen mode
   const captureSelection = useCallback(() => {
@@ -510,57 +471,6 @@ const Reader = () => {
     };
   }, [isFullscreen, setSelectionState]);
   
-  // Load user preferences
-  useEffect(() => {
-    try {
-      const savedWidth = localStorage.getItem('readerPanelWidth');
-      if (savedWidth) {
-        setLeftPanelWidth(parseFloat(savedWidth));
-      }
-      
-      const savedShowAI = localStorage.getItem('showAIPanel');
-      if (savedShowAI) {
-        setShowAgent(savedShowAI === 'true');
-      }
-    } catch (e) {
-      logger.error(`Error loading preferences:`, e);
-    }
-  }, []);
-  
-  // Save user preferences
-  useEffect(() => {
-    if (isDraggingRef.current) return;
-    try {
-      localStorage.setItem('showAIPanel', showAgent.toString());
-    } catch (e) {
-      logger.error(`Error saving preferences:`, e);
-    }
-  }, [showAgent]);
-  
-  // Save panel width when it changes, but not during dragging
-  useEffect(() => {
-    if (isDraggingRef.current) return;
-    try {
-      localStorage.setItem('readerPanelWidth', leftPanelWidth.toString());
-    } catch (e) {
-      logger.error(`Error saving panel width:`, e);
-    }
-  }, [leftPanelWidth]);
-  
-  // Window resize handler
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768 && showAgent) {
-        if (leftPanelWidth < 40) {
-          setLeftPanelWidth(40);
-        }
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [showAgent, leftPanelWidth]);
-  
   // Extract visible content when scrolling or resizing
   useEffect(() => {
     if (!readerContentRef.current || !article) return;
@@ -710,80 +620,6 @@ const Reader = () => {
     return () => scrollContainer.removeEventListener('scroll', handleDirectScroll);
   }, [readerColumnRef.current]);
   
-  // --- Drag Handlers ---
-  
-  // Start dragging the divider
-  const handleDragStart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isDraggingRef.current = true;
-    initialXRef.current = e.clientX;
-    initialWidthRef.current = leftPanelWidth;
-    
-    const eventTarget = e.target as HTMLElement;
-    const targetDoc = eventTarget?.ownerDocument || document;
-    
-    targetDoc.addEventListener('mousemove', handleDrag, { capture: true });
-    targetDoc.addEventListener('mouseup', handleDragEnd, { capture: true });
-    
-    targetDoc.body.style.cursor = 'col-resize';
-    targetDoc.body.style.userSelect = 'none';
-  };
-
-  // Handle mouse movement during drag
-  const handleDrag = useCallback((e: MouseEvent) => {
-    if (!isDraggingRef.current) return;
-    
-    requestAnimationFrame(() => {
-      const containerElement = readerContainerRef.current;
-      const containerWidth = containerElement?.clientWidth || window.innerWidth;
-      
-      const deltaX = e.clientX - initialXRef.current;
-      const percentageDelta = (deltaX / containerWidth) * 100;
-      
-      let newWidth = Math.min(85, Math.max(30, initialWidthRef.current + percentageDelta));
-      setLeftPanelWidth(newWidth);
-    });
-  }, []);
-
-  // End dragging
-  const handleDragEnd = useCallback(() => {
-    isDraggingRef.current = false;
-    
-    const docs = [document]; 
-    
-    try {
-      const iframe = document.getElementById('readlite-iframe-container') as HTMLIFrameElement;
-      if (iframe?.contentDocument) {
-        docs.push(iframe.contentDocument);
-      }
-    } catch (e) {
-      // Ignore errors accessing iframe document
-    }
-    
-    docs.forEach(doc => {
-      doc.removeEventListener('mousemove', handleDrag, { capture: true });
-      doc.removeEventListener('mouseup', handleDragEnd, { capture: true });
-      
-      if (doc.body) {
-        doc.body.style.cursor = '';
-        doc.body.style.userSelect = '';
-      }
-    });
-    
-    if (document.fullscreenElement && readerContainerRef.current) {
-      readerContainerRef.current.style.userSelect = 'text';
-      if (readerContentRef.current) {
-        readerContentRef.current.style.userSelect = 'text';
-      }
-    }
-    
-    try {
-      localStorage.setItem('readerPanelWidth', leftPanelWidth.toString());
-    } catch (e) {
-      logger.error(`Error saving panel width after drag:`, e);
-    }
-  }, [handleDrag, leftPanelWidth]);
-  
   // --- UI Animation Setup ---
 
   useEffect(() => {
@@ -846,13 +682,6 @@ const Reader = () => {
   }, [setShowSettings]);
   
   /**
-   * Toggles the visibility of the AI side panel.
-   */
-  const toggleAgent = useCallback(() => {
-    setShowAgent((prev: boolean) => !prev)
-  }, [setShowAgent]);
-  
-  /**
    * Closes the reader view
    */
   const handleClose = useCallback(() => {
@@ -882,79 +711,6 @@ const Reader = () => {
   // Toggle auto-scroll
   const toggleAutoScroll = useCallback(() => {
     setIsAutoScrolling(prev => !prev);
-  }, []);
-
-  // Auto-scroll for summary command
-  const autoScrollForSummary = useCallback(async () => {
-    const scrollContainer = readerColumnRef.current;
-    if (!scrollContainer) return;
-
-    logger.info('Starting auto-scroll for summary command');
-    setIsAutoScrolling(true);
-
-    // Calculate the total scroll distance
-    const totalHeight = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-    const startPosition = scrollContainer.scrollTop;
-    
-    // Keep track of the last position to detect when we're at the bottom
-    let lastPosition = startPosition;
-    let isAtBottom = 0; // Changed from boolean to number to use as counter
-    
-    // Scroll at a faster rate for summary command (to complete faster)
-    const summaryScrollSpeed = 5;
-    let lastTime = 0;
-    
-    // Collect content while scrolling (this would be further enhanced to gather content)
-    const collectContentWhileScrolling = () => {
-      // For demo purposes, we'll just continue scrolling
-      if (scrollContainer.scrollTop >= totalHeight || isAtBottom >= 5) {
-        // We've reached the bottom, stop auto-scrolling
-        setIsAutoScrolling(false);
-        window.postMessage({ type: 'AUTO_SCROLL_COMPLETED' }, '*');
-        logger.info('Auto-scroll completed, reached end of document');
-        return;
-      }
-      
-      // Check if we're stuck (haven't moved)
-      if (Math.abs(scrollContainer.scrollTop - lastPosition) < 1) {
-        // Increment counter if we're stuck
-        if (++isAtBottom >= 5) {
-          // We're stuck, consider it done
-          setIsAutoScrolling(false);
-          window.postMessage({ type: 'AUTO_SCROLL_COMPLETED' }, '*');
-          logger.info('Auto-scroll completed, possibly reached end of document');
-          return;
-        }
-      } else {
-        // Reset counter if we've moved
-        isAtBottom = 0;
-      }
-      
-      // Update last position
-      lastPosition = scrollContainer.scrollTop;
-      
-      // Scroll down
-      scrollContainer.scrollBy({
-        top: summaryScrollSpeed,
-        behavior: 'auto'
-      });
-      
-      // Continue scrolling
-      if (isAutoScrolling) {
-        requestAnimationFrame(collectContentWhileScrolling);
-      } else {
-        window.postMessage({ type: 'AUTO_SCROLL_COMPLETED' }, '*');
-        logger.info('Auto-scroll stopped manually');
-      }
-    };
-    
-    // Start scrolling
-    requestAnimationFrame(collectContentWhileScrolling);
-    
-    // Return cleanup function
-    return () => {
-      setIsAutoScrolling(false);
-    };
   }, []);
 
   // Initialize auto-scroll when isAutoScrolling state changes
@@ -1036,26 +792,6 @@ const Reader = () => {
       };
     }
   }, [isAutoScrolling, autoScrollSpeed]);
-
-  // Listen for auto-scroll requests from other components (like Agent)
-  useEffect(() => {
-    const handleAutoScrollRequest = (event: MessageEvent) => {
-      if (event.data) {
-        if (event.data.type === 'START_AUTO_SCROLL_FOR_SUMMARY') {
-          // Start auto-scrolling for summary command
-          autoScrollForSummary();
-        } else if (event.data.type === 'STOP_AUTO_SCROLL_FOR_SUMMARY') {
-          // Stop auto-scrolling
-          setIsAutoScrolling(false);
-        }
-      }
-    };
-    
-    window.addEventListener('message', handleAutoScrollRequest);
-    return () => {
-      window.removeEventListener('message', handleAutoScrollRequest);
-    };
-  }, [autoScrollForSummary]);
 
   // Stop auto-scrolling when the Reader component will unmount or be hidden
   useEffect(() => {
@@ -1176,12 +912,7 @@ const Reader = () => {
           {/* Reader Column (left side) */}
           <div 
             ref={readerColumnRef}
-            className={`h-full overflow-y-auto relative box-border scrollbar-custom ${
-              showAgent ? "" : "w-full"
-            } ${isDraggingRef.current ? '' : 'transition-all duration-200 ease-out'}`}
-            style={{
-              width: showAgent ? `${leftPanelWidth}%` : undefined
-            }}
+            className={`h-full overflow-y-auto relative box-border scrollbar-custom w-full ${isDraggingRef.current ? '' : 'transition-all duration-200 ease-out'}`}
           >
             {/* Reader Content Area */}
             <ReaderContent 
@@ -1194,9 +925,6 @@ const Reader = () => {
             
             {/* Toolbar */}
             <ReaderToolbar 
-              showAgent={showAgent}
-              leftPanelWidth={leftPanelWidth}
-              toggleAgent={toggleAgent}
               handleMarkdownDownload={handleMarkdownDownload}
               toggleSettings={toggleSettings}
               handleClose={handleClose}
@@ -1210,36 +938,6 @@ const Reader = () => {
               toggleAutoScroll={toggleAutoScroll}
             />
           </div>
-
-          {/* Divider - only shown when AI panel is visible */}
-          {showAgent && (
-            <ReaderDivider 
-              ref={dividerRef}
-              theme={theme}
-              isDragging={isDraggingRef.current}
-              onDragStart={handleDragStart}
-            />
-          )}
-
-          {/* AI Column (right side) - only rendered when showAISidePanel is true */}
-          {showAgent && (
-            <div 
-              className={`h-full flex flex-col relative overflow-y-auto border-l border-border ${isDraggingRef.current ? '' : 'transition-all duration-200 ease-out'}`}
-              style={{
-                width: `${100 - leftPanelWidth}%`
-              }}
-            >
-              <AgentUI
-                onClose={toggleAgent}
-                initialMessage={t('welcomeMessage')}
-                isVisible={showAgent}
-                article={article}
-                visibleContent={visibleContent}
-                baseFontSize={settings.fontSize}
-                baseFontFamily={settings.fontFamily}
-              />
-            </div>
-          )}
         </div>
         
         {/* Text selection toolbar */}
@@ -1251,9 +949,7 @@ const Reader = () => {
             onClose={() => setSelectionState(prev => ({ ...prev, isActive: false }))}
             highlightElement={selectionState.highlightElement}
             onRemoveHighlight={handleRemoveHighlight}
-            onAskAI={handleAskAI}
             onCopy={handleCopy}
-            onOpenAgent={toggleAgent}
           />
         )}
         

@@ -24,14 +24,12 @@ module.exports = {
         'bg-secondary': 'var(--readlite-bg-secondary)',
         'bg-tertiary': 'var(--readlite-bg-tertiary)',
         'bg-user': 'var(--readlite-bg-user)',
-        'bg-agent': 'var(--readlite-bg-agent)',
         'bg-input': 'var(--readlite-bg-input)',
         
         // Text colors
         'text-primary': 'var(--readlite-text-primary)',
         'text-secondary': 'var(--readlite-text-secondary)',
         'text-user': 'var(--readlite-text-user)',
-        'text-agent': 'var(--readlite-text-agent)',
         'text-accent': 'var(--readlite-text-accent)',
         
         // UI elements
@@ -239,4 +237,4 @@ module.exports = {
       addUtilities(highlightUtilities);
     },
   ],
-} 
+}

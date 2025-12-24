@@ -11,53 +11,9 @@
     "description": "Label for the note button in selection toolbar.",
     "message": "Note"
   },
-  "agent": {
-    "description": "Label/tooltip for the AI agent button.",
-    "message": "Agent"
-  },
-  "agentContext": {
-    "description": "Label for the context selector",
-    "message": "Context"
-  },
-  "agentDefaultModel": {
-    "description": "Default model option",
-    "message": "Default"
-  },
-  "agentInputPlaceholder": {
-    "description": "Placeholder text for input field",
-    "message": "Type a message, use '/' for commands"
-  },
-  "agentSend": {
-    "description": "Text for send button",
-    "message": "Send"
-  },
-  "agentSending": {
-    "description": "Text shown when message is being sent",
-    "message": "Sending..."
-  },
-  "agentSendMessage": {
-    "description": "Title for send button",
-    "message": "Send message"
-  },
-  "ai": {
-    "description": "Short label for the AI assistant button in selection toolbar.",
-    "message": "AI"
-  },
-  "aiAssistant": {
-    "description": "Tooltip for the AI assistant button in selection toolbar.",
-    "message": "AI Assistant"
-  },
   "allFonts": {
     "description": "Label for showing all available fonts.",
     "message": "All Fonts"
-  },
-  "askAI": {
-    "description": "Label for the AI assistant button in selection toolbar.",
-    "message": "Ask AI"
-  },
-  "askQuestion": {
-    "description": "Placeholder or action label in AI panel.",
-    "message": "Ask a question"
   },
   "autoScroll": {
     "description": "Label for the auto-scroll button.",
@@ -83,10 +39,6 @@
     "description": "Label for Chinese fonts section.",
     "message": "Chinese Fonts"
   },
-  "clearChat": {
-    "description": "Label for the clear chat button in Agent UI.",
-    "message": "Clear chat"
-  },
   "close": {
     "description": "Close button label.",
     "message": "Close"
@@ -106,30 +58,6 @@
   "contentWidth": {
     "description": "Label for page width adjustment.",
     "message": "Content Width"
-  },
-  "contextArticleDesc": {
-    "description": "Description for article context",
-    "message": "Use the entire article as context"
-  },
-  "contextScreenDesc": {
-    "description": "Description for screen context",
-    "message": "Only use currently visible content"
-  },
-  "contextSelectionDesc": {
-    "description": "Description for selection context",
-    "message": "Use selected text as context"
-  },
-  "contextTypeArticle": {
-    "description": "Label for article context type",
-    "message": "Article"
-  },
-  "contextTypeScreen": {
-    "description": "Label for screen context type",
-    "message": "Screen"
-  },
-  "contextTypeSelection": {
-    "description": "Label for selection context type",
-    "message": "Selection"
   },
   "copied": {
     "description": "Label shown after text has been copied.",
@@ -187,10 +115,6 @@
     "description": "Label for downloading article as Markdown.",
     "message": "Download"
   },
-  "emptyStateDescription": {
-    "description": "Description for empty state",
-    "message": "Select a context mode and ask any question to start the conversation."
-  },
   "english": {
     "description": "English language name.",
     "message": "English"
@@ -206,10 +130,6 @@
   "errorOccurred": {
     "description": "Text shown when an error occurs",
     "message": "An error occurred"
-  },
-  "explainSelection": {
-    "description": "Default query for selected text",
-    "message": "Explain this selection"
   },
   "extensionDescription": {
     "description": "Description of the extension.",
@@ -315,57 +235,17 @@
     "description": "Message shown when content is loading.",
     "message": "Loading..."
   },
-  "login": {
-    "description": "Label for the login button.",
-    "message": "Log in"
-  },
-  "loginButton": {
-    "description": "Label for the login button in the login UI.",
-    "message": "Log In"
-  },
-  "loginMessage": {
-    "description": "Message explaining why login is required.",
-    "message": "Please log in to use the AI assistant feature. Login is free and helps us prevent abuse."
-  },
-  "loginRequired": {
-    "description": "Title for the login required message.",
-    "message": "Login Required"
-  },
-  "loginSafe": {
-    "description": "Message indicating login is safe",
-    "message": "Safe login, no privacy concerns"
-  },
-  "minimize": {
-    "description": "Text for minimize/close button",
-    "message": "Close"
-  },
-  "modelSelectorTitle": {
-    "description": "Title for model selector",
-    "message": "Select AI Model"
-  },
   "narrow": {
     "description": "Narrow width option.",
     "message": "Narrow"
-  },
-  "noModelsAvailable": {
-    "description": "Text when no models are available",
-    "message": "No models available"
   },
   "normal": {
     "description": "Normal line spacing option.",
     "message": "Normal"
   },
-  "note": {
-    "description": "Label for the note button in selection toolbar.",
-    "message": "Note"
-  },
   "paper": {
     "description": "Paper theme option.",
     "message": "Paper"
-  },
-  "query": {
-    "description": "Label for the query button in selection toolbar.",
-    "message": "Query"
   },
   "readingTheme": {
     "description": "Label for the reading theme selection.",
@@ -407,37 +287,17 @@
     "description": "Label for color select button.",
     "message": "Select"
   },
-  "selectedText": {
-    "description": "Label for selected text reference block",
-    "message": "Selected Text"
-  },
   "selectHighlightColor": {
     "description": "Label for the highlight color picker dialog.",
     "message": "Select highlight color"
-  },
-  "selectModel": {
-    "description": "Label for the model selector in Agent UI.",
-    "message": "Select Model"
   },
   "settings": {
     "description": "Label for the settings button/panel.",
     "message": "Settings"
   },
-  "share": {
-    "description": "Label for the share button in selection toolbar.",
-    "message": "Share"
-  },
   "standard": {
     "description": "Standard width option.",
     "message": "Standard"
-  },
-  "startConversation": {
-    "description": "Text shown when no messages exist",
-    "message": "Start a new conversation"
-  },
-  "summarize": {
-    "description": "Action label in AI panel to summarize.",
-    "message": "Summarize article"
   },
   "system": {
     "description": "System font option.",
@@ -455,10 +315,6 @@
     "description": "Label for theme button.",
     "message": "Theme"
   },
-  "thinking": {
-    "description": "Label shown while the AI is thinking.",
-    "message": "Thinking..."
-  },
   "tight": {
     "description": "Tight line spacing option.",
     "message": "Tight"
@@ -471,24 +327,12 @@
     "description": "Label for UI color setting.",
     "message": "UI"
   },
-  "welcomeMessage": {
-    "description": "Initial welcome message shown in Agent UI.",
-    "message": "I'm here to help you understand what's currently visible on your screen. As you scroll, my context updates to focus on what you're reading now."
-  },
   "wide": {
     "description": "Wide width option.",
     "message": "Wide"
   },
-  "quickSummary": {
-    "description": "Label for the quick summary button/feature.",
-    "message": "Quick Summary"
-  },
-  "generatingSummary": {
-    "description": "Text shown when generating a summary.",
-    "message": "Generating summary..."
-  },
-  "noSummaryAvailable": {
-    "description": "Text shown when no summary is available.",
-    "message": "No summary available."
+  "returnToPage": {
+    "description": "Button to return to the original page.",
+    "message": "Return to page"
   }
 }

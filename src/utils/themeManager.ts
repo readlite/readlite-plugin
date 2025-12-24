@@ -105,7 +105,6 @@ export function applyThemeGlobally(theme: ThemeType, customTheme?: string): void
                 primary: customThemeObj.bgPrimary,
                 secondary: customThemeObj.bgPrimary, // Assuming secondary backgrounds match primary for simplicity
                 tertiary: customThemeObj.bgPrimary,
-                agent: customThemeObj.bgPrimary,
                 user: customThemeObj.bgPrimary,
                 input: customThemeObj.bgPrimary,
             })
@@ -116,7 +115,6 @@ export function applyThemeGlobally(theme: ThemeType, customTheme?: string): void
                 primary: customThemeObj.textPrimary,
                 secondary: customThemeObj.textPrimary, // Assuming secondary text matches primary
                 user: customThemeObj.textPrimary,
-                agent: customThemeObj.textPrimary,
             })
           },
           ...(customThemeObj.accent && { 
@@ -156,7 +154,6 @@ export function applyThemeGlobally(theme: ThemeType, customTheme?: string): void
        element.style.backgroundColor = colors.bg.primary;
        element.style.color = colors.text.primary;
     }
-    // Note: CSS Variables are applied separately to the documentElement
   };
 
   // --- 2. Apply CSS Variables Globally (within the iframe) --- 
@@ -173,93 +170,59 @@ export function applyThemeGlobally(theme: ThemeType, customTheme?: string): void
     applyToElement(readerRootElement, themeColors, true);
   } else {
     logger.warn('#readlite-root element not found in the document for theme application.');
-    // 不再应用全局样式到 body
   }
   
-  // --- 4. Apply necessary classes/attributes to html/body (optional, if needed for specific global styles) ---
-  // We generally want to avoid styling html/body directly now.
-  // Remove previous theme classes from html/body
+  // --- 4. Apply necessary classes/attributes to html/body ---
   AVAILABLE_THEMES.forEach(t => {
     targetDoc.documentElement.classList.remove(t);
     targetDoc.body.classList.remove(t);
   });
-  // Add current theme class to html/body if absolutely needed by some CSS rules?
-  // targetDoc.documentElement.classList.add(theme);
-  // targetDoc.body.classList.add(theme);
-  // Set data-theme attribute on html/body if absolutely needed?
-  // targetDoc.documentElement.setAttribute('data-theme', theme);
-  // targetDoc.body.setAttribute('data-theme', theme);
 
   // Remove transition class after a delay
   setTimeout(() => {
     targetDoc.documentElement.classList.remove('theme-transition');
   }, 300); // Match CSS transition duration
-
-  /* // REMOVED: Shadow DOM logic ... */
-  /* // REMOVED: Iframe logic ... */
 }
 
 /**
  * Apply all CSS variables to a style declaration
  */
 function applyCSSVariables(style: CSSStyleDeclaration, colors: any): void {
-  // Log for debugging
-  // logger.info(`Applying CSS variables with colors:`, colors); // Can be noisy
-  
   try {
     // Background color series
     style.setProperty('--readlite-bg-primary', colors.bg.primary);
     style.setProperty('--readlite-bg-secondary', colors.bg.secondary);
     style.setProperty('--readlite-bg-tertiary', colors.bg.tertiary);
     style.setProperty('--readlite-bg-user', colors.bg.user);
-    style.setProperty('--readlite-bg-agent', colors.bg.agent);
     style.setProperty('--readlite-bg-input', colors.bg.input);
     
     // Readlite prefixed variables (for backward compatibility)
     style.setProperty('--readlite-background', colors.bg.primary);
     style.setProperty('--readlite-message-bg', colors.bg.secondary);
     style.setProperty('--readlite-user-bubble', colors.bg.user);
-    style.setProperty('--readlite-agent-bubble', colors.bg.agent);
     style.setProperty('--readlite-input-bg', colors.bg.input);
     
     // Text color series
     style.setProperty('--readlite-text-primary', colors.text.primary);
     style.setProperty('--readlite-text-secondary', colors.text.secondary);
     style.setProperty('--readlite-text-user', colors.text.user);
-    style.setProperty('--readlite-text-agent', colors.text.agent);
     style.setProperty('--readlite-text-accent', colors.text.accent);
     
     // Readlite prefixed text variables
     style.setProperty('--readlite-text', colors.text.primary);
     style.setProperty('--readlite-text-user', colors.text.user);
-    style.setProperty('--readlite-text-agent', colors.text.agent);
     style.setProperty('--readlite-text-secondary', colors.text.secondary);
     
     // Border and accent colors
-    style.setProperty('--readlite-border', colors.border);
-    style.setProperty('--readlite-accent', colors.accent);
-    style.setProperty('--readlite-error', colors.error);
-    
-    // Readlite prefixed border/accent variables
-    style.setProperty('--readlite-border', colors.border);
-    style.setProperty('--readlite-accent', colors.accent);
-    style.setProperty('--readlite-error', colors.error);
-    
-    // Scrollbar
-    style.setProperty('--readlite-scrollbar-track', colors.scrollbar.track);
-    style.setProperty('--readlite-scrollbar-thumb', colors.scrollbar.thumb);
-    
-    // Readlite prefixed scrollbar variables
-    style.setProperty('--readlite-scrollbar', colors.scrollbar.track);
-    style.setProperty('--readlite-scrollbar-hover', colors.scrollbar.thumb);
+    style.setProperty('--readlite-border', colors.ui.border);
+    style.setProperty('--readlite-accent', colors.ui.accent);
+    style.setProperty('--readlite-error', colors.ui.error);
     
     // Link colors
-    style.setProperty('--readlite-link', colors.link.normal);
-    style.setProperty('--readlite-link-visited', colors.link.visited);
-    style.setProperty('--readlite-link-hover', colors.link.hover);
-    style.setProperty('--readlite-link-active', colors.link.active);
-    
-    // logger.info('CSS variables applied successfully to style declaration');
+    if (colors.link) {
+      style.setProperty('--readlite-link', colors.link.normal);
+      style.setProperty('--readlite-link-hover', colors.link.hover);
+    }
   } catch (e) {
     logger.error('Error applying CSS variables:', e);
   }
@@ -281,17 +244,9 @@ export function generateThemeStyleContent(theme: ThemeType): string {
     /* Container elements */
     html.${theme} .readlite-reader-container, 
     body.${theme} .readlite-reader-container,
-    html.${theme} .readlite-reader-container,
-    body.${theme} .readlite-reader-container,
     html.${theme} #readlite-root,
     body.${theme} #readlite-root {
       background-color: var(--readlite-bg-primary) !important;
-      color: var(--readlite-text-primary) !important;
-    }
-    
-    /* Markdown content */
-    html.${theme} .readlite-agent-markdown-content *,
-    body.${theme} .readlite-agent-markdown-content * {
       color: var(--readlite-text-primary) !important;
     }
     
@@ -301,19 +256,9 @@ export function generateThemeStyleContent(theme: ThemeType): string {
       color: var(--readlite-link) !important;
     }
     
-    html.${theme} a:visited,
-    body.${theme} a:visited {
-      color: var(--readlite-link-visited) !important;
-    }
-    
     html.${theme} a:hover,
     body.${theme} a:hover {
       color: var(--readlite-link-hover) !important;
-    }
-    
-    html.${theme} a:active,
-    body.${theme} a:active {
-      color: var(--readlite-link-active) !important;
     }
     
     /* Scrollbar styles */
@@ -385,4 +330,4 @@ export function setupThemeChangeListener(doc: Document, callback?: (theme: Theme
   
   // Return cleanup function
   return () => window.removeEventListener('storage', storageListener);
-} 
+}

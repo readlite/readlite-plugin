@@ -2,9 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { HighlightColor } from '../../hooks/useTextSelection';
 import { useTheme } from '../../context/ThemeContext';
 import { useI18n } from '../../context/I18nContext';
-import { PencilIcon, DocumentTextIcon, SparklesIcon, XMarkIcon, ClipboardDocumentIcon, CheckIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, DocumentTextIcon, XMarkIcon, ClipboardDocumentIcon, CheckIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { createLogger } from '~/utils/logger';
-import { isAuthenticated } from '../../services/auth';
 
 // Create a logger for this module
 const logger = createLogger('selection-toolbar');
@@ -21,9 +20,7 @@ interface TextSelectionToolbarProps {
   onClose: () => void;
   highlightElement?: Element | VirtualHighlightElement | null;
   onRemoveHighlight?: (element: Element | VirtualHighlightElement) => void;
-  onAskAI?: (selectedText: string) => void;
   onCopy?: () => Promise<void> | void;
-  onOpenAgent?: () => void;
 }
 
 // Define a more extensive type for highlight colors with proper names
@@ -41,9 +38,7 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
   onClose,
   highlightElement,
   onRemoveHighlight,
-  onAskAI,
-  onCopy,
-  onOpenAgent
+  onCopy
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -276,21 +271,6 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
     }
   };
 
-  // Handle asking AI with selected text
-  const handleAskAI = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (onAskAI) {
-      // Just call the callback - parent component handles selection
-      onAskAI("");
-      onClose();
-    } else {
-      // Fallback if handler isn't provided
-      alert(t('comingSoon'));
-    }
-  };
-
   return (
     <div 
       ref={toolbarRef}
@@ -358,16 +338,6 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
               label={t('addNote')}
               isDark={theme === 'dark'}
               width={isChinese ? 48 : 56}
-            />
-            
-            {/* 4. AI ASSISTANT BUTTON */}
-            <ToolbarButton
-              onMouseDown={handleAskAI}
-              icon={<SparklesIcon className="w-5 h-5" />}
-              label={t('askAI')}
-              isDark={theme === 'dark'}
-              width={isChinese ? 48 : 56}
-              specialColor="accent"
             />
 
             {/* 6. CLOSE BUTTON - at the end */}
@@ -495,4 +465,4 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   );
 };
 
-export default SelectionToolbar; 
+export default SelectionToolbar;

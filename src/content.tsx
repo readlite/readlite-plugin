@@ -4,7 +4,6 @@ import { ReaderProvider } from "./context/ReaderContext"
 import { I18nProvider } from "./context/I18nContext"
 
 import Reader from "./components/reader/Reader"
-import { setupAuthListener } from "./services/auth"
 import { createRoot } from 'react-dom/client'
 import { createLogger } from "./utils/logger"
 import { AVAILABLE_THEMES, ThemeType, themeTokens } from "./config/theme"
@@ -100,40 +99,6 @@ function syncThemeToIframe(theme: ThemeType) {
     isolatorLogger.error("Failed to dispatch theme changed event", error);
   }
 }
-
-// StyleIsolator maintained for AgentUI component support
-// Now it uses the iframe body as a mount point instead of creating a Shadow DOM
-export const StyleIsolator: React.FC<{ 
-  children: React.ReactNode; 
-  className?: string;
-  fitContent?: boolean;
-  theme?: ThemeType;
-}> = ({ 
-  children, 
-  className = 'readlite-root',
-  fitContent = false,
-  theme = 'light'
-}) => {
-  // Apply theme whenever it changes
-  useEffect(() => {
-    if (iframeElement && iframeElement.contentDocument) {
-      // Use the sync function to apply the theme to the iframe
-      syncThemeToIframe(theme);
-      
-      // Log theme changes for tracking
-      isolatorLogger.info(`StyleIsolator: theme changed to ${theme}`);
-    }
-  }, [theme]);
-  
-  // If iframe already exists, return children directly
-  if (iframeElement && iframeElement.contentDocument) {
-    return <>{children}</>;
-  }
-  
-  // If iframe doesn't exist yet, return an empty div
-  isolatorLogger.warn("StyleIsolator called but iframe does not exist");
-  return <div className={className}>{children}</div>;
-};
 
 /**
  * Content Script UI Component
@@ -235,8 +200,6 @@ const ContentScriptUI = () => {
     contentLogger.info("Reader mode hidden");
   }
 
-  // Split the effect into multiple effects with specific responsibilities
-  
   // 1. Effect for toggle event listener
   useEffect(() => {
     const handleInternalToggleEvent = () => {
@@ -293,18 +256,7 @@ const ContentScriptUI = () => {
     };
   }, [isActive]);
   
-  // 3. Effect for authentication setup - run once and never clean up
-  useEffect(() => {
-    // Set up authentication listener for tokens from ReadLite web app
-    try {
-      setupAuthListener();
-      uiLogger.info("Authentication listener setup complete");
-    } catch (error) {
-      uiLogger.error("Failed to set up authentication listener:", error);
-    }
-  }, []);
-  
-  // 4. Effect for initial setup and content script ready notification
+  // 3. Effect for initial setup and content script ready notification
   useEffect(() => {
     // Notify background script that content script is ready
     uiLogger.info("Sending CONTENT_SCRIPT_READY message.");
@@ -665,20 +617,15 @@ function removeIframe() {
 }
 
 // Custom getRootContainer function to provide entry point for Plasmo
-// Note: We don't directly use this method to create the iframe, but in ContentScriptUI component
 export const getRootContainer = () => {
-  // This function is called by Plasmo, but we don't actually use it to create the container
-  // Instead, we return null so Plasmo won't try to render content
-  // Our rendering logic is completely handled in the ContentScriptUI component
   return null;
 }
 
-// Custom render function where we decide not to use Plasmo's default rendering mechanism
+// Custom render function
 export const render = async ({ 
   anchor, 
   createRootContainer 
 }: PlasmoRenderArgs) => {
-  // Initialize communication but don't render UI until explicitly requested
   contentLogger.info('[Content Script] ReadLite content script initialized, waiting for activation');
   
   try {

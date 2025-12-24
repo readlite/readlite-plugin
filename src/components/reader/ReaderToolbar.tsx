@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { 
-  ChatBubbleLeftRightIcon, 
   ArrowDownTrayIcon, 
   Cog6ToothIcon, 
   XMarkIcon,
@@ -10,9 +9,6 @@ import {
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
 
 interface ReaderToolbarProps {
-  showAgent: boolean;
-  leftPanelWidth: number;
-  toggleAgent: () => void;
   handleMarkdownDownload: () => void;
   toggleSettings: () => void;
   handleClose: () => void;
@@ -30,9 +26,6 @@ interface ReaderToolbarProps {
  * Toolbar component with control buttons for the reader
  */
 const ReaderToolbar: React.FC<ReaderToolbarProps> = ({
-  showAgent,
-  leftPanelWidth,
-  toggleAgent,
   handleMarkdownDownload,
   toggleSettings,
   handleClose,
@@ -45,41 +38,15 @@ const ReaderToolbar: React.FC<ReaderToolbarProps> = ({
   isAutoScrolling = false,
   toggleAutoScroll,
 }) => {
-  // Calculate right position based on panel width
-  const rightPosition = showAgent ? `calc(${100 - leftPanelWidth}% + 20px)` : '20px';
-  
-  // Track previous showAgent state to handle animation properly
-  const [isAnimating, setIsAnimating] = React.useState(false);
-  const prevShowAgentRef = React.useRef(showAgent);
-  
-  // Handle animation when Agent panel is toggled
-  useEffect(() => {
-    if (prevShowAgentRef.current !== showAgent) {
-      setIsAnimating(true);
-      const timer = setTimeout(() => {
-        setIsAnimating(false);
-      }, 200); // Match this with the Agent panel's animation duration
-      
-      prevShowAgentRef.current = showAgent;
-      return () => clearTimeout(timer);
-    }
-  }, [showAgent]);
+  // Calculate right position
+  const rightPosition = '20px';
   
   return (
     <div
       className={`fixed top-5 flex gap-2 p-2 z-[2000] bg-primary rounded-md shadow-lg backdrop-blur-md
-        ${isDragging || isAnimating ? '' : 'transition-all duration-200 ease-out'}`}
+        ${isDragging ? '' : 'transition-all duration-200 ease-out'}`}
       style={{ right: rightPosition }}
     >
-
-      {/* Agent Button */}
-      <ToolbarButton 
-        onClick={toggleAgent}
-        title={t('agent')}
-        isActive={showAgent}
-      >
-        <ChatBubbleLeftRightIcon className="w-5 h-5" />
-      </ToolbarButton>
       
       {/* Auto Scroll Button */}
       <ToolbarButton
