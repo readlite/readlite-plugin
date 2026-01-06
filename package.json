@@ -43,7 +43,7 @@
     "dompurify": "^3.2.4",
     "franc-min": "^6.2.0",
     "html2canvas": "^1.4.1",
-    "marked": "^15.0.7",
+    "marked": "^17.0.1",
     "plasmo": "0.90.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
