@@ -1,15 +1,16 @@
 import React, { useEffect } from "react";
 import { FontOption, fontOptions } from "../../../config/ui";
 import { LanguageCode } from "../../../utils/language";
+import { ReaderSettings } from "../../../types/reader";
 
 interface FontFamilySectionProps {
   sectionClassName: string;
   titleClassName: string;
-  settings: any;
+  settings: ReaderSettings;
   t: (key: string) => string;
   uiLanguage: LanguageCode;
   detectedLanguage: LanguageCode | null;
-  updateSettings: (settings: any) => void;
+  updateSettings: (settings: Partial<ReaderSettings>) => void;
 }
 
 /**
