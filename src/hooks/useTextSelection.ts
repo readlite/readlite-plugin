@@ -135,12 +135,9 @@ export const useTextSelection = (
   );
 
   // Remove highlight from text
-  const removeHighlight = useCallback(
-    (element: Element): boolean => {
-      return highlightService.removeHighlight(element);
-    },
-    [],
-  );
+  const removeHighlight = useCallback((element: Element): boolean => {
+    return highlightService.removeHighlight(element);
+  }, []);
 
   // Update note on an existing highlight
   const updateHighlightNote = useCallback(
@@ -184,7 +181,7 @@ export const useTextSelection = (
       try {
         const target = e.target as Element;
         const highlightElement = target.closest(".readlite-highlight");
-        
+
         if (!highlightElement) return;
 
         const rect = highlightElement.getBoundingClientRect();

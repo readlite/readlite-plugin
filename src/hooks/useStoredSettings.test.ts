@@ -224,7 +224,7 @@ describe("useStoredSettings", () => {
       });
 
       expect(localStorage.getItem("readlite-custom-theme")).toBe(
-        "my-custom-theme-data"
+        "my-custom-theme-data",
       );
     });
 
@@ -287,7 +287,9 @@ describe("useStoredSettings", () => {
 
       for (const theme of themes) {
         await act(async () => {
-          await result.current.updateSettings({ theme: theme as "light" | "dark" | "sepia" | "custom" });
+          await result.current.updateSettings({
+            theme: theme as "light" | "dark" | "sepia" | "custom",
+          });
         });
         expect(result.current.settings.theme).toBe(theme);
       }
@@ -303,7 +305,9 @@ describe("useStoredSettings", () => {
 
       for (const font of fonts) {
         await act(async () => {
-          await result.current.updateSettings({ fontFamily: font as "system" | "serif" | "sans-serif" | "monospace" });
+          await result.current.updateSettings({
+            fontFamily: font as "system" | "serif" | "sans-serif" | "monospace",
+          });
         });
         expect(result.current.settings.fontFamily).toBe(font);
       }

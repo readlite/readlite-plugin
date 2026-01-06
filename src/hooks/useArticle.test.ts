@@ -23,7 +23,9 @@ jest.mock("~/utils/logger", () => ({
 
 import { parseArticle } from "../utils/parser";
 
-const mockParseArticle = parseArticle as jest.MockedFunction<typeof parseArticle>;
+const mockParseArticle = parseArticle as jest.MockedFunction<
+  typeof parseArticle
+>;
 
 describe("useArticle", () => {
   beforeEach(() => {

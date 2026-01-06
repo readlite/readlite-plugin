@@ -203,7 +203,12 @@ class DomManipulationStrategy implements HighlightStrategy {
         range.startContainer === range.endContainer &&
         range.startContainer.nodeType === Node.TEXT_NODE
       ) {
-        const highlightSpan = createHighlightSpan(doc, color, highlightId, note);
+        const highlightSpan = createHighlightSpan(
+          doc,
+          color,
+          highlightId,
+          note,
+        );
         range.surroundContents(highlightSpan);
 
         saveHighlightToStorage(
@@ -238,7 +243,12 @@ class DomManipulationStrategy implements HighlightStrategy {
         );
 
         if (nodeRange.toString().trim()) {
-          const spanForNode = createHighlightSpan(doc, color, highlightId, note);
+          const spanForNode = createHighlightSpan(
+            doc,
+            color,
+            highlightId,
+            note,
+          );
           try {
             const content = nodeRange.extractContents();
             spanForNode.appendChild(content);
@@ -249,7 +259,13 @@ class DomManipulationStrategy implements HighlightStrategy {
         }
       });
 
-      saveHighlightToStorage(highlightId, firstNode, highlightText, color, note);
+      saveHighlightToStorage(
+        highlightId,
+        firstNode,
+        highlightText,
+        color,
+        note,
+      );
       return true;
     } catch (error) {
       logger.error(`${this.name} strategy failed:`, error);
@@ -291,10 +307,7 @@ class TextNodeStrategy implements HighlightStrategy {
         if (index === 0 && textNode === range.startContainer) {
           startOffset = range.startOffset;
         }
-        if (
-          index === textNodes.length - 1 &&
-          textNode === range.endContainer
-        ) {
+        if (index === textNodes.length - 1 && textNode === range.endContainer) {
           endOffset = range.endOffset;
         }
 
@@ -315,7 +328,12 @@ class TextNodeStrategy implements HighlightStrategy {
             textNode.parentNode?.insertBefore(beforeNode, textNode);
           }
 
-          const highlightSpan = createHighlightSpan(doc, color, highlightId, note);
+          const highlightSpan = createHighlightSpan(
+            doc,
+            color,
+            highlightId,
+            note,
+          );
           highlightSpan.textContent = text;
           textNode.parentNode?.insertBefore(highlightSpan, textNode);
 
@@ -331,7 +349,13 @@ class TextNodeStrategy implements HighlightStrategy {
         }
       });
 
-      saveHighlightToStorage(highlightId, firstNode, highlightText, color, note);
+      saveHighlightToStorage(
+        highlightId,
+        firstNode,
+        highlightText,
+        color,
+        note,
+      );
       return true;
     } catch (error) {
       logger.error(`${this.name} strategy failed:`, error);
@@ -384,7 +408,10 @@ class ExecCommandStrategy implements HighlightStrategy {
 
         if (highlightedElements.length > 0) {
           highlightedElements.forEach((el) => {
-            el.classList.add("readlite-highlight", `readlite-highlight-${color}`);
+            el.classList.add(
+              "readlite-highlight",
+              `readlite-highlight-${color}`,
+            );
             el.setAttribute("data-highlight-color", color);
             el.setAttribute("data-highlight-id", highlightId);
             if (note) {

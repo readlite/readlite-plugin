@@ -47,7 +47,7 @@ describe("I18nContext", () => {
       render(
         <I18nProvider>
           <TestComponent />
-        </I18nProvider>
+        </I18nProvider>,
       );
 
       expect(screen.getByTestId("translation")).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe("I18nContext", () => {
       render(
         <I18nProvider>
           <TestComponent />
-        </I18nProvider>
+        </I18nProvider>,
       );
 
       const languageEl = screen.getByTestId("language");
@@ -94,7 +94,7 @@ describe("I18nContext", () => {
       render(
         <I18nProvider>
           <TestComponent />
-        </I18nProvider>
+        </I18nProvider>,
       );
 
       const element = screen.getByTestId("missing");
@@ -122,7 +122,7 @@ describe("ThemeContext", () => {
       render(
         <ThemeProvider>
           <TestComponent />
-        </ThemeProvider>
+        </ThemeProvider>,
       );
 
       expect(screen.getByTestId("theme")).toBeInTheDocument();
@@ -141,7 +141,7 @@ describe("ThemeContext", () => {
       render(
         <ThemeProvider>
           <TestComponent />
-        </ThemeProvider>
+        </ThemeProvider>,
       );
 
       expect(screen.getByTestId("btn")).toBeInTheDocument();
@@ -156,7 +156,7 @@ describe("ThemeContext", () => {
       render(
         <ThemeProvider>
           <TestComponent />
-        </ThemeProvider>
+        </ThemeProvider>,
       );
 
       // Default should be light (or system preference)
@@ -182,7 +182,7 @@ describe("ThemeContext", () => {
       render(
         <ThemeProvider>
           <TestComponent />
-        </ThemeProvider>
+        </ThemeProvider>,
       );
 
       const button = screen.getByTestId("switch");
@@ -217,7 +217,7 @@ describe("ThemeContext", () => {
       render(
         <ThemeProvider>
           <TestComponent />
-        </ThemeProvider>
+        </ThemeProvider>,
       );
 
       // Test each theme independently
@@ -264,7 +264,7 @@ describe("Context Integration", () => {
         <ThemeProvider>
           <TestComponent />
         </ThemeProvider>
-      </I18nProvider>
+      </I18nProvider>,
     );
 
     expect(screen.getByTestId("combined")).toBeInTheDocument();
@@ -290,7 +290,7 @@ describe("Context Integration", () => {
         <ThemeProvider>
           <TestComponent />
         </ThemeProvider>
-      </I18nProvider>
+      </I18nProvider>,
     );
 
     const originalLanguage = screen.getByTestId("language").textContent;
@@ -318,7 +318,7 @@ describe("Context Error Boundaries", () => {
     render(
       <I18nProvider>
         <TestComponent />
-      </I18nProvider>
+      </I18nProvider>,
     );
 
     // Should render without crashing

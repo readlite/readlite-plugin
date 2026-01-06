@@ -345,7 +345,10 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
     /**
      * Apply link styles with proper event listener management
      */
-    const applyLinkStyles = (contentElement: HTMLElement, colors: ThemeColors) => {
+    const applyLinkStyles = (
+      contentElement: HTMLElement,
+      colors: ThemeColors,
+    ) => {
       const links = contentElement.querySelectorAll("a");
       const mouseEnterListeners: Array<{
         element: HTMLElement;

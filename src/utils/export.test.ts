@@ -21,9 +21,9 @@ describe("Export Utils", () => {
     const mockTimestamp = new Date("2024-01-15T10:30:45.000Z").getTime();
 
     beforeEach(() => {
-      jest.spyOn(Date.prototype, "toISOString").mockReturnValue(
-        "2024-01-15T10:30:45.000Z"
-      );
+      jest
+        .spyOn(Date.prototype, "toISOString")
+        .mockReturnValue("2024-01-15T10:30:45.000Z");
     });
 
     afterEach(() => {
@@ -54,7 +54,11 @@ describe("Export Utils", () => {
       const longTitle = "A".repeat(150);
       const filename = generateFilename(longTitle, "md");
       // Should be truncated title + underscore + timestamp + extension
-      const baseName = filename.replace(/\.md$/, "").split("_").slice(0, -1).join("_");
+      const baseName = filename
+        .replace(/\.md$/, "")
+        .split("_")
+        .slice(0, -1)
+        .join("_");
       expect(baseName.length).toBeLessThanOrEqual(100);
     });
 
@@ -194,8 +198,7 @@ describe("Export Utils", () => {
     });
 
     it("handles nested elements", () => {
-      const html =
-        "<p><strong><em>Bold and italic</em></strong></p>";
+      const html = "<p><strong><em>Bold and italic</em></strong></p>";
       const md = htmlToMarkdown(html);
       expect(md).toContain("***Bold and italic***");
     });

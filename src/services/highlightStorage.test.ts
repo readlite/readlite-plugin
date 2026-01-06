@@ -27,7 +27,7 @@ describe("HighlightStorage", () => {
 
   // Factory function to create test highlights
   const createTestHighlight = (
-    overrides: Partial<StoredHighlight> = {}
+    overrides: Partial<StoredHighlight> = {},
   ): StoredHighlight => ({
     id: `highlight-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     url: "https://example.com/article",
@@ -67,29 +67,31 @@ describe("HighlightStorage", () => {
   describe("getPageHighlights", () => {
     it("returns only highlights for the specified URL", async () => {
       await storage.saveHighlight(
-        createTestHighlight({ id: "h1", url: "https://example.com/page1" })
+        createTestHighlight({ id: "h1", url: "https://example.com/page1" }),
       );
       await storage.saveHighlight(
-        createTestHighlight({ id: "h2", url: "https://example.com/page2" })
+        createTestHighlight({ id: "h2", url: "https://example.com/page2" }),
       );
       await storage.saveHighlight(
-        createTestHighlight({ id: "h3", url: "https://example.com/page1" })
+        createTestHighlight({ id: "h3", url: "https://example.com/page1" }),
       );
 
       const page1Highlights = await storage.getPageHighlights(
-        "https://example.com/page1"
+        "https://example.com/page1",
       );
       expect(page1Highlights).toHaveLength(2);
-      expect(page1Highlights.every((h) => h.url === "https://example.com/page1")).toBe(true);
+      expect(
+        page1Highlights.every((h) => h.url === "https://example.com/page1"),
+      ).toBe(true);
     });
 
     it("returns empty array when no highlights match URL", async () => {
       await storage.saveHighlight(
-        createTestHighlight({ url: "https://example.com/page1" })
+        createTestHighlight({ url: "https://example.com/page1" }),
       );
 
       const result = await storage.getPageHighlights(
-        "https://example.com/other-page"
+        "https://example.com/other-page",
       );
       expect(result).toEqual([]);
     });
@@ -155,7 +157,11 @@ describe("HighlightStorage", () => {
   describe("updateHighlight", () => {
     it("updates an existing highlight", async () => {
       await storage.saveHighlight(
-        createTestHighlight({ id: "h1", text: "Original text", color: "beige" })
+        createTestHighlight({
+          id: "h1",
+          text: "Original text",
+          color: "beige",
+        }),
       );
 
       const result = await storage.updateHighlight("h1", {
@@ -172,7 +178,7 @@ describe("HighlightStorage", () => {
     it("sets updatedAt timestamp on update", async () => {
       const originalTime = Date.now() - 10000;
       await storage.saveHighlight(
-        createTestHighlight({ id: "h1", updatedAt: originalTime })
+        createTestHighlight({ id: "h1", updatedAt: originalTime }),
       );
 
       await storage.updateHighlight("h1", { note: "New note" });
@@ -240,7 +246,7 @@ describe("HighlightStorage", () => {
 
       const highlights = await storage.getAllHighlights();
       expect(highlights[0].text).toBe(
-        'Special chars: "quotes" & <tags> \n newlines'
+        'Special chars: "quotes" & <tags> \n newlines',
       );
     });
 

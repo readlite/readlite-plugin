@@ -51,9 +51,7 @@ describe("Logger Utils", () => {
       const logger = createLogger("my-module");
       logger.info("Test message");
 
-      expect(mockConsole.info).toHaveBeenCalledWith(
-        "[my-module] Test message"
-      );
+      expect(mockConsole.info).toHaveBeenCalledWith("[my-module] Test message");
     });
 
     it("passes additional arguments to console methods", () => {
@@ -66,7 +64,7 @@ describe("Logger Utils", () => {
       expect(mockConsole.info).toHaveBeenCalledWith(
         "[test] Message with data",
         extraData,
-        extraArray
+        extraArray,
       );
     });
   });
@@ -230,10 +228,10 @@ describe("Logger Utils", () => {
       logger2.info("Message from B");
 
       expect(mockConsole.info).toHaveBeenCalledWith(
-        "[module-a] Message from A"
+        "[module-a] Message from A",
       );
       expect(mockConsole.info).toHaveBeenCalledWith(
-        "[module-b] Message from B"
+        "[module-b] Message from B",
       );
     });
   });

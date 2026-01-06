@@ -71,13 +71,7 @@ const ReadingProgress: React.FC<{ scrollContainer?: HTMLElement | null }> = ({
  */
 const Reader = () => {
   // Get reader state from context
-  const {
-    article,
-    settings,
-    isLoading,
-    error,
-    loadArticle,
-  } = useReader();
+  const { article, settings, isLoading, error, loadArticle } = useReader();
 
   // Additional state for reader functionality
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -144,16 +138,18 @@ const Reader = () => {
     logger.info("Reader component mounted");
 
     // Check for Shadow DOM container
-    const shadowContainer = window.parent.document.getElementById("readlite-container");
+    const shadowContainer =
+      window.parent.document.getElementById("readlite-container");
     if (shadowContainer && shadowContainer.shadowRoot) {
-       logger.info("Reader Shadow DOM container found");
-       setIframeReady(true);
+      logger.info("Reader Shadow DOM container found");
+      setIframeReady(true);
     } else {
       logger.warn("Reader container not found on component mount");
 
       const checkInterval = setInterval(() => {
-        const checkShadow = window.parent.document.getElementById("readlite-container");
-        
+        const checkShadow =
+          window.parent.document.getElementById("readlite-container");
+
         if (checkShadow && checkShadow.shadowRoot) {
           logger.info("Reader container detected");
           setIframeReady(true);

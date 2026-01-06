@@ -78,7 +78,8 @@ class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <p className="text-text-secondary mb-4">
-              We encountered an unexpected error. Please try refreshing the page.
+              We encountered an unexpected error. Please try refreshing the
+              page.
             </p>
 
             {this.state.error && (
@@ -87,7 +88,9 @@ class ErrorBoundary extends Component<Props, State> {
                   Error details
                 </summary>
                 <div className="text-xs text-text-secondary bg-bg-tertiary p-3 rounded overflow-auto max-h-48">
-                  <p className="font-mono mb-2">{this.state.error.toString()}</p>
+                  <p className="font-mono mb-2">
+                    {this.state.error.toString()}
+                  </p>
                   {this.state.errorInfo && (
                     <pre className="whitespace-pre-wrap">
                       {this.state.errorInfo.componentStack}

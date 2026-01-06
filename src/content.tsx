@@ -7,10 +7,7 @@ import Reader from "./components/reader/Reader";
 import { createRoot, Root } from "react-dom/client";
 import { createLogger } from "./utils/logger";
 import { ThemeType } from "./config/theme";
-import {
-  getPreferredTheme,
-  applyThemeStyles,
-} from "./utils/themeManager";
+import { getPreferredTheme, applyThemeStyles } from "./utils/themeManager";
 
 // Create content-specific loggers
 const contentLogger = createLogger("content");
@@ -79,7 +76,7 @@ let readerContainer: HTMLElement | null = null;
 
 //   // Apply the theme styles
 //   applyThemeStyles(shadowRoot, theme);
-  
+
 //   // Update wrapper class
 //   const wrapper = shadowRoot.querySelector('.readlite-theme-wrapper');
 //   if (wrapper) {
@@ -321,14 +318,14 @@ function createReaderContainer() {
   const container = document.createElement("div");
   container.id = "readlite-container";
   container.style.display = "none"; // Initially hidden
-  
+
   // Add to document
   document.body.appendChild(container);
   isolatorLogger.info(`Created shadow host container`);
 
   // Attach Shadow DOM
   const shadow = container.attachShadow({ mode: "open" });
-  
+
   // Save global references
   readerContainer = container;
   // shadowRoot = shadow;
@@ -345,7 +342,7 @@ function setupShadowContent(shadow: ShadowRoot, theme: ThemeType) {
   const wrapper = document.createElement("div");
   wrapper.className = `readlite-theme-wrapper ${theme}`;
   wrapper.setAttribute("data-theme", theme);
-  
+
   // 2. Create React root node
   const rootDiv = document.createElement("div");
   rootDiv.id = "readlite-root";
@@ -360,14 +357,16 @@ function setupShadowContent(shadow: ShadowRoot, theme: ThemeType) {
   // 5. Add Tailwind CSS
   if (typeof chrome !== "undefined" && chrome.runtime) {
     const cssUrl = chrome.runtime.getURL("src/styles/tailwind.output.css");
-    
+
     fetch(cssUrl)
       .then((response) => response.text())
       .then((cssText) => {
         const style = document.createElement("style");
         style.textContent = cssText;
         shadow.appendChild(style);
-        isolatorLogger.info("Tailwind CSS loaded successfully in Shadow DOM (via fetch)");
+        isolatorLogger.info(
+          "Tailwind CSS loaded successfully in Shadow DOM (via fetch)",
+        );
 
         // Add additional fixes
         const fixesStyle = document.createElement("style");

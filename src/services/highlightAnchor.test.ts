@@ -27,7 +27,8 @@ describe("HighlightAnchor", () => {
   describe("createAnchorData", () => {
     it("creates anchor data with context before and after", () => {
       const container = document.createElement("div");
-      container.textContent = "This is some text with highlighted portion in the middle of it.";
+      container.textContent =
+        "This is some text with highlighted portion in the middle of it.";
       document.body.appendChild(container);
 
       const textNode = container.firstChild!;
@@ -69,7 +70,10 @@ describe("HighlightAnchor", () => {
       document.body.appendChild(container);
 
       const textNode = container.firstChild!;
-      const result = anchor.createAnchorData(textNode, "completely unique nonexistent xyz123");
+      const result = anchor.createAnchorData(
+        textNode,
+        "completely unique nonexistent xyz123",
+      );
 
       // Should return fallback values when text truly not found
       // The implementation may use partial matching, so just verify structure
@@ -127,7 +131,8 @@ describe("HighlightAnchor", () => {
   describe("createSelectorData", () => {
     it("creates W3C TextQuoteSelector data", () => {
       const container = document.createElement("div");
-      container.textContent = "This is the article content with important text here.";
+      container.textContent =
+        "This is the article content with important text here.";
       document.body.appendChild(container);
 
       const range = document.createRange();
@@ -207,7 +212,9 @@ describe("HighlightAnchor", () => {
 
       const span = container.querySelector("span")!;
       // Access private method through class instance
-      const path = (anchor as unknown as { getDomPath: (el: Element) => string[] }).getDomPath(span);
+      const path = (
+        anchor as unknown as { getDomPath: (el: Element) => string[] }
+      ).getDomPath(span);
 
       expect(Array.isArray(path)).toBe(true);
       expect(path.length).toBeGreaterThan(0);
@@ -232,7 +239,7 @@ describe("HighlightAnchor", () => {
         container,
         selector,
         "test-highlight-id",
-        "my-highlight-class"
+        "my-highlight-class",
       );
 
       expect(result).toBe(true);
@@ -255,7 +262,7 @@ describe("HighlightAnchor", () => {
       const result = anchor.applyHighlightWithSelector(
         container,
         selector,
-        "test-id"
+        "test-id",
       );
 
       expect(result).toBe(false);
@@ -277,7 +284,7 @@ describe("HighlightAnchor", () => {
       const result = anchor.applyHighlightWithSelector(
         container,
         selector,
-        "context-match-id"
+        "context-match-id",
       );
 
       expect(result).toBe(true);
@@ -296,7 +303,11 @@ describe("HighlightAnchor", () => {
         end: 21,
       };
 
-      anchor.applyHighlightWithSelector(container, selector, "default-class-test");
+      anchor.applyHighlightWithSelector(
+        container,
+        selector,
+        "default-class-test",
+      );
 
       expect(container.querySelector(".readlite-highlight")).toBeTruthy();
     });
@@ -315,7 +326,11 @@ describe("HighlightAnchor", () => {
         end: 8,
       };
 
-      const result = anchor.applyHighlightWithSelector(container, selector, "empty-test");
+      const result = anchor.applyHighlightWithSelector(
+        container,
+        selector,
+        "empty-test",
+      );
 
       expect(result).toBe(false);
     });
@@ -333,7 +348,11 @@ describe("HighlightAnchor", () => {
         end: 40,
       };
 
-      const result = anchor.applyHighlightWithSelector(container, selector, "regex-test");
+      const result = anchor.applyHighlightWithSelector(
+        container,
+        selector,
+        "regex-test",
+      );
 
       // Should handle regex special chars without error
       expect(typeof result).toBe("boolean");

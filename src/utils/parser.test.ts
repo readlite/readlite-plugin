@@ -169,8 +169,8 @@ describe("Parser Utils", () => {
       // External links should have target="_blank"
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = article?.content || "";
-      const externalLink = Array.from(tempDiv.querySelectorAll("a")).find(
-        (a) => a.href.includes("example.com")
+      const externalLink = Array.from(tempDiv.querySelectorAll("a")).find((a) =>
+        a.href.includes("example.com"),
       );
       expect(externalLink?.getAttribute("target")).toBe("_blank");
       expect(externalLink?.getAttribute("rel")).toContain("noopener");

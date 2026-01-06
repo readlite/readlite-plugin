@@ -3,7 +3,12 @@
  * Responsible for theme loading, saving, and application
  */
 
-import { ThemeType, AVAILABLE_THEMES, themeTokens, ThemeColors } from "../config/theme";
+import {
+  ThemeType,
+  AVAILABLE_THEMES,
+  themeTokens,
+  ThemeColors,
+} from "../config/theme";
 import { createLogger } from "./logger";
 
 const logger = createLogger("theme-manager");
@@ -60,7 +65,9 @@ function getTargetContext(): Document | ShadowRoot {
   }
 
   // 2. Fallback to main document with warning
-  logger.warn("Shadow Root not found, using main document for theme application");
+  logger.warn(
+    "Shadow Root not found, using main document for theme application",
+  );
   return document;
 }
 
@@ -181,18 +188,21 @@ export function applyThemeGlobally(
     targetContext.documentElement.classList.add("theme-transition");
   } else {
     // ShadowRoot
-    const wrapper = targetContext.querySelector('.readlite-theme-wrapper') as HTMLElement;
+    const wrapper = targetContext.querySelector(
+      ".readlite-theme-wrapper",
+    ) as HTMLElement;
     if (wrapper) {
       applyCSSVariables(wrapper.style, themeColors);
     }
     // Also apply to host for inheritance
     if (targetContext.host instanceof HTMLElement) {
-       applyCSSVariables(targetContext.host.style, themeColors);
+      applyCSSVariables(targetContext.host.style, themeColors);
     }
   }
 
   // --- 3. Apply Theme Attributes/Classes to the main App Container ---
-  const readerRootElement = rootElement || targetContext.getElementById("readlite-root");
+  const readerRootElement =
+    rootElement || targetContext.getElementById("readlite-root");
   if (readerRootElement) {
     // Apply theme class, data-attribute, and direct styles ONLY to the root container
     applyToElement(readerRootElement, themeColors, true);
@@ -214,19 +224,22 @@ export function applyThemeGlobally(
       targetContext.documentElement.classList.remove("theme-transition");
     }, 300); // Match CSS transition duration
   } else {
-     // For Shadow DOM, update wrapper classes
-     const wrapper = targetContext.querySelector('.readlite-theme-wrapper');
-     if (wrapper) {
-        AVAILABLE_THEMES.forEach((t) => wrapper.classList.remove(t));
-        wrapper.classList.add(theme);
-     }
+    // For Shadow DOM, update wrapper classes
+    const wrapper = targetContext.querySelector(".readlite-theme-wrapper");
+    if (wrapper) {
+      AVAILABLE_THEMES.forEach((t) => wrapper.classList.remove(t));
+      wrapper.classList.add(theme);
+    }
   }
 }
 
 /**
  * Apply all CSS variables to a style declaration
  */
-function applyCSSVariables(style: CSSStyleDeclaration, colors: ThemeColors): void {
+function applyCSSVariables(
+  style: CSSStyleDeclaration,
+  colors: ThemeColors,
+): void {
   try {
     // Background color series
     style.setProperty("--readlite-bg-primary", colors.bg.primary);
@@ -361,7 +374,10 @@ export function generateThemeStyleContent(theme: ThemeType): string {
 /**
  * Apply theme styles to Document or ShadowRoot
  */
-export function applyThemeStyles(target: Document | ShadowRoot, theme: ThemeType): void {
+export function applyThemeStyles(
+  target: Document | ShadowRoot,
+  theme: ThemeType,
+): void {
   const styleContent = generateThemeStyleContent(theme);
   const styleId = "readlite-theme-dynamic-styles";
 
@@ -372,7 +388,7 @@ export function applyThemeStyles(target: Document | ShadowRoot, theme: ThemeType
     // Create new style tag
     styleElement = document.createElement("style");
     styleElement.id = styleId;
-    
+
     if (target instanceof Document) {
       target.head.appendChild(styleElement);
     } else {

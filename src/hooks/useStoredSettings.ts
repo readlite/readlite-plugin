@@ -126,7 +126,7 @@ export const useStoredSettings = () => {
         // Save to storage asynchronously using Plasmo API
         try {
           await getStorage().set(SETTINGS_KEY, updated);
-          
+
           // Verify customTheme was saved if present
           if ("customTheme" in updated && updated.theme === "custom") {
             // Double-check customTheme is in localStorage too
@@ -144,10 +144,7 @@ export const useStoredSettings = () => {
                 );
               }
             } catch (e) {
-              logger.error(
-                "Error checking localStorage for customTheme",
-                e,
-              );
+              logger.error("Error checking localStorage for customTheme", e);
             }
           }
         } catch (err) {

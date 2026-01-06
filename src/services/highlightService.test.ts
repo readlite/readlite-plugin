@@ -106,11 +106,7 @@ describe("HighlightService", () => {
 
       const mockSelection = createMockSelection(range);
 
-      const result = service.applyHighlight(
-        document,
-        mockSelection,
-        "beige"
-      );
+      const result = service.applyHighlight(document, mockSelection, "beige");
 
       expect(typeof result).toBe("boolean");
     });
@@ -148,7 +144,7 @@ describe("HighlightService", () => {
       colors.forEach((color) => {
         // Reset container content for each iteration
         container.textContent = "Fresh text for highlighting test.";
-        
+
         const range = document.createRange();
         const textNode = container.firstChild!;
         range.setStart(textNode, 0);
@@ -156,7 +152,7 @@ describe("HighlightService", () => {
 
         const mockSelection = createMockSelection(range);
         const result = service.applyHighlight(document, mockSelection, color);
-        
+
         expect(typeof result).toBe("boolean");
       });
     });
@@ -173,7 +169,7 @@ describe("HighlightService", () => {
         document,
         mockSelection,
         "cyan",
-        "My note"
+        "My note",
       );
 
       expect(typeof result).toBe("boolean");
@@ -185,7 +181,7 @@ describe("HighlightService", () => {
       // Create a highlight element
       container.innerHTML =
         'Before <span class="readlite-highlight" data-highlight-id="test-id">highlighted</span> after';
-      
+
       const highlightEl = container.querySelector(".readlite-highlight")!;
       const result = service.removeHighlight(highlightEl);
 
@@ -197,11 +193,13 @@ describe("HighlightService", () => {
     it("deletes from storage when removing", () => {
       container.innerHTML =
         '<span class="readlite-highlight" data-highlight-id="storage-test">text</span>';
-      
+
       const highlightEl = container.querySelector(".readlite-highlight")!;
       service.removeHighlight(highlightEl);
 
-      expect(highlightStorage.deleteHighlight).toHaveBeenCalledWith("storage-test");
+      expect(highlightStorage.deleteHighlight).toHaveBeenCalledWith(
+        "storage-test",
+      );
     });
 
     it("returns false for non-highlight element", () => {
@@ -220,7 +218,7 @@ describe("HighlightService", () => {
     it("preserves surrounding text", () => {
       container.innerHTML =
         'Start <span class="readlite-highlight" data-highlight-id="test">middle</span> end';
-      
+
       const highlightEl = container.querySelector(".readlite-highlight")!;
       service.removeHighlight(highlightEl);
 
@@ -232,7 +230,7 @@ describe("HighlightService", () => {
     it("updates note on element", () => {
       container.innerHTML =
         '<span class="readlite-highlight" data-highlight-id="note-test">text</span>';
-      
+
       const highlightEl = container.querySelector(".readlite-highlight")!;
       const result = service.updateHighlightNote(highlightEl, "New note");
 
@@ -244,18 +242,21 @@ describe("HighlightService", () => {
     it("updates storage with new note", () => {
       container.innerHTML =
         '<span class="readlite-highlight" data-highlight-id="note-storage">text</span>';
-      
+
       const highlightEl = container.querySelector(".readlite-highlight")!;
       service.updateHighlightNote(highlightEl, "Updated note");
 
       expect(highlightStorage.updateHighlight).toHaveBeenCalledWith(
         "note-storage",
-        expect.objectContaining({ note: "Updated note" })
+        expect.objectContaining({ note: "Updated note" }),
       );
     });
 
     it("returns false for null element", () => {
-      const result = service.updateHighlightNote(null as unknown as Element, "note");
+      const result = service.updateHighlightNote(
+        null as unknown as Element,
+        "note",
+      );
       expect(result).toBe(false);
     });
   });
@@ -264,43 +265,56 @@ describe("HighlightService", () => {
     it("changes highlight color class", () => {
       container.innerHTML =
         '<span class="readlite-highlight readlite-highlight-beige" data-highlight-id="color-test" data-highlight-color="beige">text</span>';
-      
+
       const highlightEl = container.querySelector(".readlite-highlight")!;
       const result = service.changeHighlightColor(highlightEl, "cyan");
 
       expect(result).toBe(true);
-      expect(highlightEl.classList.contains("readlite-highlight-cyan")).toBe(true);
-      expect(highlightEl.classList.contains("readlite-highlight-beige")).toBe(false);
+      expect(highlightEl.classList.contains("readlite-highlight-cyan")).toBe(
+        true,
+      );
+      expect(highlightEl.classList.contains("readlite-highlight-beige")).toBe(
+        false,
+      );
       expect(highlightEl.getAttribute("data-highlight-color")).toBe("cyan");
     });
 
     it("updates storage with new color", () => {
       container.innerHTML =
         '<span class="readlite-highlight" data-highlight-id="color-storage">text</span>';
-      
+
       const highlightEl = container.querySelector(".readlite-highlight")!;
       service.changeHighlightColor(highlightEl, "lavender");
 
       expect(highlightStorage.updateHighlight).toHaveBeenCalledWith(
         "color-storage",
-        expect.objectContaining({ color: "lavender" })
+        expect.objectContaining({ color: "lavender" }),
       );
     });
 
     it("removes all other color classes", () => {
       container.innerHTML =
         '<span class="readlite-highlight readlite-highlight-beige readlite-highlight-cyan" data-highlight-id="multi-color">text</span>';
-      
+
       const highlightEl = container.querySelector(".readlite-highlight")!;
       service.changeHighlightColor(highlightEl, "olive");
 
-      expect(highlightEl.classList.contains("readlite-highlight-olive")).toBe(true);
-      expect(highlightEl.classList.contains("readlite-highlight-beige")).toBe(false);
-      expect(highlightEl.classList.contains("readlite-highlight-cyan")).toBe(false);
+      expect(highlightEl.classList.contains("readlite-highlight-olive")).toBe(
+        true,
+      );
+      expect(highlightEl.classList.contains("readlite-highlight-beige")).toBe(
+        false,
+      );
+      expect(highlightEl.classList.contains("readlite-highlight-cyan")).toBe(
+        false,
+      );
     });
 
     it("returns false for null element", () => {
-      const result = service.changeHighlightColor(null as unknown as Element, "peach");
+      const result = service.changeHighlightColor(
+        null as unknown as Element,
+        "peach",
+      );
       expect(result).toBe(false);
     });
   });
@@ -360,7 +374,9 @@ describe("HighlightService", () => {
         container.innerHTML = `<span class="readlite-highlight readlite-highlight-${color}" data-highlight-color="${color}">text</span>`;
 
         const span = container.querySelector(".readlite-highlight");
-        expect(span?.classList.contains(`readlite-highlight-${color}`)).toBe(true);
+        expect(span?.classList.contains(`readlite-highlight-${color}`)).toBe(
+          true,
+        );
         expect(span?.getAttribute("data-highlight-color")).toBe(color);
       });
     });
@@ -369,7 +385,7 @@ describe("HighlightService", () => {
   describe("Edge cases", () => {
     it("handles selection with whitespace only", () => {
       container.textContent = "Before    After";
-      
+
       const range = document.createRange();
       const textNode = container.firstChild!;
       range.setStart(textNode, 6);
