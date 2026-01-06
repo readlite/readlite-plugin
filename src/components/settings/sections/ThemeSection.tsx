@@ -6,6 +6,7 @@ import {
 } from "../../../config/theme";
 import { createLogger } from "../../../utils/logger";
 import { applyThemeGlobally } from "../../../utils/themeManager";
+import { ReaderSettings } from "../../../types/reader";
 
 // Create a logger for this module
 const logger = createLogger("settings");
@@ -13,9 +14,9 @@ const logger = createLogger("settings");
 interface ThemeSectionProps {
   sectionClassName: string;
   titleClassName: string;
-  settings: any;
+  settings: ReaderSettings;
   t: (key: string) => string;
-  updateSettings: (settings: any) => void;
+  updateSettings: (settings: Partial<ReaderSettings>) => void;
 }
 
 interface ColorPickerProps {
