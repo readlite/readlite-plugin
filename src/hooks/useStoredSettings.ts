@@ -6,14 +6,25 @@ import { createLogger } from "../utils/logger";
 // Create a logger for this module
 const logger = createLogger("settings");
 
-// Create storage instance
-const storage = new Storage({
-  area: "local", // Use extension's local storage area
-});
-
 // Storage key name with application prefix
 const SETTINGS_KEY = "readlite-settings";
 const SETTINGS_VERSION = 1;
+
+// Get storage instance (lazy initialization for better testability)
+let storageInstance: Storage | null = null;
+const getStorage = () => {
+  if (!storageInstance) {
+    storageInstance = new Storage({
+      area: "local", // Use extension's local storage area
+    });
+  }
+  return storageInstance;
+};
+
+// Export for testing - allows tests to reset storage instance
+export const __resetStorageInstance = () => {
+  storageInstance = null;
+};
 
 /**
  * Settings hook
@@ -29,7 +40,7 @@ export const useStoredSettings = () => {
     const loadSettings = async () => {
       try {
         // Try to get settings from Plasmo storage
-        const storedSettings = await storage.get(SETTINGS_KEY);
+        const storedSettings = await getStorage().get(SETTINGS_KEY);
 
         if (storedSettings) {
           // Parse stored settings if needed
@@ -70,7 +81,7 @@ export const useStoredSettings = () => {
           setSettings(mergedSettings);
         } else {
           // Initialize default settings
-          await storage.set(SETTINGS_KEY, {
+          await getStorage().set(SETTINGS_KEY, {
             ...defaultSettings,
             version: SETTINGS_VERSION,
           });
@@ -91,6 +102,12 @@ export const useStoredSettings = () => {
       try {
         const settingsToUpdate = { ...newSettings };
 
+        // Calculate updated settings first
+        const updated = { ...settings, ...settingsToUpdate };
+
+        // Update state synchronously
+        setSettings(updated);
+
         // Special handling for customTheme to ensure it's saved to localStorage too
         if ("customTheme" in settingsToUpdate) {
           try {
@@ -106,53 +123,38 @@ export const useStoredSettings = () => {
           }
         }
 
-        // Update state
-        setSettings((current: typeof defaultSettings) => {
-          const updated = { ...current, ...settingsToUpdate };
+        // Save to storage asynchronously using Plasmo API
+        try {
+          await getStorage().set(SETTINGS_KEY, updated);
 
-          // Save to storage using Plasmo API
-          storage
-            .set(SETTINGS_KEY, updated)
-            .then(() => {
-              // Verify storage
-              return storage.get(SETTINGS_KEY);
-            })
-            .then((saved) => {
-              // Verify customTheme was saved if present
-              if ("customTheme" in updated && updated.theme === "custom") {
-                // Double-check customTheme is in localStorage too
-                try {
-                  const localCustomTheme = localStorage.getItem(
-                    "readlite-custom-theme",
-                  );
-                  if (!localCustomTheme) {
-                    localStorage.setItem(
-                      "readlite-custom-theme",
-                      updated.customTheme as string,
-                    );
-                    logger.info(
-                      "Re-saved customTheme to localStorage after verifying",
-                    );
-                  }
-                } catch (e) {
-                  logger.error(
-                    "Error checking localStorage for customTheme",
-                    e,
-                  );
-                }
+          // Verify customTheme was saved if present
+          if ("customTheme" in updated && updated.theme === "custom") {
+            // Double-check customTheme is in localStorage too
+            try {
+              const localCustomTheme = localStorage.getItem(
+                "readlite-custom-theme",
+              );
+              if (!localCustomTheme) {
+                localStorage.setItem(
+                  "readlite-custom-theme",
+                  updated.customTheme as string,
+                );
+                logger.info(
+                  "Re-saved customTheme to localStorage after verifying",
+                );
               }
-            })
-            .catch((err) => {
-              logger.error("Failed to save settings to storage:", err);
-            });
-
-          return updated;
-        });
+            } catch (e) {
+              logger.error("Error checking localStorage for customTheme", e);
+            }
+          }
+        } catch (err) {
+          logger.error("Failed to save settings to storage:", err);
+        }
       } catch (error) {
         logger.error("Failed to update settings:", error);
       }
     },
-    [],
+    [settings],
   );
 
   // Reset settings to defaults
@@ -163,7 +165,7 @@ export const useStoredSettings = () => {
         version: SETTINGS_VERSION,
       };
 
-      await storage.set(SETTINGS_KEY, resetValues);
+      await getStorage().set(SETTINGS_KEY, resetValues);
       setSettings(resetValues);
     } catch (error) {
       logger.error("Failed to reset settings:", error);

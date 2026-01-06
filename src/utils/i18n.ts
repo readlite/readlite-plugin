@@ -8,10 +8,11 @@
 import {
   LanguageCode,
   normalizeLanguageCode,
-  SUPPORTED_LANGUAGES as ALL_SUPPORTED_LANGUAGES,
   isLanguageSupported,
 } from "./language";
 import { languageDisplayConfigs } from "../config/ui";
+import enMessages from "../../locales/en/messages.json";
+import zhMessages from "../../locales/zh/messages.json";
 
 // --- Functions ---
 
@@ -81,7 +82,9 @@ export function getFontSectionTitle(
 export function getBrowserLanguage(): LanguageCode {
   let detectedLang: LanguageCode = "en"; // Default
   try {
-    const browserLang = navigator.language || (navigator as any).userLanguage;
+    const browserLang =
+      navigator.language ||
+      (navigator as unknown as { userLanguage: string }).userLanguage;
     if (browserLang) {
       const normalizedLang = normalizeLanguageCode(browserLang);
 
@@ -96,7 +99,7 @@ export function getBrowserLanguage(): LanguageCode {
         }
       }
     }
-  } catch (e) {
+  } catch (_e) {
     // Silent error, use default
   }
   return detectedLang;
@@ -116,63 +119,37 @@ export function getMessage(key: string, lang?: LanguageCode): string {
 
   try {
     // If chrome.i18n not available or key not found, use local translations
-    try {
-      // Dynamic import of JSON files won't work in production
-      // so we need to use a cache of translations instead
-      return getLocalTranslation(key, language);
-    } catch (localError) {
-      // Try English as fallback if needed and not already using English
-      if (language !== "en") {
-        try {
-          return getLocalTranslation(key, "en");
-        } catch (fallbackError) {
-          // Silent fallback error
-        }
+    // Dynamic import of JSON files won't work in production
+    // so we need to use a cache of translations instead
+    return getLocalTranslation(key, language);
+  } catch (_localError) {
+    // Try English as fallback if needed and not already using English
+    if (language !== "en") {
+      try {
+        return getLocalTranslation(key, "en");
+      } catch (_fallbackError) {
+        // Silent fallback error
       }
     }
-
-    // If all else fails, return the key
-    return key;
-  } catch (e) {
-    // Silent error, return key
-    return key;
   }
+
+  // If all else fails, return the key
+  return key;
 }
 
 // Cache for loaded translations
-const translationsCache: Record<string, any> = {};
+const translationsCache: Record<
+  string,
+  Record<string, { message: string; description?: string }>
+> = {
+  en: enMessages,
+  zh: zhMessages,
+};
 
 /**
  * Get translation from local files based on language
  */
 function getLocalTranslation(key: string, lang: LanguageCode): string {
-  // Load and cache translations if not already loaded
-  if (!translationsCache[lang]) {
-    try {
-      // In a real implementation, you'd have a mechanism to load these JSON files
-      // Here we're directly importing or requiring common translations
-      if (lang === "zh") {
-        translationsCache.zh = require("../../locales/zh/messages.json");
-      } else if (lang === "en") {
-        translationsCache.en = require("../../locales/en/messages.json");
-      } else {
-        // For other languages, try loading if available or fall back to English
-        try {
-          translationsCache[lang] = require(
-            `../../locales/${lang}/messages.json`,
-          );
-        } catch (e) {
-          if (!translationsCache.en) {
-            translationsCache.en = require("../../locales/en/messages.json");
-          }
-          return getLocalTranslation(key, "en");
-        }
-      }
-    } catch (e) {
-      throw e;
-    }
-  }
-
   // Return the translation if it exists
   const translation = translationsCache[lang]?.[key]?.message;
   if (translation) {
@@ -181,13 +158,6 @@ function getLocalTranslation(key: string, lang: LanguageCode): string {
 
   // Try fallback to English if not found and not already English
   if (lang !== "en") {
-    if (!translationsCache.en) {
-      try {
-        translationsCache.en = require("../../locales/en/messages.json");
-      } catch (e) {
-        throw e;
-      }
-    }
     const enTranslation = translationsCache.en?.[key]?.message;
     if (enTranslation) {
       return enTranslation;

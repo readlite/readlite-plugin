@@ -1,14 +1,15 @@
 import React from "react";
 import { alignmentOptions } from "../../../config/ui";
 import { LanguageCode } from "../../../utils/language";
+import { ReaderSettings } from "../../../context/ReaderContext";
 
 interface AlignmentSectionProps {
   sectionClassName: string;
   titleClassName: string;
-  settings: any;
+  settings: ReaderSettings;
   t: (key: string) => string;
   uiLanguage: LanguageCode;
-  updateSettings: (settings: any) => void;
+  updateSettings: (settings: Partial<ReaderSettings>) => void;
 }
 
 /**
