@@ -79,16 +79,18 @@ jest.mock("./ReaderToolbar", () => ({
 jest.mock("./ReaderContent", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { forwardRef } = require("react");
-  const MockReaderContent = forwardRef((props: unknown, ref: React.Ref<HTMLDivElement>) => (
-    <div data-testid="reader-content" ref={ref}>
-      <h1>Title</h1>
-      <p>Paragraph 1</p>
-      <ul>
-        <li>List item</li>
-      </ul>
-      <blockquote>Quote</blockquote>
-    </div>
-  ));
+  const MockReaderContent = forwardRef(
+    (props: unknown, ref: React.Ref<HTMLDivElement>) => (
+      <div data-testid="reader-content" ref={ref}>
+        <h1>Title</h1>
+        <p>Paragraph 1</p>
+        <ul>
+          <li>List item</li>
+        </ul>
+        <blockquote>Quote</blockquote>
+      </div>
+    ),
+  );
   MockReaderContent.displayName = "MockReaderContent";
   return {
     __esModule: true,
