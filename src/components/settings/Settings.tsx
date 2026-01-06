@@ -6,10 +6,10 @@ import React, {
   useRef,
   useCallback,
 } from "react";
-import { useReader } from "~/context/ReaderContext";
+import { useReader, ReaderSettings } from "~/context/ReaderContext";
 import { useI18n } from "~/context/I18nContext";
 import { LanguageCode } from "~/utils/language";
-import { ThemeType } from "~/config/theme";
+// import { ThemeType } from "~/config/theme"; // unused
 import ThemeSection from "./sections/ThemeSection";
 import FontSizeSection from "./sections/FontSizeSection";
 import FontFamilySection from "./sections/FontFamilySection";
@@ -25,9 +25,9 @@ const logger = createLogger("settings");
 export type SectionProps = {
   sectionClassName: string;
   titleClassName: string;
-  settings: any;
+  settings: ReaderSettings;
   t: (key: string) => string;
-  updateSettings: (settings: any) => void;
+  updateSettings: (settings: Partial<ReaderSettings>) => void;
 };
 
 // Memoize section components to prevent unnecessary re-renders
@@ -39,7 +39,7 @@ const MemoizedSpacingSection = memo(SpacingSection);
 interface SettingsProps {
   onClose: () => void;
   buttonRef?: React.RefObject<HTMLButtonElement | null>;
-  onSettingsChanged?: (newSettings: Record<string, any>) => void;
+  onSettingsChanged?: (newSettings: Record<string, unknown>) => void;
 }
 
 /**
@@ -66,7 +66,7 @@ const Settings: React.FC<SettingsProps> = ({
 
   // Auto-close functionality
   const autoCloseTimeoutRef = useRef<number | null>(null);
-  const [isHovered, setIsHovered] = useState(false);
+  // const [isHovered, setIsHovered] = useState(false); // unused
 
   // Clear auto-close timeout
   const clearAutoCloseTimeout = useCallback(() => {
@@ -78,13 +78,13 @@ const Settings: React.FC<SettingsProps> = ({
 
   // Handle mouse enter - cancel auto-close
   const handleMouseEnter = useCallback(() => {
-    setIsHovered(true);
+    // setIsHovered(true);
     clearAutoCloseTimeout();
   }, [clearAutoCloseTimeout]);
 
   // Handle mouse leave - start auto-close timer
   const handleMouseLeave = useCallback(() => {
-    setIsHovered(false);
+    // setIsHovered(false);
     // Clear any existing timeout
     clearAutoCloseTimeout();
 
@@ -142,7 +142,7 @@ const Settings: React.FC<SettingsProps> = ({
 
   // Enhanced updateSettings function that also calls onSettingsChanged
   const updateSettingsWithCallback = useMemo(() => {
-    return (newSettings: Record<string, any>) => {
+    return (newSettings: Record<string, unknown>) => {
       // Call the original updateSettings
       updateSettings(newSettings);
 

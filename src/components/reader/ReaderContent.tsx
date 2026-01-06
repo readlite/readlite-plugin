@@ -1,13 +1,12 @@
-import React, { forwardRef, useEffect, useRef, useMemo, useState } from "react";
+import React, { forwardRef, useEffect, useRef, useMemo } from "react";
 import { LanguageCode } from "~/utils/language";
-import { ThemeType } from "~/config/theme";
+import { ThemeType, ThemeColors } from "~/config/theme";
 import { useTextSelection } from "~/hooks/useTextSelection";
 import { useTheme } from "~/context/ThemeContext";
-import { useI18n } from "~/context/I18nContext";
+// import { useI18n } from "~/context/I18nContext";
 import { HIGHLIGHT_STYLES } from "~/utils/parser";
-
-import llmClient from "~/services/llmClient";
 import { createLogger } from "~/utils/logger";
+import { ArticleData } from "~/context/ReaderContext";
 
 // Create a logger for this module
 const logger = createLogger("reader-content");
@@ -133,7 +132,7 @@ interface ReaderContentProps {
     textAlign: string;
     width: number;
   };
-  article: any;
+  article: ArticleData | null;
   detectedLanguage: LanguageCode;
   error: string | null;
 }
@@ -145,7 +144,6 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
   ({ settings, article, detectedLanguage, error }, ref) => {
     // Context hooks
     const { getReaderColors, theme } = useTheme();
-    const { t } = useI18n();
 
     // Refs
     const contentRef = useRef<HTMLDivElement | null>(null);
@@ -347,7 +345,10 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
     /**
      * Apply link styles with proper event listener management
      */
-    const applyLinkStyles = (contentElement: HTMLElement, colors: any) => {
+    const applyLinkStyles = (
+      contentElement: HTMLElement,
+      colors: ThemeColors,
+    ) => {
       const links = contentElement.querySelectorAll("a");
       const mouseEnterListeners: Array<{
         element: HTMLElement;
@@ -793,5 +794,7 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
     );
   },
 );
+
+ReaderContent.displayName = "ReaderContent";
 
 export default ReaderContent;

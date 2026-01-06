@@ -1,6 +1,7 @@
 import React from "react";
 import { spacingOptions } from "../../../config/ui";
 import { createLogger } from "../../../utils/logger";
+import { ReaderSettings } from "../../../types/reader";
 
 // Create a logger for this module
 const logger = createLogger("settings");
@@ -8,9 +9,9 @@ const logger = createLogger("settings");
 interface SpacingSectionProps {
   sectionClassName: string;
   titleClassName: string;
-  settings: any;
+  settings: ReaderSettings;
   t: (key: string) => string;
-  updateSettings: (settings: any) => void;
+  updateSettings: (settings: Partial<ReaderSettings>) => void;
 }
 
 /**
