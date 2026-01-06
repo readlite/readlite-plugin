@@ -1,18 +1,17 @@
 import React, {
   createContext,
   useState,
-  useEffect,
   ReactNode,
   useContext,
   useCallback,
 } from "react";
-import { LanguageCode } from "../utils/language";
 import { useArticle } from "../hooks/useArticle";
 import { useStoredSettings } from "../hooks/useStoredSettings";
 import { createLogger } from "~/utils/logger";
 import { ThemeType } from "../config/theme";
 import { ThemeProvider } from "./ThemeContext";
 import { BookOpenIcon } from "@heroicons/react/24/outline";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 // Create a logger for this module
 const logger = createLogger("reader-context");
@@ -203,7 +202,9 @@ export const ReaderProvider: React.FC<ReaderProviderProps> = ({
   return (
     <ReaderContext.Provider value={value}>
       {isSettingsLoaded ? (
-        <ThemeProvider initialTheme={initialTheme}>{children}</ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider initialTheme={initialTheme}>{children}</ThemeProvider>
+        </ErrorBoundary>
       ) : (
         <LoadingIndicator />
       )}

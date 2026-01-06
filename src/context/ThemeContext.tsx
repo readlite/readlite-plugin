@@ -8,7 +8,6 @@ import React, {
 import {
   ThemeType,
   ThemeColors,
-  themeTokens,
   getThemeColors,
   getSettingsColors,
   getReaderColors,
@@ -30,8 +29,8 @@ interface ThemeContextType {
   customTheme: string | null;
   setCustomTheme: (themeJson: string) => void;
   themeColors: ThemeColors;
-  getUIColors: () => any;
-  getReaderColors: () => any;
+  getUIColors: () => ThemeColors;
+  getReaderColors: () => ThemeColors;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);

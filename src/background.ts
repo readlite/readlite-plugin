@@ -76,7 +76,7 @@ chrome.runtime.onMessage.addListener(
  */
 function handleContentScriptReady(
   sender: chrome.runtime.MessageSender,
-  sendResponse: (response?: any) => void,
+  sendResponse: (response?: unknown) => void,
 ) {
   mainLogger.info(`Content script ready in tab: ${sender.tab?.id}`);
   sendResponse({ received: true });
@@ -89,7 +89,7 @@ function handleContentScriptReady(
 function handleReaderModeChanged(
   isActive: boolean,
   tabId: number,
-  sendResponse: (response?: any) => void,
+  sendResponse: (response?: unknown) => void,
 ) {
   mainLogger.info(`Reader mode changed in tab ${tabId}: ${isActive}`);
   activeTabsMap.set(tabId, isActive);
@@ -145,7 +145,7 @@ async function handleToggleReaderMode(tab?: chrome.tabs.Tab) {
 /**
  * Listens for tab updates (e.g., page loads) to reset the icon state.
  */
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
   if (changeInfo.status === "complete") {
     mainLogger.info(`Tab ${tabId} updated (status: complete), resetting icon.`);
     updateIconState(tabId, false);

@@ -348,7 +348,7 @@ export class HighlightAnchor {
       // Logic to find the end node and offset
       let endNode: Text | null = null;
       let endOffset = 0;
-      let exactLength = selector.exact.length;
+      const exactLength = selector.exact.length;
 
       // Special case: If start node contains the entire highlight
       if (startNode.data.length >= startOffset + exactLength) {
@@ -768,7 +768,6 @@ export class HighlightAnchor {
               }
 
               // Try smaller chunks for more flexibility with CJK text
-              let foundMatch = false;
               for (
                 let i = 0;
                 i < Math.min(normalizedHighlightText.length, 30);
@@ -783,7 +782,6 @@ export class HighlightAnchor {
                     `✅ Found character pattern match: "${charPattern}"`,
                   );
                   matchingNodes.push(node);
-                  foundMatch = true;
                   break;
                 }
               }
@@ -861,7 +859,6 @@ export class HighlightAnchor {
               }
 
               // Try smaller chunks for very flexible matching with CJK text
-              let foundMatch = false;
               const chunkSize = 8; // Use 8-character chunks
               for (
                 let i = 0;
@@ -881,7 +878,6 @@ export class HighlightAnchor {
                     `✅ Found character pattern match: "${charPattern}"`,
                   );
                   matchingNodes.push(node);
-                  foundMatch = true;
                   break;
                 }
               }
@@ -1186,9 +1182,7 @@ export class HighlightAnchor {
                 // Try with tag names only
                 const tagOnlySegments = pathSegments
                   .map((segment) => {
-                    return segment
-                      .split(/[:#.[]/) // Remove ID, class, attribute, and pseudo-selectors
-                      [0].trim(); // Get just the tag name
+                    return segment.split(/[:#.[]/)[0].trim(); // Get just the tag name
                   })
                   .filter(Boolean); // Remove any empty entries
 
@@ -1234,7 +1228,7 @@ export class HighlightAnchor {
 
       // If that fails, try a more flexible approach
       // Start with the most specific part of the path (last segments) and try to find it
-      let currentPath = [];
+      const currentPath = [];
       for (let i = Math.max(0, path.length - 3); i < path.length; i++) {
         currentPath.push(path[i]);
       }

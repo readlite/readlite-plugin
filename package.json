@@ -4,12 +4,25 @@
   "version": "1.0.8",
   "description": "A simple reading mode extension to make web reading more comfortable",
   "author": "ReadLite Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhongyiio/readlite-plugin.git"
+  },
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "clean": "rm -rf .plasmo/ build/",
     "dev": "npm run build:tailwind && plasmo dev",
+    "dev:firefox": "npm run build:tailwind && plasmo dev --target=firefox-mv3",
+    "dev:edge": "npm run build:tailwind && plasmo dev --target=edge-mv3",
     "build": "npm run build:tailwind && plasmo build",
+    "build:firefox": "npm run build:tailwind && plasmo build --target=firefox-mv3",
+    "build:edge": "npm run build:tailwind && plasmo build --target=edge-mv3",
     "package": "npm run build:tailwind && plasmo build --zip",
+    "package:firefox": "npm run build:tailwind && plasmo build --target=firefox-mv3 --zip",
+    "package:edge": "npm run build:tailwind && plasmo build --target=edge-mv3 --zip",
     "test": "jest",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
@@ -39,21 +52,31 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.312",
-    "@types/dompurify": "^3.0.5",
+    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/chrome": "^0.1.32",
+    "@types/dompurify": "^3.2.0",
     "@types/jest": "^29.5.11",
     "@types/marked": "^5.0.2",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@types/turndown": "^5.0.5",
     "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/parser": "^8.51.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.37.5",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.2.0",
     "jimp": "^1.6.0",
+    "jsdom": "^27.4.0",
     "postcss": "^8.5.3",
     "prettier": "^3.1.0",
     "tailwindcss": "^3.3.3",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.3.3"
   },
   "manifest": {
@@ -84,6 +107,15 @@
           "<all_urls>"
         ]
       }
-    ]
+    ],
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "readlite@example.com",
+        "strict_min_version": "101.0"
+      }
+    },
+    "content_security_policy": {
+      "extension_pages": "script-src 'self'; object-src 'self'"
+    }
   }
 }

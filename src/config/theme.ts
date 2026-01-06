@@ -1,6 +1,6 @@
-import { createLogger } from "../utils/logger";
+// import { createLogger } from "../utils/logger";
 
-const logger = createLogger("theme-config");
+// const logger = createLogger("theme-config"); // unused
 
 /**
  * Theme configuration system
