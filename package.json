@@ -5,6 +5,9 @@
   "description": "A simple reading mode extension to make web reading more comfortable",
   "author": "ReadLite Team",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "clean": "rm -rf .plasmo/ build/",
     "dev": "npm run build:tailwind && plasmo dev",
