@@ -1,12 +1,13 @@
 import React from "react";
 import { widthOptions } from "~/config/ui";
+import { ReaderSettings } from "../../../types/reader";
 
 interface WidthSectionProps {
   sectionClassName: string;
   titleClassName: string;
-  settings: any;
+  settings: ReaderSettings;
   t: (key: string) => string;
-  updateSettings: (settings: any) => void;
+  updateSettings: (settings: Partial<ReaderSettings>) => void;
 }
 
 /**

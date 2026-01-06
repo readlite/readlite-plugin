@@ -9,10 +9,10 @@ import {
   CheckIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { createLogger } from "~/utils/logger";
+// import { createLogger } from "~/utils/logger";
 
 // Create a logger for this module
-const logger = createLogger("selection-toolbar");
+// const logger = createLogger("selection-toolbar");
 
 interface VirtualHighlightElement {
   getAttribute(name: string): string | null;
@@ -147,7 +147,7 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
     return { top, left };
   };
 
-  const position = calculatePosition();
+  // const position = calculatePosition();
 
   // Debug log when component renders
   useEffect(() => {
@@ -433,7 +433,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   activeColor = "accent",
   specialColor,
   warningAction = false,
-  isDark = false,
+  // isDark = false, // unused
   width,
 }) => {
   const getButtonClasses = () => {

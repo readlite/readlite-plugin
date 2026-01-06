@@ -1,52 +1,50 @@
-# 依赖目录
+# Dependencies
 node_modules/
-pnpm-lock.yaml
-package-lock.json
-yarn.lock
 
-# 构建输出
+# Dist 
 dist/
 build/
 
-# Plasmo 特有目录
+# Plasmo specific directories
 .plasmo/
 out/
 
-# 开发环境
+# Development environment
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# 编译缓存
+# TurboRepo and caching
 .turbo/
 .cache/
 *.tsbuildinfo
 
-# 日志
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# 编辑器目录
+# Editor directories
 .idea/
 .vscode/
 .vim/
 *.sublime-workspace
 *.sublime-project
 
-# 系统文件
+# System files
 .DS_Store
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# 临时文件
+# Temporary files
 *.swp
 *.swo
 *~
 *.tmp
 *.bak 
 .cursor/
+coverage/

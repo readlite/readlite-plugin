@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.plasmo/
+
+# Generated files
+src/styles/tailwind.output.css
+
+# Lockfiles
+package-lock.json
+
+# Coverage
+coverage/

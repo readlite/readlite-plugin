@@ -450,7 +450,7 @@ function tryApplyHighlightToNode(
     const normalizedContent = content.replace(/\s+/g, " ");
     const normalizedSearchText = highlight.text.replace(/\s+/g, " ").trim();
 
-    let textIndex = normalizedContent.indexOf(normalizedSearchText);
+    const textIndex = normalizedContent.indexOf(normalizedSearchText);
 
     if (textIndex !== -1) {
       const range = doc.createRange();
@@ -473,7 +473,7 @@ function tryApplyHighlightToNode(
       try {
         range.surroundContents(highlightSpan);
         return true;
-      } catch (e) {
+      } catch (_e) {
         const fragment = range.extractContents();
         highlightSpan.appendChild(fragment);
         range.insertNode(highlightSpan);
