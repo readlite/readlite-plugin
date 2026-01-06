@@ -20,11 +20,12 @@ jest.mock("~/utils/logger", () => ({
 }));
 
 // Get mock storage helpers using require to avoid TypeScript errors
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const {
   __clearMockStorage,
   __setMockStorageData,
   __getMockStorageData,
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
 } = require("@plasmohq/storage");
 
 // Mock defaultSettings from ReaderContext

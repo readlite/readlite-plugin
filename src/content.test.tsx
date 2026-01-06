@@ -9,9 +9,13 @@ import {
 } from "../__mocks__/chrome";
 
 // Mock dependencies
-jest.mock("./components/reader/Reader", () => () => (
-  <div data-testid="reader-component">Reader Component</div>
-));
+jest.mock("./components/reader/Reader", () => {
+  const MockReader = () => (
+    <div data-testid="reader-component">Reader Component</div>
+  );
+  MockReader.displayName = "MockReader";
+  return MockReader;
+});
 jest.mock("./context/ReaderContext", () => ({
   ReaderProvider: ({ children }: any) => (
     <div data-testid="reader-provider">{children}</div>

@@ -85,7 +85,7 @@ const Reader = () => {
     null,
   ) as React.RefObject<HTMLButtonElement>;
   const [detectedLanguage] = useState<LanguageCode>("en");
-  const [visibleContent, setVisibleContent] = useState("");
+  const [_visibleContent, setVisibleContent] = useState("");
 
   // Get translations function
   const { t } = useI18n();
@@ -505,7 +505,6 @@ const Reader = () => {
 
     let lastScrollTop = readerColumn.scrollTop;
     let lastProcessedTime = Date.now();
-    let scrollCounter = 0;
     let forceUpdateCounter = 0;
 
     const extractVisibleContent = () => {
@@ -524,7 +523,6 @@ const Reader = () => {
         forceUpdateCounter = 0;
       }
 
-      scrollCounter++;
       lastScrollTop = currentScrollTop;
       lastProcessedTime = Date.now();
 

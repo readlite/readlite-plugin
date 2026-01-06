@@ -17,8 +17,8 @@ jest.mock("~/utils/logger", () => ({
 describe("Export Utils", () => {
   describe("generateFilename", () => {
     // Mock Date.now for consistent timestamps
-    const originalDateNow = Date.now;
-    const mockTimestamp = new Date("2024-01-15T10:30:45.000Z").getTime();
+    const _originalDateNow = Date.now;
+    const _mockTimestamp = new Date("2024-01-15T10:30:45.000Z").getTime();
 
     beforeEach(() => {
       jest

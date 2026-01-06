@@ -5,7 +5,7 @@
 
 import React from "react";
 import { render, screen, act } from "@testing-library/react";
-import { renderHook } from "@testing-library/react";
+import { renderHook as _renderHook } from "@testing-library/react";
 
 // NOTE: Don't use jest.mock("@plasmohq/storage") because moduleNameMapper in jest.config.js
 // already maps it to our mock implementation. Using jest.mock would auto-mock and replace our implementation.
@@ -250,7 +250,7 @@ describe("ThemeContext", () => {
 describe("Context Integration", () => {
   it("allows nesting of multiple providers", () => {
     const TestComponent = () => {
-      const { t, language } = useI18n();
+      const { t: _t, language } = useI18n();
       const { theme } = useTheme();
       return (
         <div data-testid="combined">

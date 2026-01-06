@@ -6,11 +6,11 @@
 import mockChrome, {
   resetMockChrome,
   mockCalls,
-  mockListeners,
+  mockListeners as _mockListeners,
   simulateMessage,
   simulateTabUpdated,
   simulateTabRemoved,
-  simulateActionClicked,
+  simulateActionClicked as _simulateActionClicked,
 } from "../__mocks__/chrome";
 
 // Setup Chrome mock globally before importing background script

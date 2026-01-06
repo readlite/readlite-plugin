@@ -34,9 +34,13 @@ jest.mock("~/utils/export", () => ({
 }));
 
 // Mock child components
-jest.mock("../settings/Settings", () => () => (
-  <div data-testid="settings-panel">Settings Panel</div>
-));
+jest.mock("../settings/Settings", () => {
+  const MockSettings = () => (
+    <div data-testid="settings-panel">Settings Panel</div>
+  );
+  MockSettings.displayName = "MockSettings";
+  return MockSettings;
+});
 jest.mock("./ReaderToolbar", () => ({
   __esModule: true,
   default: ({
@@ -73,19 +77,22 @@ jest.mock("./ReaderToolbar", () => ({
   ),
 }));
 jest.mock("./ReaderContent", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { forwardRef } = require("react");
+  const MockReaderContent = forwardRef((props: unknown, ref: React.Ref<HTMLDivElement>) => (
+    <div data-testid="reader-content" ref={ref}>
+      <h1>Title</h1>
+      <p>Paragraph 1</p>
+      <ul>
+        <li>List item</li>
+      </ul>
+      <blockquote>Quote</blockquote>
+    </div>
+  ));
+  MockReaderContent.displayName = "MockReaderContent";
   return {
     __esModule: true,
-    default: forwardRef((props: any, ref: any) => (
-      <div data-testid="reader-content" ref={ref}>
-        <h1>Title</h1>
-        <p>Paragraph 1</p>
-        <ul>
-          <li>List item</li>
-        </ul>
-        <blockquote>Quote</blockquote>
-      </div>
-    )),
+    default: MockReaderContent,
   };
 });
 jest.mock("./SelectionToolbar", () => ({
@@ -260,6 +267,7 @@ describe("Reader Component", () => {
 
   it("handles markdown download", () => {
     render(<Reader />);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { exportAsMarkdown } = require("~/utils/export");
 
     fireEvent.click(screen.getByTestId("download-markdown-btn"));

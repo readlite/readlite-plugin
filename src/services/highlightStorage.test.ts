@@ -19,7 +19,7 @@ import { HighlightStorage } from "./highlightStorage";
 import type { StoredHighlight } from "../types/highlights";
 
 // Get mock helpers using require to avoid TypeScript errors
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { __clearMockStorage } = require("@plasmohq/storage");
 
 describe("HighlightStorage", () => {
