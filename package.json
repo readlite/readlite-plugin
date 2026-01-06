@@ -4,6 +4,10 @@
   "version": "1.0.8",
   "description": "A simple reading mode extension to make web reading more comfortable",
   "author": "ReadLite Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhongyiio/readlite.git"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"

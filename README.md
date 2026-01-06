@@ -1,6 +1,6 @@
 # ReadLite - Simple Reading Mode
 
-![CI](https://github.com/yourusername/read-lite/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/zhongyiio/readlite/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 A browser extension that provides a clean, distraction-free reading experience.
@@ -21,8 +21,8 @@ A browser extension that provides a clean, distraction-free reading experience.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/read-lite.git
-cd read-lite
+git clone https://github.com/zhongyiio/readlite.git
+cd readlite
 
 # Install dependencies
 yarn install
@@ -49,8 +49,8 @@ Then open your browser's extension page (e.g., `chrome://extensions`), enable **
 ### Setup
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/read-lite.git
-cd read-lite
+git clone https://github.com/zhongyiio/readlite.git
+cd readlite
 
 # Install dependencies
 yarn install
