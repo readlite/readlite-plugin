@@ -42,7 +42,7 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
 
         // 4. If found in original language, or if English was the original language and failed, return message or key
         return message || key;
-      } catch (error) {
+      } catch (_error) {
         // 5. Return the key in case of any unexpected errors during translation
         return key;
       }

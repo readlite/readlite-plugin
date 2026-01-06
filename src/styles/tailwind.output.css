@@ -620,6 +620,10 @@ video {
   visibility: visible;
 }
 
+.collapse {
+  visibility: collapse;
+}
+
 .static {
   position: static;
 }
@@ -847,8 +851,16 @@ video {
   height: 100vh;
 }
 
+.max-h-48 {
+  max-height: 12rem;
+}
+
 .max-h-\[calc\(100\%-60px\)\] {
   max-height: calc(100% - 60px);
+}
+
+.min-h-screen {
+  min-height: 100vh;
 }
 
 .w-1\/2 {
@@ -1098,6 +1110,10 @@ video {
   white-space: nowrap;
 }
 
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
+
 .rounded {
   border-radius: 0.25rem;
 }
@@ -1176,6 +1192,18 @@ video {
   background-color: var(--readlite-accent);
 }
 
+.bg-bg-primary {
+  background-color: var(--readlite-bg-primary);
+}
+
+.bg-bg-secondary {
+  background-color: var(--readlite-bg-secondary);
+}
+
+.bg-bg-tertiary {
+  background-color: var(--readlite-bg-tertiary);
+}
+
 .bg-current {
   background-color: currentColor;
 }
@@ -1218,6 +1246,10 @@ video {
 
 .p-4 {
   padding: 1rem;
+}
+
+.p-6 {
+  padding: 1.5rem;
 }
 
 .px-2 {
@@ -1326,6 +1358,14 @@ video {
   font-weight: 600;
 }
 
+.uppercase {
+  text-transform: uppercase;
+}
+
+.italic {
+  font-style: italic;
+}
+
 .text-accent {
   color: var(--readlite-text-accent);
 }
@@ -1353,6 +1393,19 @@ video {
 
 .text-secondary {
   color: var(--readlite-text-secondary);
+}
+
+.text-text-primary {
+  color: var(--readlite-text-primary);
+}
+
+.text-text-secondary {
+  color: var(--readlite-text-secondary);
+}
+
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
 .text-opacity-90 {
@@ -1417,6 +1470,11 @@ video {
 .outline-none {
   outline: 2px solid transparent;
   outline-offset: 2px;
+}
+
+.sepia {
+  --tw-sepia: sepia(100%);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 .filter {
@@ -1578,6 +1636,10 @@ video {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+.hover\:bg-border:hover {
+  background-color: var(--readlite-border);
+}
+
 .hover\:bg-neutral-100\/60:hover {
   background-color: rgb(245 245 245 / 0.6);
 }
@@ -1604,8 +1666,16 @@ video {
   color: rgb(239 68 68 / var(--tw-text-opacity, 1));
 }
 
+.hover\:text-text-primary:hover {
+  color: var(--readlite-text-primary);
+}
+
 .hover\:opacity-100:hover {
   opacity: 1;
+}
+
+.hover\:opacity-90:hover {
+  opacity: 0.9;
 }
 
 .focus\:ring-1:focus {
