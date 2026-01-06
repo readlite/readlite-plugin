@@ -15,7 +15,7 @@ export enum LogLevel {
 let currentLogLevel = LogLevel.INFO;
 
 // Whether to enable console logging (can be disabled for production)
-let ENABLE_CONSOLE = process.env.NODE_ENV !== "production";
+const ENABLE_CONSOLE = process.env.NODE_ENV !== "production";
 
 /**
  * Set the global log level
@@ -31,7 +31,7 @@ export function setLogLevel(level: LogLevel): void {
  * @returns Logger object with logging methods
  */
 export function createLogger(namespace: string) {
-  const formatMessage = (message: string, ...args: any[]): string => {
+  const formatMessage = (message: string): string => {
     return `[${namespace}] ${message}`;
   };
 
@@ -41,7 +41,7 @@ export function createLogger(namespace: string) {
      * @param message Log message
      * @param args Additional arguments to log
      */
-    error(message: string, ...args: any[]): void {
+    error(message: string, ...args: unknown[]): void {
       if (currentLogLevel >= LogLevel.ERROR && ENABLE_CONSOLE) {
         console.error(formatMessage(message), ...args);
       }
@@ -52,7 +52,7 @@ export function createLogger(namespace: string) {
      * @param message Log message
      * @param args Additional arguments to log
      */
-    warn(message: string, ...args: any[]): void {
+    warn(message: string, ...args: unknown[]): void {
       if (currentLogLevel >= LogLevel.WARN && ENABLE_CONSOLE) {
         console.warn(formatMessage(message), ...args);
       }
@@ -63,7 +63,7 @@ export function createLogger(namespace: string) {
      * @param message Log message
      * @param args Additional arguments to log
      */
-    info(message: string, ...args: any[]): void {
+    info(message: string, ...args: unknown[]): void {
       if (currentLogLevel >= LogLevel.INFO && ENABLE_CONSOLE) {
         console.info(formatMessage(message), ...args);
       }
@@ -74,7 +74,7 @@ export function createLogger(namespace: string) {
      * @param message Log message
      * @param args Additional arguments to log
      */
-    debug(message: string, ...args: any[]): void {
+    debug(message: string, ...args: unknown[]): void {
       if (currentLogLevel >= LogLevel.DEBUG && ENABLE_CONSOLE) {
         console.debug(formatMessage(message), ...args);
       }
