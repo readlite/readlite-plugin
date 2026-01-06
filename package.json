@@ -6,7 +6,7 @@
   "author": "ReadLite Team",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zhongyiio/readlite.git"
+    "url": "https://github.com/zhongyiio/readlite-plugin.git"
   },
   "license": "MIT",
   "engines": {

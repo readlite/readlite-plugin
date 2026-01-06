@@ -19,8 +19,8 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/zhongyiio/readlite.git
-cd readlite
+git clone https://github.com/zhongyiio/readlite-plugin.git
+cd readlite-plugin
 
 # 安装依赖
 yarn install
@@ -47,8 +47,8 @@ yarn build
 ### 安装
 ```bash
 # 克隆仓库
-git clone https://github.com/zhongyiio/readlite.git
-cd readlite
+git clone https://github.com/zhongyiio/readlite-plugin.git
+cd readlite-plugin
 
 # 安装依赖
 yarn install
