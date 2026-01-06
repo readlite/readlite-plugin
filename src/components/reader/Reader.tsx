@@ -76,14 +76,11 @@ const Reader = () => {
     settings,
     isLoading,
     error,
-    updateSettings,
-    closeReader,
     loadArticle,
   } = useReader();
 
   // Additional state for reader functionality
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [visibleContent, setVisibleContent] = useState<string>("");
   const [iframeReady, setIframeReady] = useState(false);
 
   // State for Reader UI
@@ -93,7 +90,8 @@ const Reader = () => {
   const settingsButtonRef = useRef<HTMLButtonElement>(
     null,
   ) as React.RefObject<HTMLButtonElement>;
-  const [detectedLanguage, setDetectedLanguage] = useState<LanguageCode>("en");
+  const [detectedLanguage] = useState<LanguageCode>("en");
+  const [visibleContent, setVisibleContent] = useState("");
 
   // Get translations function
   const { t } = useI18n();
@@ -137,29 +135,27 @@ const Reader = () => {
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const autoScrollIntervalRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const [autoScrollSpeed, setAutoScrollSpeed] = useState(1.5); // Speed in pixels per frame (default: normal reading speed)
+  const [autoScrollSpeed] = useState(1.5); // Speed in pixels per frame (default: normal reading speed)
 
   // --- Lifecycle Effects ---
 
-  // Log when Reader component mounts and check for iframe
+  // Log when Reader component mounts and check for container (Shadow DOM)
   useEffect(() => {
     logger.info("Reader component mounted");
 
-    const iframe = window.parent.document.getElementById(
-      "readlite-iframe-container",
-    ) as HTMLIFrameElement;
-    if (iframe) {
-      logger.info("Reader iframe found");
-      setIframeReady(true);
+    // Check for Shadow DOM container
+    const shadowContainer = window.parent.document.getElementById("readlite-container");
+    if (shadowContainer && shadowContainer.shadowRoot) {
+       logger.info("Reader Shadow DOM container found");
+       setIframeReady(true);
     } else {
-      logger.warn("Reader iframe not found on component mount");
+      logger.warn("Reader container not found on component mount");
 
       const checkInterval = setInterval(() => {
-        const checkIframe = window.parent.document.getElementById(
-          "readlite-iframe-container",
-        );
-        if (checkIframe) {
-          logger.info("Reader iframe detected");
+        const checkShadow = window.parent.document.getElementById("readlite-container");
+        
+        if (checkShadow && checkShadow.shadowRoot) {
+          logger.info("Reader container detected");
           setIframeReady(true);
           clearInterval(checkInterval);
         }
@@ -169,10 +165,10 @@ const Reader = () => {
     }
   }, []);
 
-  // Load article data when component mounts and iframe is ready
+  // Load article data when component mounts and container is ready
   useEffect(() => {
     if (iframeReady) {
-      logger.info("Iframe ready, loading article content");
+      logger.info("Container ready, loading article content");
       loadArticle();
     }
   }, [iframeReady, loadArticle]);
@@ -374,7 +370,7 @@ const Reader = () => {
 
   // Handle text selection events
   const handleTextSelection = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
+    (_e: React.MouseEvent | React.TouchEvent) => {
       if (isFullscreen) {
         setTimeout(() => {
           captureSelection();
@@ -553,13 +549,13 @@ const Reader = () => {
 
       let visibleText = "";
       let visibleElementsCount = 0;
-      let visibleElementsList = [];
+      const visibleElementsList = [];
 
       if (article.title) {
         visibleText += article.title + "\n\n";
       }
 
-      textElements.forEach((el, index) => {
+      textElements.forEach((el, _index) => {
         const rect = el.getBoundingClientRect();
         const offsetTop = rect.top + readerScrollTop - containerRect.top;
 
@@ -579,7 +575,7 @@ const Reader = () => {
 
         if (isVisible) {
           visibleElementsCount++;
-          let elementText = el.textContent?.trim() || "";
+          const elementText = el.textContent?.trim() || "";
 
           if (elementText) {
             const tagName = el.tagName.toLowerCase();

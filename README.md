@@ -1,5 +1,8 @@
 # ReadLite - Simple Reading Mode
 
+![CI](https://github.com/yourusername/read-lite/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 A browser extension that provides a clean, distraction-free reading experience.
 
 ![ReadLite Icon](assets/icon.png)
@@ -72,7 +75,9 @@ yarn build
 
 ## Contributing
 
-Pull requests and issues are welcome. Please run tests and linting before submitting.
+Pull requests and issues are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+Please run tests and linting before submitting.
 
 ## Technical Details
 

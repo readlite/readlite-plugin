@@ -3,7 +3,7 @@
  * Responsible for theme loading, saving, and application
  */
 
-import { ThemeType, AVAILABLE_THEMES, themeTokens } from "../config/theme";
+import { ThemeType, AVAILABLE_THEMES, themeTokens, ThemeColors } from "../config/theme";
 import { createLogger } from "./logger";
 
 const logger = createLogger("theme-manager");
@@ -48,21 +48,19 @@ export function saveTheme(theme: ThemeType): void {
 }
 
 /**
- * Get the iframe document for theme application
+ * Get the document or shadow root for theme application
  * This should be used internally to ensure consistent document targeting
  */
-function getIframeDocument(): Document {
-  // Try to find the reader iframe
-  const iframe = document.getElementById(
-    "readlite-iframe-container",
-  ) as HTMLIFrameElement;
-  if (iframe && iframe.contentDocument) {
-    logger.info("Using iframe document for theme application");
-    return iframe.contentDocument;
+function getTargetContext(): Document | ShadowRoot {
+  // 1. Try to find the shadow root host
+  const container = document.getElementById("readlite-container");
+  if (container && container.shadowRoot) {
+    logger.info("Using Shadow DOM for theme application");
+    return container.shadowRoot;
   }
 
-  // Fallback to main document with warning
-  logger.warn("Iframe not found, using main document for theme application");
+  // 2. Fallback to main document with warning
+  logger.warn("Shadow Root not found, using main document for theme application");
   return document;
 }
 
@@ -72,9 +70,11 @@ function getIframeDocument(): Document {
 export function applyThemeGlobally(
   theme: ThemeType,
   customTheme?: string,
+  doc?: Document | ShadowRoot,
+  rootElement?: HTMLElement,
 ): void {
-  // Always get the iframe document internally
-  const targetDoc = getIframeDocument();
+  // Always get the target context internally, or use the provided one
+  const targetContext = doc || getTargetContext();
 
   logger.info(
     `Applying theme globally: ${theme}${customTheme ? " (custom)" : ""}`,
@@ -157,7 +157,7 @@ export function applyThemeGlobally(
   // --- Helper function to apply theme attributes and variables ---
   const applyToElement = (
     element: HTMLElement,
-    colors: any,
+    colors: ThemeColors,
     isRootContainer: boolean = false,
   ) => {
     // Remove previous theme classes
@@ -175,13 +175,24 @@ export function applyThemeGlobally(
 
   // --- 2. Apply CSS Variables Globally (within the iframe) ---
   // CSS Variables need to be on :root (documentElement) for Tailwind etc. to work reliably
-  applyCSSVariables(targetDoc.documentElement.style, themeColors);
-
-  // Add transition class to root element before changing theme
-  targetDoc.documentElement.classList.add("theme-transition");
+  // For Shadow DOM, we apply to the host or wrapper
+  if (targetContext instanceof Document) {
+    applyCSSVariables(targetContext.documentElement.style, themeColors);
+    targetContext.documentElement.classList.add("theme-transition");
+  } else {
+    // ShadowRoot
+    const wrapper = targetContext.querySelector('.readlite-theme-wrapper') as HTMLElement;
+    if (wrapper) {
+      applyCSSVariables(wrapper.style, themeColors);
+    }
+    // Also apply to host for inheritance
+    if (targetContext.host instanceof HTMLElement) {
+       applyCSSVariables(targetContext.host.style, themeColors);
+    }
+  }
 
   // --- 3. Apply Theme Attributes/Classes to the main App Container ---
-  const readerRootElement = targetDoc.getElementById("readlite-root");
+  const readerRootElement = rootElement || targetContext.getElementById("readlite-root");
   if (readerRootElement) {
     // Apply theme class, data-attribute, and direct styles ONLY to the root container
     applyToElement(readerRootElement, themeColors, true);
@@ -192,21 +203,30 @@ export function applyThemeGlobally(
   }
 
   // --- 4. Apply necessary classes/attributes to html/body ---
-  AVAILABLE_THEMES.forEach((t) => {
-    targetDoc.documentElement.classList.remove(t);
-    targetDoc.body.classList.remove(t);
-  });
+  if (targetContext instanceof Document) {
+    AVAILABLE_THEMES.forEach((t) => {
+      targetContext.documentElement.classList.remove(t);
+      targetContext.body.classList.remove(t);
+    });
 
-  // Remove transition class after a delay
-  setTimeout(() => {
-    targetDoc.documentElement.classList.remove("theme-transition");
-  }, 300); // Match CSS transition duration
+    // Remove transition class after a delay
+    setTimeout(() => {
+      targetContext.documentElement.classList.remove("theme-transition");
+    }, 300); // Match CSS transition duration
+  } else {
+     // For Shadow DOM, update wrapper classes
+     const wrapper = targetContext.querySelector('.readlite-theme-wrapper');
+     if (wrapper) {
+        AVAILABLE_THEMES.forEach((t) => wrapper.classList.remove(t));
+        wrapper.classList.add(theme);
+     }
+  }
 }
 
 /**
  * Apply all CSS variables to a style declaration
  */
-function applyCSSVariables(style: CSSStyleDeclaration, colors: any): void {
+function applyCSSVariables(style: CSSStyleDeclaration, colors: ThemeColors): void {
   try {
     // Background color series
     style.setProperty("--readlite-bg-primary", colors.bg.primary);
@@ -249,50 +269,83 @@ function applyCSSVariables(style: CSSStyleDeclaration, colors: any): void {
 
 /**
  * Generate theme style tag content
+ * Updated to support both global context (iframe/main) and Shadow DOM
  */
 export function generateThemeStyleContent(theme: ThemeType): string {
   return `
-    /* Basic theme class */
+    /* Basic theme class - Global Context */
     html.${theme}, body.${theme} {
       background-color: var(--readlite-bg-primary) !important;
       color: var(--readlite-text-primary) !important;
       transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Shadow DOM Host */
+    :host {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2147483645;
+      visibility: visible; /* Ensure host is visible */
+    }
+
+    /* Shadow DOM Wrapper */
+    .readlite-theme-wrapper.${theme} {
+      background-color: var(--readlite-bg-primary) !important;
+      color: var(--readlite-text-primary) !important;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
     }
     
     /* Container elements */
     html.${theme} .readlite-reader-container, 
     body.${theme} .readlite-reader-container,
     html.${theme} #readlite-root,
-    body.${theme} #readlite-root {
+    body.${theme} #readlite-root,
+    .readlite-theme-wrapper.${theme} #readlite-root {
       background-color: var(--readlite-bg-primary) !important;
       color: var(--readlite-text-primary) !important;
     }
     
     /* Link styles */
     html.${theme} a,
-    body.${theme} a {
+    body.${theme} a,
+    .readlite-theme-wrapper.${theme} a {
       color: var(--readlite-link) !important;
     }
     
     html.${theme} a:hover,
-    body.${theme} a:hover {
+    body.${theme} a:hover,
+    .readlite-theme-wrapper.${theme} a:hover {
       color: var(--readlite-link-hover) !important;
     }
     
     /* Scrollbar styles */
     html.${theme} ::-webkit-scrollbar,
-    body.${theme} ::-webkit-scrollbar {
+    body.${theme} ::-webkit-scrollbar,
+    .readlite-theme-wrapper.${theme}::-webkit-scrollbar {
       width: 5px;
       height: 5px;
     }
     
     html.${theme} ::-webkit-scrollbar-track,
-    body.${theme} ::-webkit-scrollbar-track {
+    body.${theme} ::-webkit-scrollbar-track,
+    .readlite-theme-wrapper.${theme}::-webkit-scrollbar-track {
       background: var(--readlite-scrollbar-track);
     }
     
     html.${theme} ::-webkit-scrollbar-thumb,
-    body.${theme} ::-webkit-scrollbar-thumb {
+    body.${theme} ::-webkit-scrollbar-thumb,
+    .readlite-theme-wrapper.${theme}::-webkit-scrollbar-thumb {
       background: var(--readlite-scrollbar-thumb);
       border-radius: 4px;
     }
@@ -306,20 +359,26 @@ export function generateThemeStyleContent(theme: ThemeType): string {
 }
 
 /**
- * Apply theme styles to Document
+ * Apply theme styles to Document or ShadowRoot
  */
-export function applyThemeStyles(doc: Document, theme: ThemeType): void {
+export function applyThemeStyles(target: Document | ShadowRoot, theme: ThemeType): void {
   const styleContent = generateThemeStyleContent(theme);
   const styleId = "readlite-theme-dynamic-styles";
 
   // Check if style tag already exists
-  let styleElement = doc.getElementById(styleId) as HTMLStyleElement;
+  let styleElement = target.getElementById(styleId) as HTMLStyleElement;
 
   if (!styleElement) {
     // Create new style tag
-    styleElement = doc.createElement("style");
+    styleElement = document.createElement("style");
     styleElement.id = styleId;
-    doc.head.appendChild(styleElement);
+    
+    if (target instanceof Document) {
+      target.head.appendChild(styleElement);
+    } else {
+      // For ShadowRoot, append to the root itself
+      target.appendChild(styleElement);
+    }
   }
 
   // Update style content
@@ -337,7 +396,7 @@ export function setupThemeChangeListener(
     if (event.key === THEME_STORAGE_KEY && event.newValue) {
       const newTheme = event.newValue as ThemeType;
       if (AVAILABLE_THEMES.includes(newTheme as ThemeType)) {
-        applyThemeGlobally(newTheme);
+        applyThemeGlobally(newTheme, undefined, doc);
         applyThemeStyles(doc, newTheme);
 
         if (callback) {

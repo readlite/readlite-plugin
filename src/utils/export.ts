@@ -24,7 +24,7 @@ export const generateFilename = (title: string, extension: string): string => {
     .replace(/[\\/:*?"<>|]/g, "-") // Replace Windows/Unix invalid filename chars
     .replace(/\s+/g, "_") // Replace spaces with underscores
     .replace(/_+/g, "_") // Replace multiple underscores with one
-    .replace(/[^\w\s\.\-]/g, ""); // Remove non-alphanumeric chars except dots, spaces, hyphens
+    .replace(/[^\w\s.-]/g, ""); // Remove non-alphanumeric chars except dots, spaces, hyphens
 
   // Truncate to reasonable length
   if (filename.length > 100) {
@@ -105,7 +105,7 @@ export const htmlToMarkdown = (html: string): string => {
     },
   });
 
-  return turndownService.turndown(html);
+  return turndownService.turndown(cleanHtml);
 };
 
 /**
@@ -146,7 +146,7 @@ function downloadFile(
             filename: filename,
             saveAs: true,
           },
-          (downloadId) => {
+          (_downloadId) => {
             // Clean up the URL after download starts
             setTimeout(() => URL.revokeObjectURL(url), 1000);
           },
@@ -301,15 +301,20 @@ export const exportAsMarkdown = (title: string, content: string): void => {
 };
 
 // Add Chrome API type declarations for TypeScript
-declare namespace chrome {
-  namespace downloads {
-    function download(
-      options: {
-        url: string;
-        filename?: string;
-        saveAs?: boolean;
-      },
-      callback?: (downloadId?: number) => void,
-    ): void;
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace chrome {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace downloads {
+      function download(
+        options: {
+          url: string;
+          filename?: string;
+          saveAs?: boolean;
+        },
+        callback?: (downloadId: number) => void,
+      ): void;
+    }
   }
 }
