@@ -1,91 +1,53 @@
-# ReadLite - Simple Reading Mode
+# ReadLite
 
-A browser extension that provides a clean, distraction-free reading experience.
-
-![ReadLite Icon](assets/icon.png)
+A clean, distraction-free reading mode browser extension for web articles.
 
 ## Features
 
-- **Clean Reader Interface**: Transform cluttered web pages into a beautiful, distraction-free reading experience
-- **Multiple Themes**: Choose from Light, Dark, Sepia, and Paper themes to suit your preference
-- **Adjustable Typography**: Customize font size, line spacing, and width for optimal reading comfort
-- **Article Saving**: Save articles as markdown for offline reading
-- **Text Highlighting & Notes**: Mark important passages and attach notes for later reference
+- 📖 **Clean Reading Mode** - Extract and display article content without distractions
+- 🎨 **Multiple Themes** - Light, Dark, Paper, Eyecare, High Contrast
+- ✏️ **Text Highlighting** - Highlight and save important text passages
+- ⚙️ **Customizable Display** - Adjust font, size, spacing, width, and alignment
+- 🌐 **Multi-language** - Support for English and Chinese
+- 📱 **Fullscreen Mode** - Immersive reading experience
+- 📤 **Export to Markdown** - Save articles for offline reading
 
 ## Installation
 
-### From Source
+### Development
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/read-lite.git
-cd read-lite
-
 # Install dependencies
-yarn install
-
-# Build the extension
-yarn build
-```
-
-Then open your browser's extension page (e.g., `chrome://extensions`), enable **Developer mode**, and load the `build/chrome-mv3-prod` folder.
-
-## Usage
-
-1. Install the extension from the Chrome Web Store (coming soon)
-2. Navigate to any article or blog post
-3. Click the ReadLite icon in your browser toolbar
-4. Enjoy a clean reading experience
-
-## Development
-
-### Prerequisites
-- Node.js (v16+)
-- Yarn or npm
-
-### Setup
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/read-lite.git
-cd read-lite
-
-# Install dependencies
-yarn install
+bun install
 
 # Start development server
-yarn dev
+bun run dev
 ```
 
-### Testing & Linting
+### Build
+
 ```bash
-# Run tests
-yarn test
+# Build for all browsers
+bun run build
 
-# Check code style
-yarn lint
+# Build for specific browser
+bun run build:chrome
+bun run build:firefox
+bun run build:edge
+
+# Create zip package
+bun run zip
 ```
 
-### Build for production
-```bash
-yarn build
-```
+## Tech Stack
 
-## Contributing
+- [WXT](https://wxt.dev) - Browser extension framework
+- [React](https://react.dev) - UI library
+- [TypeScript](https://www.typescriptlang.org) - Type safety
+- [Tailwind CSS](https://tailwindcss.com) - Styling
+- [@mozilla/readability](https://github.com/mozilla/readability) - Article extraction
 
-Pull requests and issues are welcome. Please run tests and linting before submitting.
-
-## Technical Details
-
-This extension is built with:
-- [Plasmo Framework](https://www.plasmo.com/) - Browser extension framework
-- [React](https://reactjs.org/) - UI library
-- [Mozilla Readability](https://github.com/mozilla/readability) - Content extraction
-- [Marked](https://marked.js.org/) - Markdown parsing
 
 ## License
 
 MIT
-
-## Languages
-
-- [中文说明](./README.zh.md)

@@ -1,21 +1,17 @@
 {
-  "name": "read-lite",
-  "displayName": "ReadLite - Simple Reading Mode",
-  "version": "1.0.8",
-  "description": "A simple reading mode extension to make web reading more comfortable",
-  "author": "ReadLite Team",
-  "license": "MIT",
+  "name": "readlite-wxt",
+  "private": true,
+  "version": "1.0.9",
+  "type": "module",
   "scripts": {
-    "clean": "rm -rf .plasmo/ build/",
-    "dev": "npm run build:tailwind && plasmo dev",
-    "build": "npm run build:tailwind && plasmo build",
-    "package": "npm run build:tailwind && plasmo build --zip",
-    "test": "jest",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
-    "build:tailwind": "npx tailwindcss -i ./src/styles/global.css -o ./src/styles/tailwind.output.css",
-    "watch:tailwind": "npx tailwindcss -i ./src/styles/global.css -o ./src/styles/tailwind.output.css --watch"
+    "dev": "wxt",
+    "build": "wxt build",
+    "build:chrome": "wxt build -b chrome",
+    "build:firefox": "wxt build -b firefox",
+    "build:edge": "wxt build -b edge",
+    "zip": "wxt zip",
+    "compile": "tsc --noEmit",
+    "postinstall": "wxt prepare"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -24,14 +20,13 @@
     "@mozilla/readability": "^0.6.0",
     "@mui/icons-material": "^7.0.1",
     "@mui/material": "^7.0.1",
-    "@plasmohq/storage": "^1.9.0",
-    "@types/classnames": "^2.3.0",
+    "@wxt-dev/i18n": "^0.2.4",
+    "@wxt-dev/module-react": "^1.1.5",
     "classnames": "^2.5.1",
     "dompurify": "^3.2.4",
     "franc-min": "^6.2.0",
     "html2canvas": "^1.4.1",
     "marked": "^15.0.7",
-    "plasmo": "0.90.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "turndown": "^7.2.0",
@@ -39,51 +34,17 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.312",
+    "@types/chrome": "^0.0.263",
     "@types/dompurify": "^3.0.5",
-    "@types/jest": "^29.5.11",
     "@types/marked": "^5.0.2",
-    "@types/react": "^19.0.12",
-    "@types/react-dom": "^19.0.4",
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
     "@types/turndown": "^5.0.5",
     "@types/uuid": "^10.0.0",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^8.55.0",
-    "jest": "^29.7.0",
-    "jimp": "^1.6.0",
-    "postcss": "^8.5.3",
-    "prettier": "^3.1.0",
-    "tailwindcss": "^3.3.3",
-    "typescript": "^5.3.3"
-  },
-  "manifest": {
-    "default_locale": "en",
-    "name": "__MSG_extensionName__",
-    "description": "__MSG_extensionDescription__",
-    "permissions": [
-      "activeTab",
-      "scripting",
-      "storage"
-    ],
-    "host_permissions": [
-      "<all_urls>"
-    ],
-    "action": {
-      "default_title": "ReadLite - Simple Reading Mode"
-    },
-    "background": {
-      "service_worker": "background.js",
-      "type": "module"
-    },
-    "web_accessible_resources": [
-      {
-        "resources": [
-          "src/styles/tailwind.output.css"
-        ],
-        "matches": [
-          "<all_urls>"
-        ]
-      }
-    ]
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.2",
+    "wxt": "^0.19.0"
   }
 }

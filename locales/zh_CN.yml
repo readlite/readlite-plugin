@@ -1,0 +1,112 @@
+# ReadLite 中文翻译
+
+# 扩展信息
+extensionName: 读点东西
+extensionDescription: 为任何网页文章提供清晰无干扰的阅读体验。
+
+# 主题名称
+light: 明亮
+dark: 暗黑
+paper: 纸张
+eyecare: 护眼
+highcontrast: 高对比度
+custom: 自定义
+
+# 设置标签
+settings: 设置
+displaySettings: 显示设置
+readingTheme: 阅读主题
+theme: 主题
+customTheme: 自定义主题
+fontFamily: 字体
+fontSize: 字号
+lineSpacing: 行间距
+contentWidth: 页面宽度
+textAlignment: 文本对齐
+
+# 字体描述
+system: 系统
+currentFont: 当前字体
+currentSize: 当前字号
+allFonts: 所有字体
+fontArial: 通用无衬线字体
+fontBookerly: Kindle默认阅读字体
+fontGeorgia: 经典网页衬线字体
+fontPalatino: 经典优雅的衬线字体
+fontTimesNewRoman: 传统经典衬线字体
+fontPingFang: 苹果设备默认中文字体
+fontMicrosoftYaHei: Windows系统默认中文字体
+fontSourceHanSans: 现代清晰的无衬线字体
+fontSourceHanSerif: 专业中文衬线字体
+fontHiraginoSansGB: 清晰的现代无衬线字体
+
+# 字体分类
+englishFonts: 英文字体
+chineseFonts: 中文字体
+recommendedForEnglish: 推荐英文
+recommendedForChinese: 推荐中文
+recommendedForBoth: 通用字体
+
+# 语言名称
+english: 英文
+chinese: 中文
+detected: 已检测
+
+# 对齐选项
+left: 左对齐
+center: 居中
+right: 右对齐
+justify: 两端对齐
+
+# 宽度选项
+narrow: 窄
+standard: 标准
+wide: 宽
+
+# 间距选项
+tight: 紧凑
+normal: 标准
+relaxed: 宽松
+
+# 颜色设置
+text: 文本
+background: 背景
+accent: 强调
+border: 边框
+ui: UI
+select: 选择
+accentColors: 强调色
+lightBackgrounds: 浅色背景
+darkBackgrounds: 深色背景
+eyecareBackgrounds: 护眼背景
+lightText: 浅色文本
+darkText: 深色文本
+
+# 操作
+close: 关闭
+closeReaderMode: 关闭阅读模式
+download: 下载
+copy: 复制
+copied: 已复制
+copyPlain: 纯文本
+copyMarkdown: 引用
+copyWithSource: + 来源
+highlight: 划线
+selectHighlightColor: 选择划线颜色
+removeHighlight: 删除划线
+addNote: 写想法
+delete: 删除
+collapseToolbar: 折叠工具栏
+autoScroll: 自动滚动
+returnToPage: 返回原网页
+tryAgain: 重试
+retry: 重试
+refreshLanguage: 同步浏览器语言
+
+# 状态消息
+loading: 加载中...
+extractingArticle: 提取文章中...
+couldNotExtract: 无法提取文章内容
+comingSoon: 即将推出
+errorOccurred: 发生错误
+errorMessage: 无法完成请求，请稍后再试

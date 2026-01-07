@@ -1,0 +1,112 @@
+# ReadLite English Translations
+
+# Extension info
+extensionName: ReadLite
+extensionDescription: Provide a clean, distraction-free reading experience for any article on the web.
+
+# Theme names
+light: Light
+dark: Dark
+paper: Paper
+eyecare: Eyecare
+highcontrast: High Contrast
+custom: Custom
+
+# Settings labels
+settings: Settings
+displaySettings: Display Settings
+readingTheme: Theme
+theme: Theme
+customTheme: Custom Theme
+fontFamily: Font
+fontSize: Font Size
+lineSpacing: Line Spacing
+contentWidth: Content Width
+textAlignment: Text Alignment
+
+# Font descriptions
+system: System
+currentFont: Current Font
+currentSize: Current Size
+allFonts: All Fonts
+fontArial: Common sans-serif font
+fontBookerly: Kindle default reading font
+fontGeorgia: Classic web serif font
+fontPalatino: Classic elegant serif
+fontTimesNewRoman: Traditional classic serif
+fontPingFang: Apple default Chinese font
+fontMicrosoftYaHei: Windows default Chinese font
+fontSourceHanSans: Clean modern sans-serif
+fontSourceHanSerif: Professional Chinese serif
+fontHiraginoSansGB: Clear modern sans-serif
+
+# Font categories
+englishFonts: English Fonts
+chineseFonts: Chinese Fonts
+recommendedForEnglish: For English
+recommendedForChinese: For Chinese
+recommendedForBoth: Universal
+
+# Language names
+english: English
+chinese: Chinese
+detected: Detected
+
+# Alignment options
+left: Left
+center: Center
+right: Right
+justify: Justify
+
+# Width options
+narrow: Narrow
+standard: Standard
+wide: Wide
+
+# Spacing options
+tight: Tight
+normal: Normal
+relaxed: Relaxed
+
+# Color settings
+text: Text
+background: Background
+accent: Accent
+border: Border
+ui: UI
+select: Select
+accentColors: Accent colors
+lightBackgrounds: Light backgrounds
+darkBackgrounds: Dark backgrounds
+eyecareBackgrounds: Eye-care backgrounds
+lightText: Light text
+darkText: Dark text
+
+# Actions
+close: Close
+closeReaderMode: Close Reader Mode
+download: Download
+copy: Copy
+copied: Copied
+copyPlain: Text
+copyMarkdown: Quote
+copyWithSource: + Source
+highlight: Highlight
+selectHighlightColor: Select highlight color
+removeHighlight: Remove Highlight
+addNote: Note
+delete: Delete
+collapseToolbar: Collapse Toolbar
+autoScroll: Auto-scroll
+returnToPage: Return to page
+tryAgain: Try again
+retry: Retry
+refreshLanguage: Sync browser language
+
+# Status messages
+loading: Loading...
+extractingArticle: Extracting article...
+couldNotExtract: Could not extract article content
+comingSoon: Coming soon
+errorOccurred: An error occurred
+errorMessage: Unable to complete the request. Please try again later.
