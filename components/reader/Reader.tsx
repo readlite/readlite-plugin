@@ -24,48 +24,6 @@ interface VirtualHighlightElement {
 }
 
 /**
- * Reading Progress Indicator Component
- * Shows a progress bar at the top of the reader
- */
-const ReadingProgress: React.FC<{ scrollContainer?: HTMLElement | null }> = ({
-  scrollContainer,
-}) => {
-  const [progress, setProgress] = useState(0);
-
-  // Update progress as user scrolls
-  useEffect(() => {
-    if (!scrollContainer) return;
-
-    const handleScroll = () => {
-      const scrollPosition = scrollContainer.scrollTop;
-      const containerHeight = scrollContainer.clientHeight;
-      const scrollHeight = scrollContainer.scrollHeight - containerHeight;
-
-      if (scrollHeight <= 0) return;
-
-      const currentProgress = Math.min(
-        100,
-        Math.max(0, (scrollPosition / scrollHeight) * 100),
-      );
-      setProgress(currentProgress);
-    };
-
-    handleScroll();
-    scrollContainer.addEventListener("scroll", handleScroll);
-    return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, [scrollContainer]);
-
-  return (
-    <div className="fixed top-0 left-0 w-full h-1.5 z-[9999] bg-accent/20 pointer-events-none">
-      <div
-        className={`h-full transition-all duration-150 ease-out bg-accent`}
-        style={{ width: `${progress}%` }}
-      />
-    </div>
-  );
-};
-
-/**
  * Main Reader component
  * Displays the article in a clean, readable format.
  */
@@ -762,7 +720,7 @@ const Reader = () => {
   // Handle loading state
   if (isLoading) {
     return (
-      <ThemeProvider currentTheme={theme}>
+      <ThemeProvider initialTheme={theme}>
         <div
           className="flex justify-center items-center h-screen w-screen bg-primary text-primary"
           data-theme={theme}
@@ -784,7 +742,7 @@ const Reader = () => {
   // Handle error state (article not extracted or other errors)
   if (!article || error) {
     return (
-      <ThemeProvider currentTheme={theme}>
+      <ThemeProvider initialTheme={theme}>
         <div
           className="flex justify-center items-center h-screen w-screen bg-primary text-primary"
           data-theme={theme}
@@ -812,7 +770,6 @@ const Reader = () => {
 
   return (
     <ThemeProvider initialTheme={theme}>
-      <ReadingProgress />
       {/* Inline Progress Bar */}
       <div className="fixed top-0 left-0 w-full h-1.5 z-[9999] bg-accent/20 pointer-events-none">
         <div
@@ -824,7 +781,7 @@ const Reader = () => {
       {/* Main Container - the entire screen */}
       <div
         ref={readerContainerRef}
-        className="readlite-reader-container bg-primary text-primary flex flex-col w-full h-full overflow-hidden relative"
+        className="readlite-reader-container bg-primary text-primary flex flex-col w-full h-full relative"
         style={{
           ...(isFullscreen ? { userSelect: "text" } : {}),
         }}
@@ -838,7 +795,7 @@ const Reader = () => {
           {/* Reader Column (left side) */}
           <div
             ref={readerColumnRef}
-            className={`h-full overflow-y-auto relative box-border scrollbar-custom w-full ${isDraggingRef.current ? "" : "transition-all duration-200 ease-out"}`}
+            className={`h-full overflow-y-scroll overscroll-contain relative box-border w-full ${isDraggingRef.current ? "" : "transition-all duration-200 ease-out"}`}
           >
             {/* Reader Content Area */}
             <ReaderContent
@@ -848,24 +805,22 @@ const Reader = () => {
               detectedLanguage={detectedLanguage}
               error={error}
             />
-
-            {/* Toolbar */}
-            <ReaderToolbar
-              handleMarkdownDownload={handleMarkdownDownload}
-              toggleSettings={toggleSettings}
-              handleClose={handleClose}
-              toggleFullscreen={toggleFullscreen}
-              isFullscreen={isFullscreen}
-              settingsButtonRef={settingsButtonRef}
-              showSettings={showSettings}
-              isDragging={isDraggingRef.current}
-              t={t}
-              isAutoScrolling={isAutoScrolling}
-              toggleAutoScroll={toggleAutoScroll}
-              isVisible={isToolbarVisible || showSettings}
-            />
           </div>
         </div>
+
+        {/* Toolbar - Moved outside scroll container to ensure fixed positioning works */}
+        <ReaderToolbar
+          handleMarkdownDownload={handleMarkdownDownload}
+          toggleSettings={toggleSettings}
+          handleClose={handleClose}
+          toggleFullscreen={toggleFullscreen}
+          isFullscreen={isFullscreen}
+          settingsButtonRef={settingsButtonRef}
+          showSettings={showSettings}
+          isDragging={isDraggingRef.current}
+          t={t}
+          isVisible={isToolbarVisible || showSettings}
+        />
 
         {/* Text selection toolbar */}
         {selectionState.isActive && selectionState.rect && (

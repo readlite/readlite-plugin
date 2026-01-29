@@ -3,6 +3,7 @@
  * 
  * Provides a simple interface to access translations.
  */
+// @ts-ignore
 import { i18n } from '#i18n';
 
 /**

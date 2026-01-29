@@ -6,7 +6,6 @@ import { useTheme } from "@/context/ThemeContext";
 import { useI18n } from "@/hooks/useI18n";
 import { HIGHLIGHT_STYLES } from "@/utils/parser";
 
-import llmClient from "@/services/llmClient";
 import { createLogger } from "@/utils/logger";
 
 // Create a logger for this module

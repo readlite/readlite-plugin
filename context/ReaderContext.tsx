@@ -22,6 +22,7 @@ const logger = createLogger("reader-context");
 // Main settings type
 export interface ReaderSettings {
   theme: ThemeType;
+  customTheme?: string;
   fontFamily: string;
   fontSize: number;
   lineHeight: number;
@@ -35,6 +36,7 @@ export interface ReaderSettings {
 // Default settings for reader
 export const defaultSettings: ReaderSettings = {
   theme: "light",
+  customTheme: "",
   fontFamily: "", // Empty string to allow language-specific default
   fontSize: 18,
   lineHeight: 1.6,

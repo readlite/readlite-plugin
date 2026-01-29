@@ -148,8 +148,8 @@ const ThemeSection: React.FC<ThemeSectionProps> = ({
   const [customTheme, setCustomTheme] = useState({
     bgPrimary: themeTokens.custom.bg.primary,
     textPrimary: themeTokens.custom.text.primary,
-    accent: themeTokens.custom.accent,
-    border: themeTokens.custom.border,
+    accent: themeTokens.custom.ui.accent,
+    border: themeTokens.custom.ui.border,
   });
 
   // Update color picker initial values when custom theme is selected
@@ -162,8 +162,8 @@ const ThemeSection: React.FC<ThemeSectionProps> = ({
             savedCustomTheme.bgPrimary || themeTokens.custom.bg.primary,
           textPrimary:
             savedCustomTheme.textPrimary || themeTokens.custom.text.primary,
-          accent: savedCustomTheme.accent || themeTokens.custom.accent,
-          border: savedCustomTheme.border || themeTokens.custom.border,
+          accent: savedCustomTheme.accent || themeTokens.custom.ui.accent,
+          border: savedCustomTheme.border || themeTokens.custom.ui.border,
         });
       } catch (e) {
         logger.error("Failed to parse saved custom theme", e);
@@ -205,8 +205,8 @@ const ThemeSection: React.FC<ThemeSectionProps> = ({
         : {
             bgPrimary: themeTokens[currentTheme].bg.primary,
             textPrimary: themeTokens[currentTheme].text.primary,
-            accent: themeTokens[currentTheme].accent,
-            border: themeTokens[currentTheme].border,
+            accent: themeTokens[currentTheme].ui.accent,
+            border: themeTokens[currentTheme].ui.border,
           };
 
       // Set local state to theme defaults

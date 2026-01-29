@@ -70,12 +70,18 @@ export default defineContentScript({
         contentLogger.info("Mounting ShadowRoot UI");
         shadowRoot = shadow;
         mountPoint = uiContainer;
+
+        // Ensure uiContainer takes full width/height of the shadow host
+        Object.assign(uiContainer.style, {
+          width: '100%',
+          height: '100%'
+        });
         
         // 1. Inject Styles
         // Inject Tailwind/Global CSS
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = browser.runtime.getURL(globalCssUrl);
+        link.href = (browser.runtime as any).getURL(globalCssUrl);
         shadow.appendChild(link);
 
         // Inject container styles to the Shadow Host to ensure it covers the screen
@@ -220,7 +226,7 @@ export default defineContentScript({
           return false;
       }
     };
-    browser.runtime.onMessage.addListener(handleMessage);
+    browser.runtime.onMessage.addListener(handleMessage as any);
 
     // Listen for internal toggle event (from React app close button)
     const handleInternalToggle = () => {
@@ -233,7 +239,7 @@ export default defineContentScript({
     
     // Return cleanup for the content script
     return () => {
-        browser.runtime.onMessage.removeListener(handleMessage);
+        browser.runtime.onMessage.removeListener(handleMessage as any);
         document.removeEventListener("READLITE_TOGGLE_INTERNAL", handleInternalToggle);
         ui.remove();
         document.documentElement.style.overflow = '';

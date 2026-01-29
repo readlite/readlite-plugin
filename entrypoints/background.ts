@@ -40,7 +40,7 @@ export default defineBackground(() => {
    * Handles incoming messages from content scripts.
    */
   browser.runtime.onMessage.addListener(
-    (message: unknown, sender, sendResponse) => {
+    ((message: unknown, sender: any, sendResponse: any) => {
       // Cast message to expected type
       const bgMessage = message as BackgroundMessage;
       
@@ -67,7 +67,7 @@ export default defineBackground(() => {
       }
 
       return false;
-    },
+    }) as any,
   );
 
   // --- Browser Event Listeners ---
