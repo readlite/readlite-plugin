@@ -3,10 +3,54 @@
  * Responsible for theme loading, saving, and application
  */
 
-import { ThemeType, AVAILABLE_THEMES, themeTokens } from "../config/theme";
+import {
+  ThemeType,
+  AVAILABLE_THEMES,
+  themeTokens,
+  normalizeTheme,
+} from "../config/theme";
 import { createLogger } from "./logger";
 
 const logger = createLogger("theme-manager");
+
+/**
+ * Convert a CSS color string to space-separated RGB numbers for use in
+ * Tailwind's `rgb(var(--token) / alpha)` pattern.
+ */
+function toRgbValues(color: string | undefined): string {
+  if (!color) return "0 0 0";
+
+  // Already in rgb/rgba format
+  const rgbMatch = color.match(/rgba?\(([^)]+)\)/i);
+  if (rgbMatch) {
+    const parts = rgbMatch[1]
+      .split(",")
+      .slice(0, 3)
+      .map((p) => p.trim())
+      .join(" ");
+    return parts || "0 0 0";
+  }
+
+  // Hex format (#rgb or #rrggbb)
+  if (color.startsWith("#")) {
+    let hex = color.replace("#", "");
+    if (hex.length === 3) {
+      hex = hex
+        .split("")
+        .map((c) => c + c)
+        .join("");
+    }
+
+    if (hex.length === 6) {
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return `${r} ${g} ${b}`;
+    }
+  }
+
+  return "0 0 0";
+}
 
 // Key name for theme storage in localStorage
 const THEME_STORAGE_KEY = "readlite_theme";
@@ -18,13 +62,18 @@ const THEME_STORAGE_KEY = "readlite_theme";
 export function getPreferredTheme(): ThemeType {
   try {
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-    if (savedTheme && AVAILABLE_THEMES.includes(savedTheme as ThemeType)) {
-      return savedTheme as ThemeType;
+    if (savedTheme) {
+      const normalized = normalizeTheme(savedTheme);
+      if (normalized !== savedTheme) {
+        // migrate legacy value silently
+        localStorage.setItem(THEME_STORAGE_KEY, normalized);
+      }
+      return normalized;
     }
   } catch (e) {
     logger.warn("Unable to read theme settings from localStorage", e);
   }
-  return "light"; // Default to light theme
+  return "ink"; // Default to Paper Mono
 }
 
 /**
@@ -53,7 +102,6 @@ export function saveTheme(theme: ThemeType): void {
 export function applyThemeGlobally(
   theme: ThemeType,
   targetRoot?: Document | ShadowRoot | HTMLElement,
-  customTheme?: string,
 ): void {
   // Use provided root or fallback to document (for main page context if needed)
   const root = targetRoot || document;
@@ -80,69 +128,10 @@ export function applyThemeGlobally(
       return;
   }
 
-  logger.info(
-    `Applying theme globally: ${theme}${customTheme ? " (custom)" : ""}`,
-  );
+  const normalizedTheme = normalizeTheme(theme);
+  logger.info(`Applying theme globally: ${normalizedTheme}`);
 
-  let themeColors = themeTokens[theme];
-
-  // --- 1. Process Custom Theme ---
-  if (theme === "custom") {
-    // If customTheme wasn't provided, try to load from localStorage
-    if (!customTheme) {
-      try {
-        const savedCustomTheme = localStorage.getItem("readlite-custom-theme");
-        if (savedCustomTheme) {
-          customTheme = savedCustomTheme;
-        }
-      } catch (e) {
-        logger.error("Failed to load custom theme from localStorage", e);
-      }
-    }
-
-    // Now apply the custom theme if available
-    if (customTheme) {
-      try {
-        const customThemeObj = JSON.parse(customTheme);
-        // Merge custom colors with base theme tokens
-        themeColors = {
-          ...themeTokens.custom, // Start with custom defaults
-          bg: {
-            ...themeTokens.custom.bg,
-            ...(customThemeObj.bgPrimary && {
-              primary: customThemeObj.bgPrimary,
-              secondary: customThemeObj.bgPrimary, 
-              tertiary: customThemeObj.bgPrimary,
-              user: customThemeObj.bgPrimary,
-              input: customThemeObj.bgPrimary,
-            }),
-          },
-          text: {
-            ...themeTokens.custom.text,
-            ...(customThemeObj.textPrimary && {
-              primary: customThemeObj.textPrimary,
-              secondary: customThemeObj.textPrimary,
-              user: customThemeObj.textPrimary,
-            }),
-          },
-          ...(customThemeObj.accent && {
-            accent: customThemeObj.accent,
-          }),
-          ...(customThemeObj.border && { border: customThemeObj.border }),
-        };
-
-        if (customThemeObj.accent) {
-          themeColors.text = {
-            ...themeColors.text,
-            accent: customThemeObj.accent,
-          };
-        }
-      } catch (e) {
-        logger.error("Failed to parse or apply custom theme", e);
-        themeColors = themeTokens.custom;
-      }
-    }
-  }
+  const themeColors = themeTokens[normalizedTheme];
 
   // --- 2. Apply CSS Variables ---
   // Apply to the root element (host or html)
@@ -158,8 +147,8 @@ export function applyThemeGlobally(
     }
   });
 
-  rootElement.classList.add(theme);
-  rootElement.setAttribute("data-theme", theme);
+  rootElement.classList.add(normalizedTheme);
+  rootElement.setAttribute("data-theme", normalizedTheme);
 
   // Apply transition
   rootElement.classList.add("theme-transition");
@@ -175,8 +164,20 @@ function applyCSSVariables(style: CSSStyleDeclaration, colors: any): void {
   try {
     // Background color series
     style.setProperty("--readlite-bg-primary", colors.bg.primary);
+    style.setProperty(
+      "--readlite-bg-primary-rgb",
+      toRgbValues(colors.bg.primary),
+    );
     style.setProperty("--readlite-bg-secondary", colors.bg.secondary);
+    style.setProperty(
+      "--readlite-bg-secondary-rgb",
+      toRgbValues(colors.bg.secondary),
+    );
     style.setProperty("--readlite-bg-tertiary", colors.bg.tertiary);
+    style.setProperty(
+      "--readlite-bg-tertiary-rgb",
+      toRgbValues(colors.bg.tertiary),
+    );
     style.setProperty("--readlite-bg-user", colors.bg.user);
     style.setProperty("--readlite-bg-input", colors.bg.input);
 
@@ -188,7 +189,15 @@ function applyCSSVariables(style: CSSStyleDeclaration, colors: any): void {
 
     // Text color series
     style.setProperty("--readlite-text-primary", colors.text.primary);
+    style.setProperty(
+      "--readlite-text-primary-rgb",
+      toRgbValues(colors.text.primary),
+    );
     style.setProperty("--readlite-text-secondary", colors.text.secondary);
+    style.setProperty(
+      "--readlite-text-secondary-rgb",
+      toRgbValues(colors.text.secondary),
+    );
     style.setProperty("--readlite-text-user", colors.text.user);
     style.setProperty("--readlite-text-accent", colors.text.accent);
 
@@ -199,8 +208,37 @@ function applyCSSVariables(style: CSSStyleDeclaration, colors: any): void {
 
     // Border and accent colors
     style.setProperty("--readlite-border", colors.ui.border);
+    style.setProperty(
+      "--readlite-border-rgb",
+      toRgbValues(colors.ui.border),
+    );
     style.setProperty("--readlite-accent", colors.ui.accent);
+    style.setProperty(
+      "--readlite-accent-rgb",
+      toRgbValues(colors.ui.accent),
+    );
     style.setProperty("--readlite-error", colors.ui.error);
+    style.setProperty("--readlite-error-rgb", toRgbValues(colors.ui.error));
+
+    // Highlight colors
+    if (colors.highlight) {
+      style.setProperty("--readlite-highlight-beige", colors.highlight.beige);
+      style.setProperty("--readlite-highlight-cyan", colors.highlight.cyan);
+      style.setProperty(
+        "--readlite-highlight-lavender",
+        colors.highlight.lavender,
+      );
+      style.setProperty("--readlite-highlight-olive", colors.highlight.olive);
+      style.setProperty("--readlite-highlight-peach", colors.highlight.peach);
+      style.setProperty(
+        "--readlite-highlight-selection",
+        colors.highlight.selection,
+      );
+      style.setProperty(
+        "--readlite-highlight-selection-hover",
+        colors.highlight.selectionHover,
+      );
+    }
 
     // Link colors
     if (colors.link) {
@@ -274,7 +312,8 @@ export function generateThemeStyleContent(theme: ThemeType): string {
  * Apply theme styles to a root node (Document or ShadowRoot)
  */
 export function applyThemeStyles(root: Document | ShadowRoot, theme: ThemeType): void {
-  const styleContent = generateThemeStyleContent(theme);
+  const normalizedTheme = normalizeTheme(theme);
+  const styleContent = generateThemeStyleContent(normalizedTheme);
   const styleId = "readlite-theme-dynamic-styles";
 
   // Check if style tag already exists

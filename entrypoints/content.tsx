@@ -5,7 +5,12 @@ import React, { useEffect, useState } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { ReaderProvider } from "@/context/ReaderContext";
 import Reader from "@/components/reader/Reader";
-import { createLogger } from "@/utils/logger";
+import {
+  applyLogSettings,
+  createLogger,
+  LOG_CONSOLE_STORAGE_KEY,
+  LOG_LEVEL_STORAGE_KEY,
+} from "@/utils/logger";
 import {
   getPreferredTheme,
   applyThemeGlobally,
@@ -49,6 +54,87 @@ export default defineContentScript({
   runAt: "document_idle",
   cssInjectionMode: "manual",
   async main(ctx) {
+    // Font CDN URL (non-blocking injected)
+    const fontsUrl =
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&family=Source+Serif+4:wght@400;600&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;600&family=LXGW+WenKai+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Mono:wght@400;500&display=swap";
+
+    const injectFontLinks = (shadow: ShadowRoot, host: HTMLElement) => {
+      const doc = shadow.ownerDocument || document;
+      const ensure = (id: string, builder: () => HTMLLinkElement) => {
+        if (shadow.getElementById(id)) return;
+        const el = builder();
+        el.id = id;
+        shadow.appendChild(el);
+      };
+
+      // Preconnect to font origins
+      ensure("readlite-font-preconnect-1", () => {
+        const link = doc.createElement("link");
+        link.rel = "preconnect";
+        link.href = "https://fonts.googleapis.com";
+        return link;
+      });
+
+      ensure("readlite-font-preconnect-2", () => {
+        const link = doc.createElement("link");
+        link.rel = "preconnect";
+        link.href = "https://fonts.gstatic.com";
+        link.crossOrigin = "anonymous";
+        return link;
+      });
+
+      // Non-blocking stylesheet load
+      ensure("readlite-font-style", () => {
+        const link = doc.createElement("link");
+        link.rel = "preload";
+        link.as = "style";
+        link.href = fontsUrl;
+        link.crossOrigin = "anonymous";
+        link.onload = () => {
+          link.rel = "stylesheet";
+          link.onload = null;
+        };
+        // Fallback: ensure stylesheet applied even if onload not fired (older browsers)
+        setTimeout(() => {
+          if (link.rel !== "stylesheet") {
+            link.rel = "stylesheet";
+          }
+        }, 3000);
+        return link;
+      });
+    };
+    const loadLogSettings = async () => {
+      try {
+        const stored = await browser.storage.local.get([
+          LOG_LEVEL_STORAGE_KEY,
+          LOG_CONSOLE_STORAGE_KEY,
+        ]);
+        applyLogSettings({
+          level:
+            typeof stored[LOG_LEVEL_STORAGE_KEY] === "number"
+              ? stored[LOG_LEVEL_STORAGE_KEY]
+              : undefined,
+          console:
+            typeof stored[LOG_CONSOLE_STORAGE_KEY] === "boolean"
+              ? stored[LOG_CONSOLE_STORAGE_KEY]
+              : undefined,
+        });
+      } catch {
+        // Ignore logging config failures; defaults remain in effect.
+      }
+    };
+
+    await loadLogSettings();
+    browser.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName !== "local") return;
+      const nextLevel = changes[LOG_LEVEL_STORAGE_KEY]?.newValue;
+      const nextConsole = changes[LOG_CONSOLE_STORAGE_KEY]?.newValue;
+      applyLogSettings({
+        level: typeof nextLevel === "number" ? nextLevel : undefined,
+        console: typeof nextConsole === "boolean" ? nextConsole : undefined,
+      });
+    });
+
     contentLogger.info("[Content Script] ReadLite content script initialized");
 
     // Track state
@@ -57,6 +143,8 @@ export default defineContentScript({
     let shadowRoot: ShadowRoot | null = null;
     let mountPoint: HTMLElement | null = null;
     let reactRoot: Root | null = null;
+    let cssReady = false;
+    let pendingShow = false;
 
     // Define the UI using WXT's Shadow Root helper
     const ui = await createShadowRootUi(ctx, {
@@ -73,16 +161,33 @@ export default defineContentScript({
 
         // Ensure uiContainer takes full width/height of the shadow host
         Object.assign(uiContainer.style, {
+          position: 'absolute',
+          top: '0',
+          left: '0',
           width: '100%',
-          height: '100%'
+          height: '100%',
+          boxSizing: 'border-box',
         });
         
         // 1. Inject Styles
+        const markCssReady = () => {
+          cssReady = true;
+          if (pendingShow || uiVisible) {
+            shadowHost.style.display = "block";
+            pendingShow = false;
+          }
+        };
+
         // Inject Tailwind/Global CSS
         const link = document.createElement("link");
         link.rel = "stylesheet";
         link.href = (browser.runtime as any).getURL(globalCssUrl);
+        link.addEventListener("load", markCssReady);
+        link.addEventListener("error", markCssReady);
         shadow.appendChild(link);
+
+        // Inject font links (non-blocking) into shadow root
+        injectFontLinks(shadow, shadowHost);
 
         // Inject container styles to the Shadow Host to ensure it covers the screen
         Object.assign(shadowHost.style, {
@@ -94,6 +199,7 @@ export default defineContentScript({
           zIndex: '2147483647',
           display: 'none', // Hidden by default
           isolation: 'isolate',
+          boxSizing: 'border-box',
         });
 
         // 2. Setup Theme
@@ -159,6 +265,9 @@ export default defineContentScript({
       }
     });
 
+    let previousHtmlOverflow: string | null = null;
+    let previousBodyOverflow: string | null = null;
+
     // Helper to show/hide the UI
     const setUiVisibility = (visible: boolean) => {
         if (!uiMounted && visible) {
@@ -174,7 +283,17 @@ export default defineContentScript({
              if (shadowRoot) {
                  const host = shadowRoot.host as HTMLElement;
                  if (host) {
-                     host.style.display = visible ? 'block' : 'none';
+                     if (visible) {
+                        if (cssReady) {
+                          host.style.display = "block";
+                        } else {
+                          pendingShow = true;
+                          host.style.display = "none";
+                        }
+                     } else {
+                        pendingShow = false;
+                        host.style.display = "none";
+                     }
                  }
              }
         }
@@ -183,10 +302,32 @@ export default defineContentScript({
         
         // Toggle body scroll
         if (visible) {
+            if (previousHtmlOverflow === null) {
+                previousHtmlOverflow = document.documentElement.style.overflow;
+            }
+            if (previousBodyOverflow === null && document.body) {
+                previousBodyOverflow = document.body.style.overflow;
+            }
             document.documentElement.style.overflow = 'hidden';
+            if (document.body) {
+                document.body.style.overflow = 'hidden';
+            }
             document.documentElement.classList.add('readlite-active');
         } else {
-             document.documentElement.style.overflow = '';
+             if (previousHtmlOverflow !== null) {
+                document.documentElement.style.overflow = previousHtmlOverflow;
+                previousHtmlOverflow = null;
+             } else {
+                document.documentElement.style.overflow = '';
+             }
+             if (document.body) {
+                if (previousBodyOverflow !== null) {
+                    document.body.style.overflow = previousBodyOverflow;
+                    previousBodyOverflow = null;
+                } else {
+                    document.body.style.overflow = '';
+                }
+             }
              document.documentElement.classList.remove('readlite-active');
         }
 

@@ -17,12 +17,32 @@ let currentLogLevel = LogLevel.INFO;
 // Whether to enable console logging (can be disabled for production)
 let ENABLE_CONSOLE = process.env.NODE_ENV !== "production";
 
+export const LOG_LEVEL_STORAGE_KEY = "readlite_log_level";
+export const LOG_CONSOLE_STORAGE_KEY = "readlite_log_console";
+
+export type LogSettings = {
+  level?: LogLevel;
+  console?: boolean;
+};
+
 /**
  * Set the global log level
  * @param level New log level to use
  */
 export function setLogLevel(level: LogLevel): void {
   currentLogLevel = level;
+}
+
+/**
+ * Apply log settings in a single call.
+ */
+export function applyLogSettings(settings: LogSettings): void {
+  if (typeof settings.level === "number") {
+    currentLogLevel = settings.level;
+  }
+  if (typeof settings.console === "boolean") {
+    ENABLE_CONSOLE = settings.console;
+  }
 }
 
 /**

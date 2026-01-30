@@ -23,7 +23,6 @@ export interface FontLabel {
 export interface FontOption {
   value: string; // CSS font-family value
   label: FontLabel; // Localized display names in different languages
-  compatibleLanguages: string[]; // Languages this font supports, first one is primary
   available?: boolean; // Whether this font is available (default: true)
 }
 
@@ -33,53 +32,77 @@ export interface FontOption {
  * All font-related UI elements should reference this array
  */
 export const fontOptions: FontOption[] = [
-  // Chinese fonts - 3 essential options
+  // --- CJK Serif / Mixed reading (bundled) ---
   {
     value:
-      '"Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
-    label: { zh: "思源黑体", en: "Source Han Sans" },
-    compatibleLanguages: ["zh", "ja", "ko", "cmn", "wuu", "yue"],
-    available: true,
-  },
-  {
-    value: '"PingFang SC", "苹方", "-apple-system", sans-serif',
-    label: { zh: "苹方", en: "PingFang" },
-    compatibleLanguages: ["zh", "cmn", "wuu", "yue"],
-    available: true,
-  },
-  {
-    value: '"Source Han Serif SC", "Noto Serif SC", serif',
-    label: { zh: "思源宋体", en: "Source Han Serif" },
-    compatibleLanguages: ["zh", "ja", "ko", "cmn", "wuu", "yue"],
-    available: true,
+      '"LXGW WenKai", "Noto Serif", "Source Serif 4", "Songti SC", SimSun, serif',
+    label: { zh: "霞鹜文楷 / LXGW WenKai", en: "LXGW WenKai" },
   },
 
-  // English fonts - 3 essential options
+  // --- Latin Serif ---
   {
-    value: '"Georgia", serif',
+    value: '"Literata", Georgia, "Times New Roman", serif',
+    label: { zh: "Literata", en: "Literata" },
+  },
+  {
+    value: '"Source Serif 4", "Literata", Georgia, "Times New Roman", serif',
+    label: { zh: "Source Serif 4", en: "Source Serif 4" },
+  },
+  {
+    value: '"Noto Serif", "Source Serif 4", Georgia, "Times New Roman", serif',
+    label: { zh: "Noto Serif", en: "Noto Serif" },
+  },
+  {
+    value: "Georgia, \"Times New Roman\", Times, serif",
     label: { zh: "Georgia", en: "Georgia" },
-    compatibleLanguages: ["en", "fr", "de", "es", "it", "ru"],
-    available: true,
+  },
+
+  // --- Latin Sans ---
+  {
+    value: "\"Noto Sans\", Arial, sans-serif",
+    label: { zh: "Noto Sans", en: "Noto Sans" },
   },
   {
-    value: '"Palatino", "Palatino Linotype", serif',
-    label: { zh: "Palatino", en: "Palatino" },
-    compatibleLanguages: ["en", "fr", "de", "es", "it", "ru"],
-    available: true,
+    value:
+      'system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif',
+    label: { zh: "系统无衬线", en: "System UI Sans" },
+  },
+
+  // --- Mono ---
+  {
+    value:
+      '"JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace',
+    label: { zh: "JetBrains Mono", en: "JetBrains Mono" },
   },
   {
-    value: '"Arial", "Helvetica", sans-serif',
-    label: { zh: "Arial", en: "Arial" },
-    compatibleLanguages: ["en", "fr", "de", "es", "it", "ru"],
+    value:
+      '"FiraCode Nerd Font Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace',
+    label: { zh: "FiraCode Nerd Font Mono", en: "FiraCode Nerd Font Mono" },
+  },
+  {
+    value: '"Noto Sans Mono", Menlo, Consolas, monospace',
+    label: { zh: "Noto Sans Mono", en: "Noto Sans Mono" },
+  },
+  {
+    value:
+      'Menlo, "SF Mono", Monaco, Consolas, "Liberation Mono", monospace',
+    label: { zh: "Menlo / SF Mono", en: "Menlo / SF Mono" },
+  },
+
+  // --- Accessibility ---
+  {
+    value: '"OpenDyslexic", "Noto Sans", Arial, sans-serif',
+    label: { zh: "OpenDyslexic（阅读障碍友好）", en: "OpenDyslexic" },
     available: true,
   },
 ];
 
 // Width options with visual representation
 export const widthOptions = [
-  { value: 640, label: { zh: "窄", en: "Narrow" }, widthClass: "narrow" },
-  { value: 768, label: { zh: "标准", en: "Standard" }, widthClass: "standard" },
-  { value: 960, label: { zh: "宽", en: "Wide" }, widthClass: "wide" },
+  { value: 0.30, label: { zh: "窄版", en: "Narrow" }, widthClass: "narrow" },    // 30% viewport
+  { value: 0.50, label: { zh: "标准", en: "Standard" }, widthClass: "standard" }, // 50% viewport
+  { value: 0.70, label: { zh: "加宽", en: "Wide" }, widthClass: "wide" },        // 70% viewport
+  { value: 1.00, label: { zh: "满屏", en: "Full" }, widthClass: "full" },        // 100% viewport
 ];
 
 // Spacing options with visual representation

@@ -7,6 +7,7 @@ interface WidthSectionProps {
   settings: any;
   t: (key: string) => string;
   updateSettings: (settings: any) => void;
+  uiLanguage?: string;
 }
 
 /**
@@ -18,6 +19,7 @@ const WidthSection: React.FC<WidthSectionProps> = ({
   settings,
   t,
   updateSettings,
+  uiLanguage = "en",
 }) => {
   // Change the content width
   const changeWidth = (width: number) => {
@@ -26,10 +28,21 @@ const WidthSection: React.FC<WidthSectionProps> = ({
 
   // Get width representation based on option
   const getWidthClass = (widthClass: string) => {
-    if (widthClass === "narrow") return "w-[30%]";
-    if (widthClass === "standard") return "w-[50%]";
-    return "w-[70%]";
+    switch (widthClass) {
+      case "narrow":
+        return "w-[30%]";
+      case "standard":
+        return "w-[50%]";
+      case "wide":
+        return "w-[70%]";
+      case "full":
+        return "w-full";
+      default:
+        return "w-[50%]";
+    }
   };
+
+  const isUiChinese = uiLanguage.toLowerCase().startsWith("zh");
 
   return (
     <section className={sectionClassName}>
@@ -47,7 +60,7 @@ const WidthSection: React.FC<WidthSectionProps> = ({
                         ${
                           isActive
                             ? "border-accent bg-accent/5 text-accent font-medium"
-                            : "border-border bg-transparent text-primary"
+                            : "border-border bg-transparent text-ink"
                         }`}
               aria-pressed={isActive}
             >
@@ -56,7 +69,9 @@ const WidthSection: React.FC<WidthSectionProps> = ({
                   className={`bg-current rounded-sm ${getWidthClass(option.widthClass)}`}
                 />
               </div>
-              <span>{t(option.label.en.toLowerCase())}</span>
+              <span>
+                {isUiChinese ? option.label.zh : option.label.en}
+              </span>
             </button>
           );
         })}

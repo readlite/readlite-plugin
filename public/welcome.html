@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReadLite 使用手册</title>
+  <style>
+    :root {
+      --bg: #f8f8f8;
+      --surface: #ffffff;
+      --ink: #111111;
+      --ink-2: #444;
+      --border: #dcdcdc;
+      --shadow: 0 18px 50px rgba(0,0,0,0.07);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.65;
+      font-size: 20px;
+    }
+    .page {
+      max-width: 860px;
+      margin: 36px auto 48px;
+      padding: 0 18px;
+    }
+    .sheet {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 26px;
+      letter-spacing: 0.2px;
+    }
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--ink-2);
+      font-size: 14px;
+    }
+    .section {
+      margin: 22px 0;
+    }
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+    .section p,
+    .section li {
+      color: var(--ink-2);
+      font-size: 14px;
+    }
+    ul { padding-left: 20px; margin: 8px 0 0; }
+    ol { padding-left: 20px; margin: 8px 0 0; }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #111;
+      color: #fff;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+    }
+    .divider {
+      margin: 22px 0;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 640px) {
+      .sheet { padding: 22px; border-radius: 14px; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <article class="sheet">
+      <div class="badge">ReadLite · 使用手册</div>
+      <h1>三分钟上手沉浸式阅读</h1>
+      <p class="subtitle">界面风格与阅读器一致，确保你看到的效果与真实阅读体验相同。</p>
+
+      <section class="section">
+        <h2>1. 进入阅读模式</h2>
+        <ol>
+          <li>在浏览器扩展管理中将 ReadLite 固定到工具栏。</li>
+          <li>打开一篇网页文章，直接点击工具栏的 ReadLite 图标即可进入阅读模式。</li>
+          <li>进入后，页面会出现浮动控制条，可随时收起或关闭阅读视图。</li>
+        </ol>
+      </section>
+
+      <section class="section">
+        <h2>2. 控制条速览</h2>
+        <ul>
+          <li>主题：6 套内置主题，点击即刻预览。</li>
+          <li>字体：任意选择（含等宽），即时作用于正文与代码。</li>
+          <li>字号 / 行距：滑动或点选，实时生效。</li>
+          <li>宽度：30 / 50 / 70 / 100 四档，适配不同屏幕与姿势。</li>
+          <li>对齐：左对齐 / 两端对齐自由切换。</li>
+          <li>关闭：右上角 “×” 可退出阅读模式。</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>3. 主题与排版</h2>
+        <ul>
+          <li>默认主题：纸墨单色（低对比、接近墨水印刷）。</li>
+          <li>其他可选：夜读、竹露、天青、冷紫、纯黑——点击即刻预览。</li>
+          <li>排版：宽度 30/50/70/100%，左对齐 / 两端对齐可切换；行距、字号实时生效。</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>4. 字体</h2>
+        <ul>
+          <li>字体由你决定，列表内含中英文通吃与多款等宽字体（JetBrains Mono、FiraCode Nerd Font 等）。</li>
+          <li>内置字体：LXGW WenKai、Noto Serif / Noto Sans、Source Serif 4、Literata、Noto Sans Mono、JetBrains Mono、IBM Plex Mono、FiraCode Nerd Font Mono（同时可用系统字体栈）。</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>5. 高亮与导出</h2>
+        <ul>
+          <li>选中文本即可高亮或写笔记，支持导出 Markdown（如需下载权限会提示）。</li>
+          <li>高亮颜色随主题调整，保证夜间与深色模式的可读性。</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>6. 隐私与权限</h2>
+        <ul>
+          <li>不采集、不上传任何阅读内容。</li>
+          <li>权限仅用于在当前页注入阅读视图并保存本地设置；导出时如需下载会再次确认。</li>
+          <li>设置保存在本地 storage，可随时删除扩展或清理浏览器数据以重置。</li>
+        </ul>
+      </section>
+
+      <hr class="divider" />
+      <section class="section">
+        <h2>常见排障</h2>
+        <ul>
+          <li>按钮没反应：刷新页面后重试；确保不是浏览器的内置特殊页。</li>
+          <li>Edge/Firefox 提示 “Failed to send toggle message”：切回目标标签页再点击，或重新打开标签。</li>
+          <li>字体/主题没变化：在设置里重新选择并保存，确认页面未被站点脚本阻拦。</li>
+          <li>内核限制：Chrome/Edge/Firefox 的扩展页面、PDF 预览等特殊页无法被接管。</li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <script>
+    // 轻量语言检测：若浏览器语言以 en 开头且当前不是英文页，则跳到英文版
+    (function () {
+      try {
+        const lang = (navigator.language || "").toLowerCase();
+        if (lang.startsWith("en")) {
+          const current = location.pathname.split("/").pop() || "";
+          if (!current.includes("welcome-en")) {
+            const target = location.href.replace(/welcome(?:-en)?\.html/i, "welcome-en.html");
+            location.replace(target);
+          }
+        }
+      } catch (e) {
+        // 静默失败，保持中文页
+      }
+    })();
+  </script>
+</body>
+</html>

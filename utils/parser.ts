@@ -97,11 +97,11 @@ export const HIGHLIGHT_STYLES = `
     position: relative;
     text-decoration: none !important;
   }
-  .readlite-highlight-beige { background-color: rgba(255,245,230,0.82) !important; }
-  .readlite-highlight-cyan { background-color: rgba(181,228,255,0.82) !important; }
-  .readlite-highlight-lavender { background-color: rgba(220,198,255,0.82) !important; }
-  .readlite-highlight-olive { background-color: rgba(222,234,181,0.82) !important; }
-  .readlite-highlight-peach { background-color: rgba(255,204,153,0.82) !important; }
+  .readlite-highlight-beige { background-color: var(--readlite-highlight-beige, rgba(255,245,230,0.82)) !important; }
+  .readlite-highlight-cyan { background-color: var(--readlite-highlight-cyan, rgba(181,228,255,0.82)) !important; }
+  .readlite-highlight-lavender { background-color: var(--readlite-highlight-lavender, rgba(220,198,255,0.82)) !important; }
+  .readlite-highlight-olive { background-color: var(--readlite-highlight-olive, rgba(222,234,181,0.82)) !important; }
+  .readlite-highlight-peach { background-color: var(--readlite-highlight-peach, rgba(255,204,153,0.82)) !important; }
 `;
 
 // --- Types ---

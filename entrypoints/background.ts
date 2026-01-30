@@ -1,9 +1,26 @@
 import { defineBackground } from 'wxt/sandbox';
 import { browser } from 'wxt/browser';
-import { createLogger } from "@/utils/logger";
+import {
+  applyLogSettings,
+  createLogger,
+    LOG_CONSOLE_STORAGE_KEY,
+    LOG_LEVEL_STORAGE_KEY,
+} from "@/utils/logger";
 
 const mainLogger = createLogger("background");
 const messageLogger = createLogger("background-messages");
+
+// Welcome page (on first install)
+browser.runtime.onInstalled.addListener(async ({ reason }) => {
+  if (reason !== "install") return;
+  try {
+    const url =
+      (browser.runtime as any)?.getURL?.("welcome.html") || "welcome.html";
+    await browser.tabs.create({ url });
+  } catch (e) {
+    mainLogger.warn("Failed to open welcome page", e);
+  }
+});
 
 // --- Constants ---
 
@@ -34,6 +51,38 @@ type BackgroundMessage =
   | ReaderModeChangedMessage;
 
 export default defineBackground(() => {
+  const loadLogSettings = async () => {
+    try {
+      const stored = await browser.storage.local.get([
+        LOG_LEVEL_STORAGE_KEY,
+        LOG_CONSOLE_STORAGE_KEY,
+      ]);
+      applyLogSettings({
+        level:
+          typeof stored[LOG_LEVEL_STORAGE_KEY] === "number"
+            ? stored[LOG_LEVEL_STORAGE_KEY]
+            : undefined,
+        console:
+          typeof stored[LOG_CONSOLE_STORAGE_KEY] === "boolean"
+            ? stored[LOG_CONSOLE_STORAGE_KEY]
+            : undefined,
+      });
+    } catch {
+      // Ignore logging config failures; defaults remain in effect.
+    }
+  };
+
+  void loadLogSettings();
+  browser.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== "local") return;
+    const nextLevel = changes[LOG_LEVEL_STORAGE_KEY]?.newValue;
+    const nextConsole = changes[LOG_CONSOLE_STORAGE_KEY]?.newValue;
+    applyLogSettings({
+      level: typeof nextLevel === "number" ? nextLevel : undefined,
+      console: typeof nextConsole === "boolean" ? nextConsole : undefined,
+    });
+  });
+
   // --- Main Message Listener ---
 
   /**
@@ -186,6 +235,13 @@ async function handleToggleReaderMode(tab?: any) { // browser.tabs.Tab
     return;
   }
 
+  // Skip restricted schemes where content scripts cannot be injected
+  const url: string = tab.url || "";
+  if (url.startsWith("chrome://") || url.startsWith("edge://") || url.startsWith("about:") || url.startsWith("chrome-extension://") || url.startsWith("view-source:")) {
+    mainLogger.warn(`Cannot inject reader into restricted page: ${url}`);
+    return;
+  }
+
   mainLogger.info(`Requesting toggle in tab ${tab.id}`);
   try {
     // Use message passing instead of browser.scripting.executeScript
@@ -196,5 +252,20 @@ async function handleToggleReaderMode(tab?: any) { // browser.tabs.Tab
     mainLogger.error(
       `Failed to send toggle message to tab ${tab.id}: ${error instanceof Error ? error.message : String(error)}`,
     );
+
+    // Fallback: content script might not be injected yet (Edge/Chrome MV3 race).
+    try {
+      mainLogger.info(`Attempting to inject content script into tab ${tab.id} then retry toggle.`);
+      await browser.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ["content-scripts/content.js"],
+      });
+      await browser.tabs.sendMessage(tab.id, { type: "TOGGLE_READER" });
+      mainLogger.info(`Toggle message sent after injection to tab ${tab.id}.`);
+    } catch (injectErr) {
+      mainLogger.error(
+        `Content script injection/toggle failed for tab ${tab.id}: ${injectErr instanceof Error ? injectErr.message : String(injectErr)}`,
+      );
+    }
   }
 }

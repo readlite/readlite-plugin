@@ -722,7 +722,7 @@ const Reader = () => {
     return (
       <ThemeProvider initialTheme={theme}>
         <div
-          className="flex justify-center items-center h-screen w-screen bg-primary text-primary"
+          className="flex justify-center items-center h-screen w-screen bg-surface text-ink"
           data-theme={theme}
         >
           <div className="flex flex-col items-center">
@@ -744,7 +744,7 @@ const Reader = () => {
     return (
       <ThemeProvider initialTheme={theme}>
         <div
-          className="flex justify-center items-center h-screen w-screen bg-primary text-primary"
+          className="flex justify-center items-center h-screen w-screen bg-surface text-ink"
           data-theme={theme}
         >
           <div className="flex flex-col items-center max-w-md mx-auto p-4 rounded-lg">
@@ -771,7 +771,7 @@ const Reader = () => {
   return (
     <ThemeProvider initialTheme={theme}>
       {/* Inline Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-1.5 z-[9999] bg-accent/20 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-1 z-[9999] bg-accent/15 pointer-events-none backdrop-blur-sm readlite-rise">
         <div
           className="h-full transition-all duration-150 ease-out bg-accent"
           style={{ width: `${scrollProgress}%` }}
@@ -781,7 +781,7 @@ const Reader = () => {
       {/* Main Container - the entire screen */}
       <div
         ref={readerContainerRef}
-        className="readlite-reader-container bg-primary text-primary flex flex-col w-full h-full relative"
+        className="readlite-reader-container readlite-stage text-ink flex flex-col w-full h-full relative overflow-hidden"
         style={{
           ...(isFullscreen ? { userSelect: "text" } : {}),
         }}
@@ -791,11 +791,15 @@ const Reader = () => {
         onTouchEnd={handleTextSelection}
       >
         {/* Content Container - holds the two columns */}
-        <div className="flex flex-row flex-grow h-full">
+        <div className="flex flex-row flex-grow h-full min-h-0 px-4 sm:px-7 md:px-10 lg:px-12 py-8">
           {/* Reader Column (left side) */}
           <div
             ref={readerColumnRef}
-            className={`h-full overflow-y-scroll overscroll-contain relative box-border w-full ${isDraggingRef.current ? "" : "transition-all duration-200 ease-out"}`}
+            className={`h-full min-h-0 overflow-y-auto overscroll-contain relative box-border w-full mx-auto pb-24 ${isDraggingRef.current ? "" : "transition-all duration-200 ease-out"}`}
+            style={{
+              maxWidth: `calc(${Math.round(settings.width * 100)}vw)`,
+            }}
+            data-readlite-scroll-root="true"
           >
             {/* Reader Content Area */}
             <ReaderContent

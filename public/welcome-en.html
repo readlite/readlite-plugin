@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReadLite · Quick Guide</title>
+  <style>
+    :root {
+      --bg: #f8f8f8;
+      --surface: #ffffff;
+      --ink: #111111;
+      --ink-2: #444;
+      --border: #dcdcdc;
+      --shadow: 0 18px 50px rgba(0,0,0,0.07);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.65;
+      font-size: 20px;
+    }
+    .page {
+      max-width: 860px;
+      margin: 36px auto 48px;
+      padding: 0 18px;
+    }
+    .sheet {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 26px;
+      letter-spacing: 0.2px;
+    }
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--ink-2);
+      font-size: 14px;
+    }
+    .lang-switch {
+      display: inline-block;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    .lang-switch a {
+      color: #0f3dad;
+      text-decoration: none;
+    }
+    .lang-switch a:hover { text-decoration: underline; }
+    .section { margin: 22px 0; }
+    .section h2 { margin: 0 0 10px; font-size: 18px; }
+    .section p, .section li { color: var(--ink-2); font-size: 14px; }
+    ul { padding-left: 20px; margin: 8px 0 0; }
+    ol { padding-left: 20px; margin: 8px 0 0; }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #111;
+      color: #fff;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+    }
+    .divider {
+      margin: 22px 0;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 640px) {
+      .sheet { padding: 22px; border-radius: 14px; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <article class="sheet">
+      <div class="lang-switch"><a href="welcome.html">中文版本</a></div>
+      <div class="badge">ReadLite · Quick Guide</div>
+      <h1>3-Minute Onboarding to Immersive Reading</h1>
+      <p class="subtitle">Styled the same as the reader so what you see here matches the real reading experience.</p>
+
+      <section class="section">
+        <h2>1. Enter Reading Mode</h2>
+        <ol>
+          <li>Pin ReadLite to your browser toolbar from the extensions panel.</li>
+          <li>Open any article and click the ReadLite toolbar icon to enter reading mode.</li>
+          <li>A floating control bar appears; collapse it or close the reader anytime.</li>
+        </ol>
+      </section>
+
+      <section class="section">
+        <h2>2. Control Bar at a Glance</h2>
+        <ul>
+          <li>Themes: 6 built-in themes, instant preview.</li>
+          <li>Fonts: pick any (includes monospace options), applied to body and code.</li>
+          <li>Size / Line height: slider adjustments, live updates.</li>
+          <li>Width: 30 / 50 / 70 / 100 steps for different screens and postures.</li>
+          <li>Alignment: left or justify.</li>
+          <li>Close: “×” at top-right exits reading mode.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>3. Themes & Layout</h2>
+        <ul>
+          <li>Default: Print Mono (paper-like, low contrast).</li>
+          <li>Also available: Night Pro, Bamboo, Ceramic, Phantom, Pure Black.</li>
+          <li>Layout: width steps 30/50/70/100%, left or justify; line height & font size update immediately.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>4. Fonts</h2>
+        <ul>
+          <li>Built-in set: LXGW WenKai, Noto Serif / Noto Sans, Source Serif 4, Literata, Noto Sans Mono, JetBrains Mono, IBM Plex Mono, FiraCode Nerd Font Mono (system stacks also available).</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>5. Highlights & Export</h2>
+        <ul>
+          <li>Select text to highlight or add notes; export to Markdown (download permission will be requested when needed).</li>
+          <li>Highlight colors follow the current theme for night/dark readability.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>6. Privacy & Permissions</h2>
+        <ul>
+          <li>No data collection, no uploads.</li>
+          <li>Permissions only for injecting the reader and saving local settings; download prompts appear when exporting.</li>
+          <li>Settings live in local storage—remove the extension or clear browser data to reset.</li>
+        </ul>
+      </section>
+
+      <hr class="divider" />
+      <section class="section">
+        <h2>Troubleshooting</h2>
+        <ul>
+          <li>Icon no response: refresh the page; ensure it’s not a browser special page.</li>
+          <li>Edge/Firefox “Failed to send toggle message”: switch back to the target tab then click, or reopen the tab.</li>
+          <li>Fonts/themes not changing: reselect in settings and save; some sites or special pages may block takeover.</li>
+          <li>Browser limitations: built-in pages (extensions, PDF viewer, etc.) cannot be overridden.</li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <script>
+    // If user language is not English, and we're on EN page, go to Chinese version
+    (function () {
+      try {
+        const lang = (navigator.language || "").toLowerCase();
+        const current = location.pathname.split("/").pop() || "";
+        if (!lang.startsWith("en") && current.includes("welcome-en")) {
+          const target = location.href.replace(/welcome(?:-en)?\.html/i, "welcome.html");
+          location.replace(target);
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+  </script>
+</body>
+</html>

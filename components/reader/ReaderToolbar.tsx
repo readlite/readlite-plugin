@@ -38,35 +38,21 @@ const ReaderToolbar: React.FC<ReaderToolbarProps> = ({
   isVisible = true,
 }) => {
   const [isHovered, setIsHovered] = React.useState(false);
-  
-  // Calculate right position
-  const rightPosition = "20px";
-  
-  // Show toolbar if visible prop is true or user is hovering
   const shouldShow = isVisible || isHovered;
 
   return (
-    <>
-      {/* Hover trigger zone - always visible at top right */}
-      <div
-        className="fixed top-0 right-0 w-48 h-16 z-[1999]"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      />
-      <div
-        className={`fixed top-5 flex gap-2 p-2 z-[2000] bg-primary rounded-md shadow-lg backdrop-blur-md
-          ${isDragging ? "" : "transition-all duration-200 ease-out"}
-          ${shouldShow ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"}`}
-        style={{ right: rightPosition }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-      {/* Save as Markdown Button */}
+    <div
+      className={`fixed top-12 right-5 flex items-center gap-2 px-3 py-2 z-[2000] readlite-glass shadow-floating border border-border/70 rounded-full
+        ${isDragging ? "" : "transition-all duration-200 ease-out"}
+        ${shouldShow ? "opacity-100 translate-y-0" : "opacity-70 -translate-y-1"}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      aria-label="Reader controls"
+    >
       <ToolbarButton onClick={handleMarkdownDownload} title={t("download")}>
         <ArrowDownTrayIcon className="w-5 h-5" />
       </ToolbarButton>
 
-      {/* Fullscreen Button */}
       <ToolbarButton
         onClick={toggleFullscreen}
         title={t("fullscreen")}
@@ -79,7 +65,6 @@ const ReaderToolbar: React.FC<ReaderToolbarProps> = ({
         )}
       </ToolbarButton>
 
-      {/* Settings Button */}
       <ToolbarButton
         buttonRef={settingsButtonRef}
         onClick={toggleSettings}
@@ -89,12 +74,10 @@ const ReaderToolbar: React.FC<ReaderToolbarProps> = ({
         <Cog6ToothIcon className="w-5 h-5" />
       </ToolbarButton>
 
-      {/* Close Reader Button */}
       <ToolbarButton onClick={handleClose} title={t("close")}>
         <XMarkIcon className="w-5 h-5" />
       </ToolbarButton>
     </div>
-    </>
   );
 };
 
@@ -117,14 +100,15 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   return (
     <button
       ref={buttonRef}
-      className={`w-8 h-8 flex items-center justify-center cursor-pointer border-none rounded-md transition-all duration-150 ease-in-out
+      className={`w-10 h-10 flex items-center justify-center cursor-pointer border border-border/70 rounded-full transition-all duration-150 ease-in-out
         ${
           isActive
             ? "bg-accent/10 text-accent shadow-sm"
-            : "bg-transparent text-primary/70 hover:bg-primary/5 hover:text-primary"
+            : "bg-transparent text-ink/70 hover:bg-surface/80 hover:text-ink"
         }`}
       onClick={onClick}
       title={title}
+      aria-label={title}
     >
       <div className="w-5 h-5 flex items-center justify-center">{children}</div>
     </button>

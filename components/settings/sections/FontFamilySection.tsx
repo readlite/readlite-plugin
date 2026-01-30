@@ -24,41 +24,51 @@ const FontFamilySection: React.FC<FontFamilySectionProps> = ({
   detectedLanguage,
   updateSettings,
 }) => {
-  // Set default font based on detected language if not set
-  useEffect(() => {
-    // Apply default font when fontFamily is empty or not set
-    if (!settings.fontFamily || settings.fontFamily === "") {
-      // For Chinese languages and dialects
-      const chineseLanguages = ["zh", "cmn", "wuu", "yue"];
-      const defaultFont = chineseLanguages.includes(detectedLanguage || "")
-        ? fontOptions.find((f) => f.label.en === "PingFang")?.value
-        : fontOptions.find((f) => f.label.en === "Bookerly")?.value;
+  const isUiChinese = uiLanguage?.toLowerCase().startsWith("zh");
 
-      if (defaultFont) {
-        // Apply default font without logging to console
-        updateSettings({ fontFamily: defaultFont });
-      }
+  // Set default font if not set (use a neutral stack, no recommendation)
+  useEffect(() => {
+    if (!settings.fontFamily || settings.fontFamily === "") {
+      const defaultFont =
+        '"Noto Serif SC", "Source Han Serif SC", "Songti SC", SimSun, serif';
+      updateSettings({
+        fontFamily: defaultFont,
+        fontFamilyCJK: defaultFont,
+        fontFamilyLatin: defaultFont,
+      });
     }
-  }, [settings.fontFamily, detectedLanguage, updateSettings]);
+  }, [
+    settings.fontFamily,
+    settings.fontFamilyCJK,
+    settings.fontFamilyLatin,
+    updateSettings,
+  ]);
 
   // Font family selection handler
   const changeFontFamily = (fontFamily: string) => {
-    updateSettings({ fontFamily });
+    updateSettings({
+      fontFamily,
+      fontFamilyCJK: fontFamily,
+      fontFamilyLatin: fontFamily,
+    });
   };
 
-  // Split fonts into two columns
-  const midPoint = Math.ceil(fontOptions.length / 2);
-  const firstColumnFonts = fontOptions.slice(0, midPoint);
-  const secondColumnFonts = fontOptions.slice(midPoint);
+  // No recommendations; all fonts in one list
+  const recommendedFonts: FontOption[] = [];
+  const otherFonts = fontOptions;
+
+  const splitColumns = (fonts: FontOption[]) => {
+    const mid = Math.ceil(fonts.length / 2);
+    return [fonts.slice(0, mid), fonts.slice(mid)];
+  };
 
   // Render a single font option
   const renderFontOption = (font: FontOption) => {
-    const isActive = settings.fontFamily === font.value;
-    const displayName = uiLanguage === "zh" ? font.label.zh : font.label.en;
-    const isRecommended =
-      detectedLanguage &&
-      font.compatibleLanguages &&
-      font.compatibleLanguages.includes(detectedLanguage);
+    const activeFont = settings.fontFamily;
+
+    const isActive = activeFont === font.value;
+    const displayName = isUiChinese ? font.label.zh : font.label.en;
+    const isRecommended = false;
 
     const fontFamily = font.value.split(",")[0];
 
@@ -71,7 +81,7 @@ const FontFamilySection: React.FC<FontFamilySectionProps> = ({
                    ${
                      isActive
                        ? "border-accent bg-accent/5 text-accent"
-                       : "border-border bg-transparent text-primary"
+                       : "border-border bg-transparent text-ink"
                    }`}
         aria-pressed={isActive}
       >
@@ -114,41 +124,19 @@ const FontFamilySection: React.FC<FontFamilySectionProps> = ({
       <h3 className={titleClassName}>{t("fontFamily")}</h3>
 
       {/* Font section description with explanation */}
-      {detectedLanguage && (
-        <div className="text-[10px] mb-2 text-primary/70">
-          {uiLanguage === "zh"
-            ? `★ 表示适合${getLanguageDisplayName(detectedLanguage, uiLanguage)}内容的字体`
-            : `★ indicates fonts optimized for ${getLanguageDisplayName(detectedLanguage, uiLanguage)} content`}
-        </div>
-      )}
+      <div className="text-[10px] mb-2 text-ink/70">
+        {isUiChinese ? "选择任意字体应用于阅读器" : "Pick any font to apply"}
+      </div>
 
-      <div className="grid grid-cols-2 gap-x-1.5 mb-1">
-        {/* First column */}
-        <div className="space-y-1">
-          {firstColumnFonts.map(renderFontOption)}
-        </div>
-
-        {/* Second column */}
-        <div className="space-y-1">
-          {secondColumnFonts.map(renderFontOption)}
-        </div>
+      <div className="grid grid-cols-2 gap-x-1.5">
+        {splitColumns(otherFonts).map((col, idx) => (
+          <div key={idx} className="space-y-1">
+            {col.map(renderFontOption)}
+          </div>
+        ))}
       </div>
     </section>
   );
-};
-
-// Helper function to get language display name (simplified version)
-const getLanguageDisplayName = (
-  langCode: LanguageCode,
-  uiLanguage: LanguageCode,
-): string => {
-  if (langCode === "zh") {
-    return uiLanguage === "zh" ? "中文" : "Chinese";
-  }
-  if (langCode === "en") {
-    return uiLanguage === "zh" ? "英文" : "English";
-  }
-  return langCode;
 };
 
 export default FontFamilySection;

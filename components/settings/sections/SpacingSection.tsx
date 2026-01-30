@@ -64,7 +64,7 @@ const SpacingSection: React.FC<SpacingSectionProps> = ({
                         ${
                           isActive
                             ? "border-accent bg-accent/5 text-accent font-medium"
-                            : "border-border bg-transparent text-primary"
+                            : "border-border bg-transparent text-ink"
                         }`}
               aria-pressed={isActive}
             >

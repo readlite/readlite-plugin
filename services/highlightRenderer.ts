@@ -14,19 +14,25 @@ const logger = createLogger("highlight-renderer");
 // Highlight color type - 3 essential colors
 export type HighlightColor = "yellow" | "blue" | "purple";
 
-// Color configuration
-export const HIGHLIGHT_COLORS: Record<HighlightColor, { background: string; solid: string }> = {
+// Color configuration (use CSS variables so they adapt to theme tokens)
+export const HIGHLIGHT_COLORS: Record<
+  HighlightColor,
+  { background: string; solid: string }
+> = {
   yellow: {
-    background: "rgba(255,245,200,0.85)",
-    solid: "#fff5c8",
+    background:
+      "var(--readlite-highlight-beige, rgba(255,245,230,0.82))",
+    solid: "var(--readlite-highlight-beige, #fff5e6)",
   },
   blue: {
-    background: "rgba(181,228,255,0.85)",
-    solid: "#b5e4ff",
+    background:
+      "var(--readlite-highlight-cyan, rgba(181,228,255,0.82))",
+    solid: "var(--readlite-highlight-cyan, #b5e4ff)",
   },
   purple: {
-    background: "rgba(220,198,255,0.85)",
-    solid: "#dcc6ff",
+    background:
+      "var(--readlite-highlight-lavender, rgba(220,198,255,0.82))",
+    solid: "var(--readlite-highlight-lavender, #dcc6ff)",
   },
 };
 

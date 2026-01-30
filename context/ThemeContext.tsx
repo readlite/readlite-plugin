@@ -16,7 +16,6 @@ import {
 } from "../config/theme";
 import { createLogger } from "@/utils/logger";
 import {
-  applyThemeGlobally,
   getPreferredTheme,
   saveTheme,
   setupThemeChangeListener,
@@ -27,8 +26,6 @@ const logger = createLogger("theme-context");
 interface ThemeContextType {
   theme: ThemeType;
   setTheme: (theme: ThemeType) => void;
-  customTheme: string | null;
-  setCustomTheme: (themeJson: string) => void;
   themeColors: ThemeColors;
   getUIColors: () => any;
   getReaderColors: () => any;
@@ -69,25 +66,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     }
   }, [initialTheme]);
 
-  const [customTheme, setCustomThemeState] = useState<string | null>(null);
-
-  // Apply theme when it changes
-  useEffect(() => {
-    logger.info(`Theme changed to: ${theme}`);
-    // We don't call applyThemeGlobally here directly anymore because:
-    // 1. content.tsx listens for storage events and applies theme to the Shadow Root/Container.
-    // 2. Calling it here with default args would target 'document' (the host page), which we want to avoid.
-    saveTheme(theme);
-  }, [theme]);
-
-  // Handle custom theme changes
-  useEffect(() => {
-    if (customTheme) {
-      // Logic for custom theme would go here
-      // For now we just rely on the theme manager to handle custom theme via local storage
-    }
-  }, [customTheme]);
-
   // Listen for storage changes (e.g. from other tabs or popup)
   useEffect(() => {
     // Use the utility function to set up the listener
@@ -108,16 +86,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
   const setTheme = (newTheme: ThemeType) => {
     if (AVAILABLE_THEMES.includes(newTheme)) {
+      logger.info(`Theme changed to: ${newTheme}`);
+      saveTheme(newTheme);
       setThemeState(newTheme);
     } else {
       logger.warn(`Invalid theme requested: ${newTheme}`);
     }
-  };
-
-  const setCustomTheme = (themeJson: string) => {
-    setCustomThemeState(themeJson);
-    // Custom theme application is handled by ThemeSection component saving to localStorage
-    // and themeManager reading it when theme is set to 'custom'
   };
 
   // Memoize values to prevent unnecessary re-renders
@@ -137,13 +111,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     () => ({
       theme,
       setTheme,
-      customTheme,
-      setCustomTheme,
       themeColors,
       getUIColors,
       getReaderColors: getReaderThemeColors,
     }),
-    [theme, customTheme, getUIColors, getReaderThemeColors],
+    [theme, getUIColors, getReaderThemeColors],
   );
 
   return (

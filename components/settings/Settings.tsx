@@ -204,7 +204,7 @@ const Settings: React.FC<SettingsProps> = ({
     <div
       className="fixed sm:static sm:w-[320px] md:w-[350px] sm:rounded-lg sm:border sm:shadow-lg 
                 inset-0 sm:inset-auto z-[2147483647]
-                flex flex-col overflow-auto text-sm bg-primary text-primary border-border"
+                flex flex-col overflow-auto text-sm bg-surface text-ink border-border readlite-glass readlite-pop"
       style={{ ...panelPositionStyle, transform: "translateZ(0)" }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -213,23 +213,21 @@ const Settings: React.FC<SettingsProps> = ({
         <h2 className="m-0 text-base sm:text-sm font-medium">
           {t("displaySettings")}
         </h2>
-        <div className="flex gap-3 sm:gap-2 items-center">
-          <button
-            onClick={onClose}
-            className="bg-transparent border-none text-xl sm:text-lg p-1.5 sm:p-1 
-                      cursor-pointer text-current ml-2 flex items-center justify-center 
-                      opacity-70 hover:opacity-100 transition-opacity"
-            aria-label={t("close")}
-          >
-            ✕
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          className="bg-transparent border-none text-xl sm:text-lg p-1.5 sm:p-1 
+                    cursor-pointer text-current ml-2 flex items-center justify-center 
+                    opacity-70 hover:opacity-100 transition-opacity"
+          aria-label={t("close")}
+        >
+          ✕
+        </button>
       </div>
 
       <div className="max-h-[calc(100%-60px)] sm:max-h-[calc(100vh-160px)] overflow-y-auto flex-1">
         <div>
           {/* Theme Section */}
-          <MemoizedThemeSection {...commonSectionProps} />
+          <MemoizedThemeSection {...commonSectionProps} uiLanguage={uiLanguage} />
 
           {/* Font Size Section */}
           <MemoizedFontSizeSection {...commonSectionProps} />
@@ -242,7 +240,7 @@ const Settings: React.FC<SettingsProps> = ({
           />
 
           {/* Width Section */}
-          <MemoizedWidthSection {...commonSectionProps} />
+          <MemoizedWidthSection {...commonSectionProps} uiLanguage={uiLanguage} />
 
           {/* Text Alignment Section */}
           <AlignmentSection {...commonSectionProps} uiLanguage={uiLanguage} />

@@ -23,7 +23,9 @@ const logger = createLogger("reader-context");
 export interface ReaderSettings {
   theme: ThemeType;
   customTheme?: string;
-  fontFamily: string;
+  fontFamily: string; // legacy/global
+  fontFamilyLatin?: string; // preferred for Latin scripts
+  fontFamilyCJK?: string; // preferred for CJK
   fontSize: number;
   lineHeight: number;
   width: number;
@@ -35,12 +37,17 @@ export interface ReaderSettings {
 
 // Default settings for reader
 export const defaultSettings: ReaderSettings = {
-  theme: "light",
+  theme: "ink",
   customTheme: "",
-  fontFamily: "", // Empty string to allow language-specific default
+  fontFamily:
+    '"LXGW WenKai", "Noto Serif", "Source Serif 4", "Songti SC", SimSun, serif',
+  fontFamilyLatin:
+    '"LXGW WenKai", "Noto Serif", "Source Serif 4", "Songti SC", SimSun, serif',
+  fontFamilyCJK:
+    '"LXGW WenKai", "Noto Serif", "Source Serif 4", "Songti SC", SimSun, serif',
   fontSize: 18,
   lineHeight: 1.6,
-  width: 700, // Standard width
+  width: 0.50, // Standard: 50% viewport
   spacing: "normal",
   textAlign: "left",
   trackingEnabled: false,

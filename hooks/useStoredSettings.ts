@@ -2,6 +2,13 @@ import { storage } from "wxt/storage";
 import { useCallback, useEffect, useState } from "react";
 import { defaultSettings } from "@/context/ReaderContext";
 import { createLogger } from "@/utils/logger";
+import { saveTheme } from "@/utils/themeManager";
+import {
+  ThemeType,
+  AVAILABLE_THEMES,
+  normalizeTheme,
+  LEGACY_THEME_MAP,
+} from "@/config/theme";
 
 // Create a logger for this module
 const logger = createLogger("settings");
@@ -35,34 +42,27 @@ export const useStoredSettings = () => {
             version: SETTINGS_VERSION,
           };
 
-          // If using custom theme, check if we have saved custom theme settings
-          if (
-            mergedSettings.theme === "custom" &&
-            !mergedSettings.customTheme
-          ) {
-            try {
-              // Try to load from localStorage as a fallback
-              const savedCustomTheme = localStorage.getItem(
-                "readlite-custom-theme",
-              );
-              if (savedCustomTheme) {
-                logger.info(
-                  "Found saved custom theme in localStorage, applying to settings",
-                );
-                mergedSettings.customTheme = savedCustomTheme;
-              }
-            } catch (e) {
-              logger.error("Failed to load custom theme from localStorage:", e);
-            }
-          }
+          // Guard + migrate: normalize legacy theme names
+          mergedSettings.theme = normalizeTheme(mergedSettings.theme);
 
           setSettings(mergedSettings);
+          try {
+            // Sync localStorage theme key so shadow-root listener can react
+            saveTheme(mergedSettings.theme as ThemeType);
+          } catch (e) {
+            logger.warn("Unable to sync theme to localStorage on load", e);
+          }
         } else {
           // Initialize default settings
           await storage.setItem(SETTINGS_KEY, {
             ...defaultSettings,
             version: SETTINGS_VERSION,
           });
+          try {
+            saveTheme(defaultSettings.theme as ThemeType);
+          } catch (e) {
+            logger.warn("Unable to sync default theme to localStorage", e);
+          }
         }
       } catch (error) {
         logger.error("Error loading settings from storage:", error);
@@ -81,17 +81,15 @@ export const useStoredSettings = () => {
         const settingsToUpdate = { ...newSettings };
 
         // Special handling for customTheme to ensure it's saved to localStorage too
-        if ("customTheme" in settingsToUpdate) {
+        // If theme changes, sync to localStorage (drives shadow DOM listener)
+        if (typeof settingsToUpdate.theme !== "undefined") {
           try {
-            localStorage.setItem(
-              "readlite-custom-theme",
-              settingsToUpdate.customTheme as string,
-            );
-            logger.info(
-              "Saved customTheme to localStorage from updateSettings",
-            );
+            // Normalize legacy theme names and fallback if unknown
+            const nextTheme = normalizeTheme(settingsToUpdate.theme as string);
+            saveTheme(nextTheme);
+            settingsToUpdate.theme = nextTheme;
           } catch (e) {
-            logger.error("Failed to save customTheme to localStorage", e);
+            logger.error("Failed to save theme to localStorage", e);
           }
         }
 
@@ -106,31 +104,7 @@ export const useStoredSettings = () => {
               // Verify storage
               return storage.getItem(SETTINGS_KEY);
             })
-            .then((saved) => {
-              // Verify customTheme was saved if present
-              if ("customTheme" in updated && updated.theme === "custom") {
-                // Double-check customTheme is in localStorage too
-                try {
-                  const localCustomTheme = localStorage.getItem(
-                    "readlite-custom-theme",
-                  );
-                  if (!localCustomTheme) {
-                    localStorage.setItem(
-                      "readlite-custom-theme",
-                      updated.customTheme as string,
-                    );
-                    logger.info(
-                      "Re-saved customTheme to localStorage after verifying",
-                    );
-                  }
-                } catch (e) {
-                  logger.error(
-                    "Error checking localStorage for customTheme",
-                    e,
-                  );
-                }
-              }
-            })
+            .then(() => {})
             .catch((err) => {
               logger.error("Failed to save settings to storage:", err);
             });

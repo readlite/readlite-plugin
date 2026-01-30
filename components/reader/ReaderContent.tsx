@@ -91,8 +91,16 @@ const getFontFamilyClass = (fontFamily: string): string => {
  * Helper function to get Tailwind text align class
  */
 const getTextAlignClass = (textAlign: string): string => {
-  if (!textAlign) return "text-left";
-  return `text-${textAlign}`;
+  switch (textAlign) {
+    case "center":
+      return "text-center";
+    case "right":
+      return "text-right";
+    case "justify":
+      return "text-justify";
+    default:
+      return "text-left";
+  }
 };
 
 /**
@@ -244,7 +252,7 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
       if (!existingLabel) {
         const langLabel = document.createElement("div");
         langLabel.className =
-          "code-lang-label absolute top-0 right-0 bg-primary/10 text-primary/70 text-xs px-2 py-1 rounded-bl font-mono";
+          "code-lang-label absolute top-0 right-0 bg-surface/70 text-ink/70 text-xs px-2 py-1 rounded-bl font-mono";
         langLabel.textContent = languageName;
         preElement.appendChild(langLabel);
       }
@@ -278,7 +286,15 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
     /**
      * Apply font variables to root element
      */
+    const fallbackFontFamily =
+      settings.fontFamily ||
+      '"LXGW WenKai", "Noto Serif", "Source Serif 4", "Songti SC", SimSun, serif';
+
     const applyFontVariablesToRoot = (contentElement: HTMLElement) => {
+      contentElement.style.setProperty(
+        "--readlite-font-family",
+        fallbackFontFamily,
+      );
       contentElement.style.setProperty(
         "--readlite-reader-font-size",
         `${settings.fontSize}px`,
@@ -287,7 +303,7 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
         "--readlite-reader-line-height",
         getOptimalLineHeight.toString(),
       );
-      contentElement.style.fontFamily = settings.fontFamily;
+      contentElement.style.fontFamily = fallbackFontFamily;
     };
 
     /**
@@ -304,7 +320,7 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
         // Use direct style settings for consistent control
         htmlEl.style.fontSize = `${settings.fontSize}px`;
         htmlEl.style.lineHeight = getOptimalLineHeight.toString();
-        htmlEl.style.fontFamily = settings.fontFamily;
+        htmlEl.style.fontFamily = fallbackFontFamily;
 
         // For paragraphs, add margin bottom
         if (el.tagName === "P") {
@@ -606,7 +622,19 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
         .readlite-reader-content {
           --readlite-reader-font-size: ${settings.fontSize}px;
           --readlite-reader-line-height: ${getOptimalLineHeight};
-          font-family: ${settings.fontFamily};
+          --readlite-font-family: ${fallbackFontFamily};
+          --readlite-space-1: 0.6em;
+          --readlite-space-2: 1em;
+          --readlite-space-3: 1.4em;
+          --readlite-code-bg: var(--code-bg, rgba(0,0,0,0.04));
+          --readlite-code-border: rgba(0,0,0,0.08);
+          --readlite-code-radius: 12px;
+          --readlite-code-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+          font-family: var(--readlite-font-family);
+          line-height: var(--readlite-reader-line-height);
+          word-break: break-word;
+          hyphens: auto;
+          letter-spacing: ${isCJKLanguage ? "0.02em" : "0em"};
           
           /* Extract RGB values from theme colors for rgba() usage */
           --readlite-accent-rgb: ${hexToRgb(readerColors.link.normal)};
@@ -619,17 +647,45 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
         .readlite-reader-content div:not(.code-lang-label):not(.readlite-byline) {
           font-size: var(--readlite-reader-font-size);
           line-height: var(--readlite-reader-line-height);
-          font-family: ${settings.fontFamily};
+          font-family: var(--readlite-font-family);
         }
         
         .readlite-reader-content p {
           margin-bottom: ${getParagraphSpacing};
         }
-        
-        .readlite-reader-content pre,
-        .readlite-reader-content code {
+
+        /* Inline code (non-pre) */
+        .readlite-reader-content :not(pre) > code {
+          font-family: ${MONOSPACE_FONT_STACK};
+          font-size: ${Math.max(TYPOGRAPHY.minCodeFontSize, settings.fontSize - 2)}px;
+          background: var(--readlite-code-bg);
+          padding: 0.12em 0.32em;
+          border-radius: 6px;
+          border: 1px solid var(--readlite-code-border);
+        }
+
+        /* Block code */
+        .readlite-reader-content pre {
           font-family: ${MONOSPACE_FONT_STACK};
           font-size: ${Math.max(TYPOGRAPHY.minCodeFontSize, settings.fontSize - TYPOGRAPHY.codeBlockFontSizeReduction)}px;
+          overflow-x: auto;
+          white-space: pre;
+          max-width: 100%;
+          word-break: normal;
+          padding: var(--readlite-space-2);
+          border-radius: var(--readlite-code-radius);
+          background: var(--readlite-code-bg);
+          border: 1px solid var(--readlite-code-border);
+          box-shadow: var(--readlite-code-shadow);
+          margin: var(--readlite-space-2) 0;
+        }
+
+        /* Remove double background/border on pre > code */
+        .readlite-reader-content pre code {
+          background: transparent;
+          border: 0;
+          padding: 0;
+          box-shadow: none;
         }
         
         .readlite-reader-content h1 { font-size: calc(var(--readlite-reader-font-size) * ${TYPOGRAPHY.headingSizeMultipliers.h1}); }
@@ -638,6 +694,37 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
         .readlite-reader-content h4 { font-size: calc(var(--readlite-reader-font-size) * ${TYPOGRAPHY.headingSizeMultipliers.h4}); }
         .readlite-reader-content h5 { font-size: calc(var(--readlite-reader-font-size) * ${TYPOGRAPHY.headingSizeMultipliers.h5}); }
         .readlite-reader-content h6 { font-size: var(--readlite-reader-font-size); }
+
+        .readlite-reader-content h1,
+        .readlite-reader-content h2,
+        .readlite-reader-content h3,
+        .readlite-reader-content h4,
+        .readlite-reader-content h5,
+        .readlite-reader-content h6 {
+          margin-top: 1.3em;
+          margin-bottom: 0.6em;
+          line-height: 1.25;
+          letter-spacing: ${isCJKLanguage ? "0.015em" : "-0.01em"};
+        }
+        .readlite-reader-content h1 { margin-top: 0.8em; }
+        .readlite-reader-content h2 { margin-top: 1.0em; }
+
+        .readlite-reader-content ul,
+        .readlite-reader-content ol {
+          margin: 0.2em 0 0.8em 1.2em;
+          padding: 0;
+        }
+        .readlite-reader-content li {
+          margin-bottom: 0.35em;
+        }
+
+        .readlite-reader-content blockquote {
+          margin: 0.9em 0;
+          padding: 0.65em 1em;
+          border-left: 3px solid var(--divider);
+          background: rgba(0,0,0,0.02);
+          color: var(--text-secondary);
+        }
         
         .readlite-reader-content pre {
           overflow-x: auto;
@@ -672,6 +759,36 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
           white-space: pre-wrap;
           display: block;
         }
+
+        .readlite-reader-content img,
+        .readlite-reader-content video {
+          max-width: 100%;
+          height: auto;
+          border-radius: 12px;
+          display: block;
+          margin: 1em auto;
+        }
+
+        .readlite-reader-content table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 1em 0;
+          font-size: 0.95em;
+        }
+        .readlite-reader-content th,
+        .readlite-reader-content td {
+          border: 1px solid var(--divider);
+          padding: 0.55em 0.75em;
+        }
+        .readlite-reader-content tbody tr:nth-child(odd) {
+          background: rgba(0,0,0,0.02);
+        }
+
+        .readlite-reader-content hr {
+          margin: 1.4em 0;
+          border: none;
+          border-top: 1px solid var(--divider);
+        }
         
         ${HIGHLIGHT_STYLES}
       `;
@@ -685,10 +802,12 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
 
       return (
         <h1
-          className="mb-4 mt-4 font-semibold transition-colors duration-300 text-primary"
+          className="mb-3 mt-2 font-semibold tracking-tight transition-colors duration-300 text-ink"
           style={{
-            letterSpacing: isCJKLanguage ? "0.02em" : "0",
-            fontFamily: settings.fontFamily,
+            letterSpacing: isCJKLanguage ? "0.02em" : "-0.01em",
+            fontFamily:
+              settings.fontFamily ||
+              '"LXGW WenKai", "Noto Serif", "Source Serif 4", "Songti SC", SimSun, serif',
           }}
         >
           {article.title}
@@ -703,7 +822,7 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
       if (!article?.byline) return null;
 
       return (
-        <div className="mb-8 opacity-75 text-secondary readlite-byline text-md">
+        <div className="mb-6 opacity-75 text-ink-muted readlite-byline text-sm">
           {article.byline}
         </div>
       );
@@ -718,7 +837,7 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
       return (
         <div
           dangerouslySetInnerHTML={{ __html: article.content }}
-          className="content text-primary"
+          className="content text-ink"
         />
       );
     };
@@ -739,6 +858,11 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
       );
     };
 
+    const computedMaxWidth =
+      settings.width >= 1
+        ? "calc(100vw - 32px)"
+        : `calc(${Math.round(settings.width * 100)}vw - 48px)`;
+
     return (
       <div
         ref={(element) => {
@@ -751,22 +875,23 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
           contentRef.current = element;
         }}
         className={`
-          readlite-reader-content 
+          readlite-reader-content readlite-sheet readlite-pop
           lang-${detectedLanguage} 
-          mx-auto my-8 px-[48px] py-8
+          mx-auto my-6 px-[32px] py-8
           relative
           ${fontFamilyClass}
           ${textAlignClass}
-          bg-primary
-          text-primary
+          bg-surface
+          text-ink
           antialiased
-          shadow-md
-          rounded-md
+          shadow-sheet
+          rounded-2xl
           transition-colors duration-300
         `}
         style={
           {
-            maxWidth: `${settings.width}px`,
+            maxWidth: computedMaxWidth,
+            textAlign: settings.textAlign,
             "--readlite-reader-font-size": `${settings.fontSize}px`,
             "--readlite-reader-line-height": getOptimalLineHeight.toString(),
           } as React.CSSProperties

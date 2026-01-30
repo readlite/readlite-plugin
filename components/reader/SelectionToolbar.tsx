@@ -65,25 +65,25 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
   // Adjust button width based on language
   const isChinese = uiLanguage.startsWith("zh");
 
-  // Simplified highlight color scheme - 3 essential colors
+  // Simplified highlight color scheme - 3 essential colors (theme-aware via CSS vars)
   const highlightColors: HighlightColorOption[] = [
     {
       color: "yellow",
       name: "yellow",
       description: "Classic highlight color",
-      value: "rgb(255, 245, 200)",
+      value: "var(--readlite-highlight-beige, rgba(255,245,230,0.82))",
     },
     {
       color: "blue",
       name: "blue",
       description: "For concepts and definitions",
-      value: "rgb(181, 228, 255)",
+      value: "var(--readlite-highlight-cyan, rgba(181,228,255,0.82))",
     },
     {
       color: "purple",
       name: "purple",
       description: "For important points",
-      value: "rgb(220, 198, 255)",
+      value: "var(--readlite-highlight-lavender, rgba(220,198,255,0.82))",
     },
   ];
 
@@ -334,7 +334,7 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
   return (
     <div
       ref={toolbarRef}
-      className={`fixed z-[9999] transform -translate-x-1/2 transition-all duration-200 ease-out ${
+      className={`fixed z-[9999] transform -translate-x-1/2 transition-all duration-200 ease-out readlite-pop ${
         isVisible
           ? "opacity-100 scale-100"
           : "opacity-0 scale-95 pointer-events-none"
@@ -344,13 +344,7 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
       {/* Glass container with modern styling */}
       <div
         className={`
-        relative overflow-hidden rounded-xl shadow-lg
-        ${
-          theme === "dark"
-            ? "bg-neutral-800/95 border border-neutral-700/50"
-            : "bg-white/95 border border-neutral-200/80"
-        }
-        backdrop-blur-md p-1.5
+        relative overflow-hidden rounded-xl shadow-floating readlite-glass p-1.5
       `}
       >
         {/* Main Toolbar */}
@@ -373,7 +367,7 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
                 </div>
               }
               label={isCopied ? t("copied") : t("copy")}
-              isDark={theme === "dark"}
+              isDark={theme === "obsidian"}
               width={isChinese ? 48 : 56}
             />
 
@@ -384,30 +378,30 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
                 isActive={showColorPicker}
                 activeColor="accent"
                 icon={<PencilIcon className="w-5 h-5" />}
-                label={t("highlight")}
-                isDark={theme === "dark"}
+              label={t("highlight")}
+              isDark={theme === "obsidian"}
+              width={isChinese ? 48 : 56}
+            />
+          ) : (
+            highlightElement &&
+            onRemoveHighlight && (
+              <ToolbarButton
+                onMouseDown={handleRemoveHighlight}
+                icon={<TrashIcon className="w-5 h-5" />}
+                label={t("delete")}
+                isDark={theme === "obsidian"}
                 width={isChinese ? 48 : 56}
+                warningAction
               />
-            ) : (
-              highlightElement &&
-              onRemoveHighlight && (
-                <ToolbarButton
-                  onMouseDown={handleRemoveHighlight}
-                  icon={<TrashIcon className="w-5 h-5" />}
-                  label={t("delete")}
-                  isDark={theme === "dark"}
-                  width={isChinese ? 48 : 56}
-                  warningAction
-                />
-              )
-            )}
+            )
+          )}
 
             {/* 6. CLOSE BUTTON - at the end */}
             <ToolbarButton
               onMouseDown={onClose}
               icon={<XMarkIcon className="w-5 h-5" />}
               label={t("close")}
-              isDark={theme === "dark"}
+              isDark={theme === "obsidian"}
               width={isChinese ? 48 : 56}
               warningAction
             />
@@ -418,8 +412,7 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
             <div className="flex justify-start mt-1 mb-0.5">
               <div
                 className={`
-                  flex items-center gap-1 px-2 py-1 rounded-lg
-                  ${theme === "dark" ? "bg-neutral-700/40" : "bg-neutral-100/80"}
+                  flex items-center gap-1 px-2 py-1 rounded-lg readlite-glass border border-border/70
                 `}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -429,8 +422,8 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
                 <button
                   onMouseDown={(e) => handleSmartCopy("plain", e)}
                   className={`px-2 py-1 text-xs rounded-md transition-colors
-                    ${theme === "dark" ? "hover:bg-neutral-600" : "hover:bg-neutral-200"}
-                    ${copiedFormat === "plain" ? "bg-accent/20 text-accent" : ""}`}
+                    hover:bg-surface/70
+                    ${copiedFormat === "plain" ? "bg-accent/15 text-accent" : "text-ink/80"}`}
                   title={t("copyPlain") || "Plain text"}
                 >
                   {t("copyPlain") || "Text"}
@@ -438,8 +431,8 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
                 <button
                   onMouseDown={(e) => handleSmartCopy("markdown", e)}
                   className={`px-2 py-1 text-xs rounded-md transition-colors
-                    ${theme === "dark" ? "hover:bg-neutral-600" : "hover:bg-neutral-200"}
-                    ${copiedFormat === "markdown" ? "bg-accent/20 text-accent" : ""}`}
+                    hover:bg-surface/70
+                    ${copiedFormat === "markdown" ? "bg-accent/15 text-accent" : "text-ink/80"}`}
                   title={t("copyMarkdown") || "Markdown quote"}
                 >
                   {t("copyMarkdown") || "Quote"}
@@ -447,8 +440,8 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
                 <button
                   onMouseDown={(e) => handleSmartCopy("withSource", e)}
                   className={`px-2 py-1 text-xs rounded-md transition-colors
-                    ${theme === "dark" ? "hover:bg-neutral-600" : "hover:bg-neutral-200"}
-                    ${copiedFormat === "withSource" ? "bg-accent/20 text-accent" : ""}`}
+                    hover:bg-surface/70
+                    ${copiedFormat === "withSource" ? "bg-accent/15 text-accent" : "text-ink/80"}`}
                   title={t("copyWithSource") || "With source link"}
                 >
                   {t("copyWithSource") || "+ Source"}
@@ -462,8 +455,7 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
             <div className="flex justify-center mt-1 mb-0.5">
               <div
                 className={`
-                  flex items-center gap-2 px-3 py-1.5 rounded-full
-                  ${theme === "dark" ? "bg-neutral-700/40" : "bg-neutral-100/80"}
+                  flex items-center gap-2 px-3 py-1.5 rounded-full readlite-glass border border-border/70
                 `}
                 style={{
                   marginLeft: isChinese ? "48px" : "56px", // Align under the highlight button
@@ -477,10 +469,10 @@ const SelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
                   <button
                     key={item.color}
                     onMouseDown={(e) => handleApplyHighlight(item.color, e)}
-                    className="w-6 h-6 rounded-full hover:scale-110 transition-transform"
+                    className="w-6 h-6 rounded-full hover:scale-110 transition-transform border border-border/60"
                     style={{
                       backgroundColor: item.value,
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
                     }}
                     title={item.description}
                     aria-label={item.name}
@@ -521,7 +513,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 }) => {
   const getButtonClasses = () => {
     const baseClasses =
-      "group flex flex-col items-center justify-center rounded-lg transition-all duration-150 p-1.5";
+      "group flex flex-col items-center justify-center rounded-lg border border-border/70 transition-all duration-150 p-1.5 bg-transparent text-ink";
 
     if (isActive) {
       return `${baseClasses} ${activeColor === "accent" ? "bg-accent/10 text-accent" : "bg-accent/10 text-accent"} shadow-sm`;
@@ -529,16 +521,16 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 
     // Warning actions like delete or close
     if (warningAction) {
-      return `${baseClasses} text-neutral-500 hover:text-red-500 hover:bg-red-50/50`;
+      return `${baseClasses} text-error hover:text-error hover:bg-error/10`;
     }
 
     // Special color for certain buttons (like AI)
     if (specialColor === "accent") {
-      return `${baseClasses} text-neutral-500 hover:text-accent hover:bg-accent/5`;
+      return `${baseClasses} text-ink/70 hover:text-accent hover:bg-accent/5`;
     }
 
     // Default state
-    return `${baseClasses} text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100/60 dark:hover:bg-neutral-700/30`;
+    return `${baseClasses} text-ink/70 hover:text-ink hover:bg-surface/70`;
   };
 
   const getTextClasses = () => {
@@ -546,12 +538,12 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
       return "text-xs font-medium mt-1 text-center text-current";
     }
     if (warningAction) {
-      return "text-xs font-medium mt-1 text-center text-neutral-500 group-hover:text-red-500";
+      return "text-xs font-medium mt-1 text-center text-error group-hover:text-error";
     }
     if (specialColor === "accent") {
-      return "text-xs font-medium mt-1 text-center text-neutral-500 group-hover:text-accent";
+      return "text-xs font-medium mt-1 text-center text-ink/70 group-hover:text-accent";
     }
-    return "text-xs font-medium mt-1 text-center text-neutral-500 group-hover:text-neutral-700 dark:group-hover:text-neutral-200";
+    return "text-xs font-medium mt-1 text-center text-ink/70 group-hover:text-ink";
   };
 
   return (
