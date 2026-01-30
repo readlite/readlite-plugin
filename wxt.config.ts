@@ -6,7 +6,7 @@ export default defineConfig({
     manifest: {
       name: "ReadLite - Simple Reading Mode",
     description: "A simple reading mode extension to make web reading more comfortable",
-    version: "1.0.9",
+    version: "2.0.0",
     permissions: ["activeTab", "scripting", "storage"],
     host_permissions: ["<all_urls>"],
     default_locale: "en",
